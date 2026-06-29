@@ -30,5 +30,11 @@ _Last updated: 2026-06-29_
 - Spec approved by user.
 
 ## Notes
-- Git initialized; Milestone 0 committed across Tasks 1–5.
-- Seed script and full router deferred to Milestone 1 (per roadmap note in 17_ROADMAP.md).
+- Git initialized; Milestone 0 implemented via subagent-driven development (Tasks 1–5),
+  final whole-branch review (opus) passed with fixes applied, then **merged to `master`**
+  (merge commit `572a2ed`); feature branch deleted. Working tree clean, full suite green.
+- Seed script and full router/layouts deferred to Milestone 1 (per 17_ROADMAP.md).
+- No git remote yet — when ready to push/PR, add a GitHub remote first.
+- Final-review fixes in `f198369`: shared builds before typecheck/test; tests excluded from
+  emitted dist; 500s logged. Deferred minors (theme FOUC, lint config files, Button cosmetic,
+  shared `"*"` pin) tracked for the Milestone 4 polish pass.

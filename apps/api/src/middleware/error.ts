@@ -15,5 +15,8 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
   const status = err instanceof HttpError ? err.status : 500;
   const code = err instanceof HttpError ? err.code : 'internal';
   const message = err instanceof HttpError ? err.message : 'Internal server error';
+  if (!(err instanceof HttpError)) {
+    console.error(err);
+  }
   res.status(status).json({ error: { message, code } });
 }

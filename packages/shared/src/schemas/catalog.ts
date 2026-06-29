@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { CONCENTRATION, GENDER, PRODUCT_TYPE } from '../enums';
-import { slugify } from '../util/slugify';
 
 const objectId = z.string().regex(/^[a-fA-F0-9]{24}$/, 'invalid id');
 
@@ -94,5 +93,3 @@ export type ProductDTO = {
   bundleItems?: { product: ProductDTO | string; qty: number }[];
 };
 export type ProductListDTO = { items: ProductDTO[]; total: number; page: number; pages: number };
-
-export { slugify };

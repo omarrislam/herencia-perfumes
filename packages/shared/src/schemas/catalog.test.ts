@@ -32,6 +32,9 @@ describe('adminProductSchema', () => {
   it('rejects negative price', () => {
     expect(() => adminProductSchema.parse({ ...base, sizes: [{ label: '50ml', price: -1, stock: 0 }] })).toThrow();
   });
+  it('rejects a price with more than 2 decimals', () => {
+    expect(() => adminProductSchema.parse({ ...base, sizes: [{ label: '50ml', price: 1.001, stock: 1 }] })).toThrow();
+  });
   it('requires bundleItems when type is bundle', () => {
     expect(() => adminProductSchema.parse({ ...base, type: 'bundle' })).toThrow();
     const bundle = adminProductSchema.parse({

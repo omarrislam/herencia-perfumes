@@ -9,14 +9,16 @@ _Last updated: 2026-06-29_
 4. Master spec: `docs/superpowers/specs/2026-06-29-herencia-design.md`
 
 ## Where we are
-Planning done; spec + docs written. **No code yet.** Waiting on user to review the spec.
+**Milestone 0 is complete and committed.** The monorepo is fully green:
+- lint, typecheck, test (shared 3 + api 4 + web 3 = 10), build — all pass.
+- Brand fonts loaded, React lint enforced, cross-platform dev script, test isolation in place.
 
 ## Immediate next steps
-1. If spec not yet approved: ask user to review `docs/superpowers/specs/2026-06-29-herencia-design.md`.
-2. After approval: invoke **writing-plans** skill → produce implementation plan.
-3. Then start **Milestone 0** (monorepo scaffold, shared package, tooling, app shells).
+1. Invoke the **writing-plans** skill to produce the Milestone 1 (catalog & content) implementation plan.
+   - Milestone 1 scope: Product + ScentFamily Mongoose models, seed script, Admin products/bundles CRUD + Cloudinary upload, Storefront Home + Products list/detail + Bundles, SEO (meta injection + JSON-LD + sitemap + robots).
+2. After the plan is reviewed, execute it via **subagent-driven-development** or **executing-plans** skill.
 
 ## Don't
 - Don't re-ask locked decisions (see `decisions.md`).
-- Don't start coding before the spec is approved and a plan exists.
-- Don't commit to git unless the user asks (git not yet initialized).
+- Don't re-verify Milestone 0 — it's done.
+- Don't start Milestone 1 code before the plan is written and reviewed.

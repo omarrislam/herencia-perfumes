@@ -8,6 +8,7 @@ describe('loadEnv', () => {
     MONGODB_URI: 'mongodb://127.0.0.1:27017/herencia',
     JWT_SECRET: 'x'.repeat(16),
     CLIENT_ORIGIN: 'http://localhost:5173',
+    ADMIN_TOKEN: 'y'.repeat(16),
   };
 
   it('parses a valid env and coerces PORT to number', () => {

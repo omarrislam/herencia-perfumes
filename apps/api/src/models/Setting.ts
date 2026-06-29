@@ -1,0 +1,24 @@
+import mongoose, { Schema, type InferSchemaType } from 'mongoose';
+
+const settingSchema = new Schema(
+  {
+    whatsappNumber: { type: String, required: true },
+    shippingFee: { type: Number, required: true, default: 0 },
+    freeShippingThreshold: { type: Number },
+    socialLinks: { instagram: String, facebook: String, tiktok: String },
+    hero: {
+      title: { type: String, required: true },
+      subtitle: { type: String, required: true },
+      ctaText: { type: String, required: true },
+      ctaLink: { type: String, required: true },
+      image: { type: String, required: true },
+    },
+    contactEmail: { type: String },
+  },
+  { timestamps: true },
+);
+
+export type SettingDoc = InferSchemaType<typeof settingSchema>;
+export const Setting =
+  (mongoose.models.Setting as mongoose.Model<SettingDoc>) ??
+  mongoose.model('Setting', settingSchema);

@@ -1,0 +1,99 @@
+import { Router } from 'express';
+import type { Model } from 'mongoose';
+import { productQuerySchema } from '@herencia/shared';
+import { Product as _Product, type ProductDoc } from '../models/Product';
+import { ScentFamily } from '../models/ScentFamily';
+import { HttpError } from '../middleware/error';
+import { toProductDTO, toScentFamilyDTO } from '../lib/serialize';
+
+// Cast away the `mongoose.models[key] | Model<T>` union that arises under noUncheckedIndexedAccess.
+const Product = _Product as Model<ProductDoc>;
+
+export const catalogRouter = Router();
+
+catalogRouter.get('/scent-families', async (_req, res, next) => {
+  try {
+    const families = await ScentFamily.find().sort({ order: 1, name: 1 }).lean();
+    res.json(families.map(toScentFamilyDTO));
+  } catch (err) {
+    next(err);
+  }
+});
+
+catalogRouter.get('/products', async (req, res, next) => {
+  try {
+    const parsed = productQuerySchema.safeParse(req.query);
+    if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? 'Invalid query', 'invalid_query');
+    const q = parsed.data;
+
+    const filter: Record<string, unknown> = { isActive: true };
+    if (q.type) filter.type = q.type;
+    if (q.scentFamily) filter.scentFamily = q.scentFamily;
+    if (q.gender) filter.gender = q.gender;
+    if (q.concentration) filter.concentration = q.concentration;
+    if (q.minPrice != null || q.maxPrice != null) {
+      filter.basePrice = {
+        ...(q.minPrice != null ? { $gte: q.minPrice } : {}),
+        ...(q.maxPrice != null ? { $lte: q.maxPrice } : {}),
+      };
+    }
+    if (q.q) filter.$text = { $search: q.q };
+
+    const sortMap: Record<typeof q.sort, Record<string, 1 | -1>> = {
+      newest: { createdAt: -1 },
+      'price-asc': { basePrice: 1 },
+      'price-desc': { basePrice: -1 },
+      rating: { 'rating.avg': -1 },
+    };
+
+    const [items, total] = await Promise.all([
+      Product.find(filter)
+        .sort(sortMap[q.sort])
+        .skip((q.page - 1) * q.limit)
+        .limit(q.limit)
+        .populate('scentFamily')
+        .lean(),
+      Product.countDocuments(filter),
+    ]);
+
+    res.json({
+      items: items.map((d) => toProductDTO(d)),
+      total,
+      page: q.page,
+      pages: Math.max(1, Math.ceil(total / q.limit)),
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+catalogRouter.get('/products/:slug', async (req, res, next) => {
+  try {
+    const doc = await Product.findOne({ slug: req.params.slug, isActive: true })
+      .populate('scentFamily')
+      .populate('bundleItems.product')
+      .lean();
+    if (!doc) throw new HttpError(404, 'Product not found', 'not_found');
+    res.json(toProductDTO(doc, { populateBundle: true }));
+  } catch (err) {
+    next(err);
+  }
+});
+
+catalogRouter.get('/products/:slug/related', async (req, res, next) => {
+  try {
+    const product = await Product.findOne({ slug: req.params.slug, isActive: true }).lean();
+    if (!product) throw new HttpError(404, 'Product not found', 'not_found');
+    const related = await Product.find({
+      _id: { $ne: product._id },
+      isActive: true,
+      scentFamily: product.scentFamily,
+    })
+      .limit(4)
+      .populate('scentFamily')
+      .lean();
+    res.json(related.map((d) => toProductDTO(d)));
+  } catch (err) {
+    next(err);
+  }
+});

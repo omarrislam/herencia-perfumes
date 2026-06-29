@@ -19,13 +19,14 @@ _Last updated: 2026-06-29_
 - [ ] Implementation plans for Milestones 1–4 (written just-in-time per milestone)
 
 ## Milestone 0 — Foundations
-- [ ] Monorepo + npm workspaces + root scripts
-- [ ] TS configs, ESLint, Prettier
-- [ ] Tailwind + brand tokens + light/dark themes
-- [ ] `packages/shared`: types + Zod schemas + enums/constants
-- [ ] api: env validation, Mongo connection, error handler, base middleware
-- [ ] Seed script
-- [ ] App shells: storefront + admin layouts, router, theme toggle, UI primitives
+- [x] Monorepo + npm workspaces + root scripts
+- [x] TS configs, ESLint, Prettier
+- [x] Tailwind + brand tokens + light/dark themes
+- [x] `packages/shared`: types + Zod schemas + enums/constants
+- [x] api: env validation, Mongo connection wiring, error handler, base middleware
+- [ ] Seed script — deferred to Milestone 1 (needs Product/ScentFamily models)
+- [x] App primitives: theme toggle (ThemeProvider) + Button
+- [ ] App shells: storefront + admin layouts + router — deferred to Milestone 1
 
 ## Milestone 1 — Catalog & content
 - [ ] Product + ScentFamily models

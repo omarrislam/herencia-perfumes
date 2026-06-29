@@ -1,5 +1,5 @@
 import mongoose, { Schema, type InferSchemaType } from 'mongoose';
-import { slugify } from '@herencia/shared';
+import { slugify, GENDER, CONCENTRATION, PRODUCT_TYPE } from '@herencia/shared';
 
 const sizeSchema = new Schema(
   {
@@ -15,7 +15,7 @@ const productSchema = new Schema(
   {
     name: { type: String, required: true, trim: true },
     slug: { type: String, required: true, unique: true, index: true },
-    type: { type: String, enum: ['perfume', 'bundle'], required: true, index: true },
+    type: { type: String, enum: [...PRODUCT_TYPE], required: true, index: true },
     shortDesc: { type: String, required: true },
     description: { type: String, required: true },
     images: { type: [String], default: [] },
@@ -27,8 +27,8 @@ const productSchema = new Schema(
       heart: { type: [String], default: [] },
       base: { type: [String], default: [] },
     },
-    gender: { type: String, enum: ['men', 'women', 'unisex'], required: true, index: true },
-    concentration: { type: String, enum: ['EDT', 'EDP', 'Extrait', 'Other'], required: true },
+    gender: { type: String, enum: [...GENDER], required: true, index: true },
+    concentration: { type: String, enum: [...CONCENTRATION], required: true },
     rating: {
       avg: { type: Number, default: 0 },
       count: { type: Number, default: 0 },
@@ -50,6 +50,7 @@ const productSchema = new Schema(
 productSchema.index({ name: 'text', shortDesc: 'text' });
 
 productSchema.pre('validate', function (next) {
+  // Mongoose v8 middleware 'this' is loosely typed; cast to the fields the hook touches.
   const doc = this as unknown as { name: string; slug?: string; sizes: { price: number }[]; basePrice?: number };
   if (!doc.slug && doc.name) doc.slug = slugify(doc.name);
   if (Array.isArray(doc.sizes) && doc.sizes.length > 0) {

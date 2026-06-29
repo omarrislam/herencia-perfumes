@@ -12,4 +12,5 @@ const scentFamilySchema = new Schema(
 
 export type ScentFamilyDoc = InferSchemaType<typeof scentFamilySchema>;
 export const ScentFamily =
-  mongoose.models.ScentFamily ?? mongoose.model('ScentFamily', scentFamilySchema);
+  (mongoose.models.ScentFamily as mongoose.Model<ScentFamilyDoc>) ??
+  mongoose.model('ScentFamily', scentFamilySchema);

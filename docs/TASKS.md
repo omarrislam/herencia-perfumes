@@ -23,9 +23,10 @@ _Last updated: 2026-06-29_
 - [x] TS configs, ESLint, Prettier
 - [x] Tailwind + brand tokens + light/dark themes
 - [x] `packages/shared`: types + Zod schemas + enums/constants
-- [x] api: env validation, Mongo connection, error handler, base middleware
-- [x] Seed script
-- [x] App shells: storefront + admin layouts, router, theme toggle, UI primitives
+- [x] api: env validation, Mongo connection wiring, error handler, base middleware
+- [ ] Seed script — deferred to Milestone 1 (needs Product/ScentFamily models)
+- [x] App primitives: theme toggle (ThemeProvider) + Button
+- [ ] App shells: storefront + admin layouts + router — deferred to Milestone 1
 
 ## Milestone 1 — Catalog & content
 - [ ] Product + ScentFamily models

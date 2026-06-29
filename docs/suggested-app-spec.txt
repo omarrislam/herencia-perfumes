@@ -1,0 +1,34 @@
+perfume-brand/
+
+docs/
+
+    00_PROJECT.md
+    01_REQUIREMENTS.md
+    02_CLAUDE_RULES.md
+    03_ARCHITECTURE.md
+    04_DATABASE.md
+    05_API.md
+    06_FRONTEND.md
+    07_BACKEND.md
+    08_UI_GUIDELINES.md
+    09_DESIGN_SYSTEM.md
+    10_ANIMATIONS.md
+    11_ADMIN.md
+    12_SEO.md
+    13_PERFORMANCE.md
+    14_SECURITY.md
+    15_TESTING.md
+    16_DEPLOYMENT.md
+    17_ROADMAP.md
+
+memory/
+
+current-state.md
+
+decisions.md
+
+next-session.md
+
+bugs.md
+
+TASKS.md

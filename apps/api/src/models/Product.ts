@@ -60,4 +60,6 @@ productSchema.pre('validate', function (next) {
 });
 
 export type ProductDoc = InferSchemaType<typeof productSchema>;
-export const Product = mongoose.models.Product ?? mongoose.model('Product', productSchema);
+export const Product =
+  (mongoose.models.Product as mongoose.Model<ProductDoc>) ??
+  mongoose.model('Product', productSchema);

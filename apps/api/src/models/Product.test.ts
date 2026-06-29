@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vitest';
-import mongoose from 'mongoose';
 import { connectMemory, disconnectMemory, clearDb } from '../test/db';
 import { ScentFamily } from './ScentFamily';
 import { Product } from './Product';

@@ -1,13 +1,9 @@
 import { Router } from 'express';
-import type { Model } from 'mongoose';
 import { productQuerySchema } from '@herencia/shared';
-import { Product as _Product, type ProductDoc } from '../models/Product';
+import { Product } from '../models/Product';
 import { ScentFamily } from '../models/ScentFamily';
 import { HttpError } from '../middleware/error';
 import { toProductDTO, toScentFamilyDTO } from '../lib/serialize';
-
-// Cast away the `mongoose.models[key] | Model<T>` union that arises under noUncheckedIndexedAccess.
-const Product = _Product as Model<ProductDoc>;
 
 export const catalogRouter = Router();
 

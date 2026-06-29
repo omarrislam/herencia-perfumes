@@ -1,6 +1,8 @@
 import type { ProductDTO, ScentFamilyDTO } from '@herencia/shared';
 
-// `doc` is a populated/lean Mongoose document; we map to plain DTOs.
+// `doc` is a lean Mongoose document whose shape varies (populated vs. raw refs);
+// `any` is intentional here so the mapper can read arbitrary nested fields.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type AnyDoc = Record<string, any>;
 
 export function toScentFamilyDTO(doc: AnyDoc): ScentFamilyDTO {

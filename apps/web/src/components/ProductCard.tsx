@@ -6,6 +6,10 @@ import { Rating } from './Rating';
 
 export function ProductCard({ product }: { product: ProductDTO }) {
   const href = `${product.type === 'bundle' ? '/bundles' : '/products'}/${product.slug}`;
+  const baseSize = product.sizes.reduce<typeof product.sizes[number] | undefined>(
+    (min, s) => (min === undefined || s.price < min.price ? s : min),
+    undefined,
+  );
   return (
     <Link
       to={href}
@@ -17,7 +21,7 @@ export function ProductCard({ product }: { product: ProductDTO }) {
       <h3 className="mt-3 font-display text-lg text-content">{product.name}</h3>
       <p className="font-body text-sm text-muted">{product.scentFamily?.name ?? ''}</p>
       <div className="mt-1"><Rating avg={product.rating.avg} count={product.rating.count} /></div>
-      <div className="mt-2"><Price value={product.basePrice} compareAt={product.sizes[0]?.compareAtPrice} /></div>
+      <div className="mt-2"><Price value={product.basePrice} compareAt={baseSize?.compareAtPrice} /></div>
     </Link>
   );
 }

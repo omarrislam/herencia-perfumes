@@ -22,4 +22,20 @@ describe('ProductCard', () => {
     render(<MemoryRouter><ProductCard product={{ ...product, type: 'bundle', slug: 'woody-duo' }} /></MemoryRouter>);
     expect(screen.getByRole('link')).toHaveAttribute('href', '/bundles/woody-duo');
   });
+  it('shows the compareAt price of the cheapest size, not sizes[0]', () => {
+    const p = {
+      id: '1', name: 'X', slug: 'x', type: 'perfume', shortDesc: 's', description: 'd',
+      images: ['img'], basePrice: 800, scentFamily: null,
+      notes: { top: [], heart: [], base: [] }, gender: 'unisex', concentration: 'EDP',
+      rating: { avg: 0, count: 0 }, isFeatured: false, isActive: true, seo: {},
+      sizes: [
+        { label: '100ml', price: 1200, compareAtPrice: 1500, stock: 5 },
+        { label: '50ml', price: 800, compareAtPrice: 1000, stock: 5 },
+      ],
+    } as const;
+    render(<MemoryRouter><ProductCard product={p as never} /></MemoryRouter>);
+    // compareAt for the basePrice (800) size is 1000, not 1500
+    expect(screen.getByText(/1,?000/)).toBeInTheDocument();
+    expect(screen.queryByText(/1,?500/)).not.toBeInTheDocument();
+  });
 });

@@ -6,6 +6,7 @@ let mem: MongoMemoryServer | null = null;
 export async function connectMemory(): Promise<void> {
   mem = await MongoMemoryServer.create();
   await mongoose.connect(mem.getUri());
+  await Promise.all(Object.values(mongoose.models).map((m) => m.init()));
 }
 
 export async function disconnectMemory(): Promise<void> {

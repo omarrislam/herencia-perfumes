@@ -1,5 +1,5 @@
 // apps/web/src/features/admin/adminClient.ts
-import type { AdminProductInput, ProductDTO, ScentFamilyDTO } from '@herencia/shared';
+import type { AdminProductInput, ProductDTO, ScentFamilyDTO, OrderDTO, OrderStatus } from '@herencia/shared';
 import { apiSend, apiGet } from '../../lib/api';
 
 export const adminCreateProduct = (data: AdminProductInput) =>
@@ -33,5 +33,12 @@ export async function uploadImage(file: File): Promise<string> {
   const body = (await res.json()) as { public_id: string };
   return body.public_id;
 }
+
+export const adminFetchOrders = (status?: OrderStatus) =>
+  apiGet<{ items: OrderDTO[]; total: number; page: number; pages: number }>(
+    `/api/admin/orders${status ? `?status=${status}` : ''}`,
+  );
+export const adminUpdateOrderStatus = (id: string, status: OrderStatus) =>
+  apiSend<OrderDTO>('PUT', `/api/admin/orders/${id}/status`, { status });
 
 export { apiGet };

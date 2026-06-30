@@ -5,7 +5,7 @@ import { loadEnv } from './config/env';
 async function main() {
   const env = loadEnv(process.env);
   await mongoose.connect(env.MONGODB_URI);
-  const app = createApp({ clientOrigin: env.CLIENT_ORIGIN });
+  const app = createApp({ clientOrigin: env.CLIENT_ORIGIN, adminToken: env.ADMIN_TOKEN });
   app.listen(env.PORT, () => console.log(`API listening on :${env.PORT}`));
 }
 

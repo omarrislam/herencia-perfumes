@@ -5,7 +5,7 @@
 
 Legend: `[x]` done · `[~]` in progress · `[ ]` todo
 
-_Last updated: 2026-06-29_
+_Last updated: 2026-06-30_
 
 ---
 
@@ -24,18 +24,18 @@ _Last updated: 2026-06-29_
 - [x] Tailwind + brand tokens + light/dark themes
 - [x] `packages/shared`: types + Zod schemas + enums/constants
 - [x] api: env validation, Mongo connection wiring, error handler, base middleware
-- [ ] Seed script — deferred to Milestone 1 (needs Product/ScentFamily models)
+- [x] Seed script — delivered in Milestone 1 (Task 4)
 - [x] App primitives: theme toggle (ThemeProvider) + Button
-- [ ] App shells: storefront + admin layouts + router — deferred to Milestone 1
+- [x] App shells: storefront + admin layouts + router — delivered in Milestone 1 (Task 7/11)
 
 ## Milestone 1 — Catalog & content
-- [ ] Product + ScentFamily models
-- [ ] Admin products/bundles CRUD + Cloudinary upload
-- [ ] Storefront Home
-- [ ] Products list (search/filter/sort)
-- [ ] Product detail (gallery, notes, sizes, related)
-- [ ] Bundles list/detail
-- [ ] SEO: meta injection + JSON-LD + sitemap + robots
+- [x] Product + ScentFamily models
+- [x] Admin products/bundles CRUD + Cloudinary upload
+- [x] Storefront Home
+- [x] Products list (search/filter/sort)
+- [x] Product detail (gallery, notes, sizes, related)
+- [x] Bundles list/detail
+- [x] SEO: meta injection + JSON-LD + sitemap + robots
 
 ## Milestone 2 — Commerce
 - [ ] Cart (local + account merge)

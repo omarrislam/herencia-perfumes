@@ -10,6 +10,7 @@ const envSchema = z.object({
   CLOUDINARY_API_KEY: z.string().optional(),
   CLOUDINARY_API_SECRET: z.string().optional(),
   WHATSAPP_NUMBER: z.string().optional(),
+  ADMIN_TOKEN: z.string().min(16),
 });
 
 export type Env = z.infer<typeof envSchema>;

@@ -1,4 +1,4 @@
-import type { ProductDTO, ScentFamilyDTO, UserDTO, OrderDTO } from '@herencia/shared';
+import type { ProductDTO, ScentFamilyDTO, UserDTO, OrderDTO, AddressDTO } from '@herencia/shared';
 
 // `doc` is a lean Mongoose document whose shape varies (populated vs. raw refs);
 // `any` is intentional here so the mapper can read arbitrary nested fields.
@@ -59,6 +59,14 @@ export function toUserDTO(doc: AnyDoc): UserDTO {
     email: doc.email,
     role: doc.role,
     phone: doc.phone ?? undefined,
+  };
+}
+
+export function toAddressDTO(a: AnyDoc): AddressDTO {
+  return {
+    id: String(a._id),
+    label: a.label, line1: a.line1, line2: a.line2 ?? undefined,
+    city: a.city, governorate: a.governorate, phone: a.phone, isDefault: !!a.isDefault,
   };
 }
 

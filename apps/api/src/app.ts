@@ -9,6 +9,7 @@ import { settingsRouter } from './routes/settings';
 import { adminRouter } from './routes/admin';
 import { cartRouter } from './routes/cart';
 import { orderRouter } from './routes/orders';
+import { accountRouter } from './routes/account';
 import { buildSitemap, ROBOTS_TXT } from './lib/seo';
 import { mountSpa } from './middleware/spa';
 import { Product } from './models/Product';
@@ -31,6 +32,7 @@ export function createApp(opts: {
   app.use('/api/admin', adminRouter());
   app.use('/api/cart', cartRouter());
   app.use('/api/orders', orderRouter());
+  app.use('/api/account', accountRouter());
   app.use('/api', notFound);
 
   const origin = opts.origin ?? '';

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createOrderSchema } from './order';
+import { createOrderSchema, ORDER_STATUS, ORDER_STATUS_TRANSITIONS, updateOrderStatusSchema } from './order';
 
 describe('createOrderSchema', () => {
   const valid = {
@@ -19,5 +19,19 @@ describe('createOrderSchema', () => {
 
   it('rejects empty items', () => {
     expect(() => createOrderSchema.parse({ ...valid, items: [] })).toThrow();
+  });
+});
+
+describe('order status', () => {
+  it('lists pending as the initial status', () => {
+    expect(ORDER_STATUS[0]).toBe('pending');
+  });
+  it('allows pending → confirmed but not delivered → pending', () => {
+    expect(ORDER_STATUS_TRANSITIONS.pending).toContain('confirmed');
+    expect(ORDER_STATUS_TRANSITIONS.delivered).toEqual([]);
+  });
+  it('validates a status payload', () => {
+    expect(updateOrderStatusSchema.safeParse({ status: 'shipped' }).success).toBe(true);
+    expect(updateOrderStatusSchema.safeParse({ status: 'banana' }).success).toBe(false);
   });
 });

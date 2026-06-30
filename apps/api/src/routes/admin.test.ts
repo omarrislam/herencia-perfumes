@@ -60,4 +60,49 @@ describe('admin products', () => {
       .send({ ...validProduct(String(fam._id)), sizes: [] });
     expect(res.status).toBe(400);
   });
+
+  it('returns 400 for a malformed product id', async () => {
+    const res = await request(app)
+      .delete('/api/admin/products/not-a-valid-id')
+      .set('x-admin-token', TOKEN);
+    expect(res.status).toBe(400);
+    expect(res.body.error.code).toBe('invalid_id');
+  });
+
+  it('returns 409 on duplicate scent-family slug', async () => {
+    const first = await request(app)
+      .post('/api/admin/scent-families')
+      .set('x-admin-token', TOKEN)
+      .send({ name: 'Woody' });
+    expect(first.status).toBe(201);
+
+    const second = await request(app)
+      .post('/api/admin/scent-families')
+      .set('x-admin-token', TOKEN)
+      .send({ name: 'Woody' });
+    expect(second.status).toBe(409);
+    expect(second.body.error.code).toBe('conflict');
+  });
+
+  it('creates a bundle product referencing an existing perfume', async () => {
+    const fam = await ScentFamily.create({ name: 'Woody', slug: 'woody', order: 1 });
+    const perfumeRes = await request(app)
+      .post('/api/admin/products')
+      .set('x-admin-token', TOKEN)
+      .send(validProduct(String(fam._id)));
+    expect(perfumeRes.status).toBe(201);
+    const perfumeId: string = perfumeRes.body.id;
+
+    const bundleRes = await request(app)
+      .post('/api/admin/products')
+      .set('x-admin-token', TOKEN)
+      .send({
+        ...validProduct(String(fam._id)),
+        name: 'Oud Bundle',
+        type: 'bundle',
+        bundleItems: [{ product: perfumeId, qty: 1 }],
+      });
+    expect(bundleRes.status).toBe(201);
+    expect(bundleRes.body.type).toBe('bundle');
+  });
 });

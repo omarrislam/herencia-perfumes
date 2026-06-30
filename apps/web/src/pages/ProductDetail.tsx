@@ -9,6 +9,7 @@ import { Price } from '../components/Price';
 import { Rating } from '../components/Rating';
 import { ProductCard } from '../components/ProductCard';
 import { Skeleton } from '../components/Skeleton';
+import { useCart } from '../features/cart/CartContext';
 
 export default function ProductDetail() {
   const { slug = '' } = useParams();
@@ -16,6 +17,7 @@ export default function ProductDetail() {
   const related = useQuery({ queryKey: ['product', slug, 'related'], queryFn: () => fetchRelated(slug), enabled: !!slug });
   const [sizeIdx, setSizeIdx] = useState(0);
   useEffect(() => { setSizeIdx(0); }, [slug]);
+  const { addItem, setOpen } = useCart();
 
   useSeo({
     title: product.data ? `${product.data.name} — HERENCIA` : 'HERENCIA',
@@ -64,6 +66,19 @@ export default function ProductDetail() {
             <Price value={size?.price ?? p.basePrice} compareAt={size?.compareAtPrice} />
           </div>
           <p className="font-body text-sm text-muted">{(size?.stock ?? 0) > 0 ? 'In stock' : 'Out of stock'}</p>
+
+          <button
+            type="button"
+            disabled={(size?.stock ?? 0) === 0}
+            onClick={() => {
+              if (!size) return;
+              addItem({ productId: p.id, sizeLabel: size.label, qty: 1 });
+              setOpen(true);
+            }}
+            className="w-full rounded-md bg-maroon px-4 py-3 font-body text-sm text-cream transition-colors hover:bg-maroon/90 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {(size?.stock ?? 0) === 0 ? 'Out of stock' : 'Add to cart'}
+          </button>
 
           {p.type === 'bundle' && p.bundleItems?.length ? (
             <div>

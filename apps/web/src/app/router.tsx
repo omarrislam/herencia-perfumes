@@ -6,6 +6,7 @@ const Home = lazy(() => import('../pages/Home'));
 const Products = lazy(() => import('../pages/Products'));
 const ProductDetail = lazy(() => import('../pages/ProductDetail'));
 const Bundles = lazy(() => import('../pages/Bundles'));
+const Cart = lazy(() => import('../pages/Cart'));
 const NotFound = lazy(() => import('../pages/NotFound'));
 const Admin = lazy(() => import('../pages/admin/AdminApp'));
 const Login = lazy(() => import('../pages/Login'));
@@ -20,6 +21,7 @@ export const router = createBrowserRouter([
       { path: '/products/:slug', element: <ProductDetail /> },
       { path: '/bundles', element: <Bundles /> },
       { path: '/bundles/:slug', element: <ProductDetail /> },
+      { path: '/cart', element: <Cart /> },
       { path: '/login', element: <Login /> },
       { path: '/register', element: <Register /> },
     ],

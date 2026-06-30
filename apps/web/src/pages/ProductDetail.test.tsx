@@ -1,9 +1,12 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
 import ProductDetail from './ProductDetail';
 import type { ProductDTO } from '@herencia/shared';
+import { AuthProvider } from '../features/auth/AuthContext';
+import { CartProvider } from '../features/cart/CartContext';
+import * as api from '../lib/api';
 
 const product: ProductDTO = {
   id: '1', name: 'Royal Oud', slug: 'royal-oud', type: 'perfume', shortDesc: 'Regal', description: 'A long description.',
@@ -13,6 +16,10 @@ const product: ProductDTO = {
   gender: 'unisex', concentration: 'EDP', rating: { avg: 4.5, count: 10 }, isFeatured: true, isActive: true, seo: {},
 };
 
+beforeEach(() => {
+  vi.spyOn(api, 'fetchMe').mockRejectedValue(new api.ApiError(401, 'no'));
+  vi.spyOn(api, 'priceCart').mockResolvedValue({ items: [], subtotal: 0, shipping: 0, total: 0, hasUnavailable: false });
+});
 afterEach(() => vi.restoreAllMocks());
 
 function renderAt(path: string) {
@@ -20,7 +27,11 @@ function renderAt(path: string) {
   return render(
     <QueryClientProvider client={client}>
       <MemoryRouter initialEntries={[path]}>
-        <Routes><Route path="/products/:slug" element={<ProductDetail />} /></Routes>
+        <AuthProvider>
+          <CartProvider>
+            <Routes><Route path="/products/:slug" element={<ProductDetail />} /></Routes>
+          </CartProvider>
+        </AuthProvider>
       </MemoryRouter>
     </QueryClientProvider>,
   );

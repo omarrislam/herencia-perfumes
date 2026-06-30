@@ -1,4 +1,4 @@
-import type { ProductDTO, ProductListDTO, ScentFamilyDTO, UserDTO, LoginInput, RegisterInput } from '@herencia/shared';
+import type { ProductDTO, ProductListDTO, ScentFamilyDTO, UserDTO, LoginInput, RegisterInput, PricedCartDTO, CartItemInput } from '@herencia/shared';
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -81,3 +81,8 @@ export const login = (input: LoginInput) => apiSend<UserDTO>('POST', '/api/auth/
 export const register = (input: RegisterInput) => apiSend<UserDTO>('POST', '/api/auth/register', input);
 export const logout = () => apiSend<void>('POST', '/api/auth/logout');
 export const fetchMe = () => apiGet<UserDTO>('/api/auth/me');
+
+export const priceCart = (items: CartItemInput[]) => apiSend<PricedCartDTO>('POST', '/api/cart/price', { items });
+export const getServerCart = () => apiGet<PricedCartDTO>('/api/cart');
+export const setServerCart = (items: CartItemInput[]) => apiSend<PricedCartDTO>('PUT', '/api/cart', { items });
+export const mergeServerCart = (items: CartItemInput[]) => apiSend<PricedCartDTO>('POST', '/api/cart/merge', { items });

@@ -6,17 +6,20 @@ import { ThemeProvider } from './app/ThemeProvider';
 import { queryClient } from './app/queryClient';
 import { router } from './app/router';
 import { AuthProvider } from './features/auth/AuthContext';
+import { CartProvider } from './features/cart/CartContext';
 import './styles/index.css';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <ThemeProvider>
-          <Suspense fallback={<div className="p-8 text-center font-body text-muted">Loading…</div>}>
-            <RouterProvider router={router} />
-          </Suspense>
-        </ThemeProvider>
+        <CartProvider>
+          <ThemeProvider>
+            <Suspense fallback={<div className="p-8 text-center font-body text-muted">Loading…</div>}>
+              <RouterProvider router={router} />
+            </Suspense>
+          </ThemeProvider>
+        </CartProvider>
       </AuthProvider>
     </QueryClientProvider>
   </StrictMode>,

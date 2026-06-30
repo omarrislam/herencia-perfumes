@@ -16,7 +16,9 @@ export function verifyToken(token: string): TokenPayload | null {
   try {
     const decoded = jwt.verify(token, secret());
     if (typeof decoded === 'object' && decoded && 'sub' in decoded && 'role' in decoded) {
-      return { sub: String(decoded.sub), role: (decoded as { role: 'customer' | 'admin' }).role };
+      const role = (decoded as Record<string, unknown>)['role'];
+      if (role !== 'customer' && role !== 'admin') return null;
+      return { sub: String(decoded.sub), role };
     }
     return null;
   } catch {

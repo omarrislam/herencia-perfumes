@@ -3,6 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { errorHandler, notFound } from './middleware/error';
+import { authRouter } from './routes/auth';
 import { catalogRouter } from './routes/catalog';
 import { settingsRouter } from './routes/settings';
 import { adminRouter } from './routes/admin';
@@ -22,6 +23,7 @@ export function createApp(opts: {
   app.use(cookieParser());
 
   app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
+  app.use('/api/auth', authRouter());
   app.use('/api', catalogRouter);
   app.use('/api', settingsRouter);
   app.use('/api/admin', adminRouter());

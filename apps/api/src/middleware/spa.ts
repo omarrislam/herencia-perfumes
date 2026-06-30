@@ -17,6 +17,9 @@ export function mountSpa(app: Express, opts: { webDist: string; origin: string }
       const head = buildHeadTags(meta, opts.origin);
       // Replace the template <title> (and everything we manage) by inserting before </head>.
       const withoutTitle = template.replace(/<title>.*?<\/title>/s, '');
+      if (!withoutTitle.includes('</head>')) {
+        console.error('[mountSpa] index.html has no </head> — head injection skipped');
+      }
       const html = withoutTitle.replace('</head>', `    ${head}\n  </head>`);
       res.status(200).type('html').send(html);
     } catch (err) {

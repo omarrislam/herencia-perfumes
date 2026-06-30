@@ -13,6 +13,22 @@ describe('buildHeadTags', () => {
     expect(html).toContain('rel="canonical"');
     expect(html).toContain('og:title');
   });
+
+  it('escapes <, >, and " in title and description', () => {
+    const html = buildHeadTags({
+      title: 'Scent <Gold> "Edition"',
+      description: 'A <great> "smell".',
+      canonicalPath: '/products/scent-gold',
+    });
+    // Escaped forms must appear
+    expect(html).toContain('&lt;Gold&gt;');
+    expect(html).toContain('&quot;Edition&quot;');
+    expect(html).toContain('&lt;great&gt;');
+    expect(html).toContain('&quot;smell&quot;');
+    // Raw injection characters must NOT appear in title/desc positions
+    expect(html).not.toContain('<Gold>');
+    expect(html).not.toContain('"Edition"');
+  });
 });
 
 describe('buildSitemap', () => {

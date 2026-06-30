@@ -53,7 +53,7 @@ export function productJsonLd(p: ProductDTO, canonical: string): string {
       reviewCount: p.rating.count,
     };
   }
-  return JSON.stringify(data);
+  return JSON.stringify(data).replace(/</g, '\\u003c');
 }
 
 export async function routeMetaForPath(path: string): Promise<RouteMeta> {
@@ -83,16 +83,17 @@ export async function routeMetaForPath(path: string): Promise<RouteMeta> {
 
 export function buildHeadTags(meta: RouteMeta, origin = ''): string {
   const url = `${origin}${meta.canonicalPath}`;
+  const safeUrl = escapeHtml(url);
   const desc = escapeHtml(meta.description);
   const title = escapeHtml(meta.title);
   const parts = [
     `<title>${title}</title>`,
     `<meta name="description" content="${desc}" />`,
-    `<link rel="canonical" href="${url}" />`,
+    `<link rel="canonical" href="${safeUrl}" />`,
     `<meta property="og:type" content="website" />`,
     `<meta property="og:title" content="${title}" />`,
     `<meta property="og:description" content="${desc}" />`,
-    `<meta property="og:url" content="${url}" />`,
+    `<meta property="og:url" content="${safeUrl}" />`,
     `<meta name="twitter:card" content="summary_large_image" />`,
   ];
   if (meta.image) parts.push(`<meta property="og:image" content="${escapeHtml(meta.image)}" />`);

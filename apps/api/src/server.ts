@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import mongoose from 'mongoose';
 import { createApp } from './app';
@@ -9,7 +10,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 async function main() {
   const env = loadEnv(process.env);
   await mongoose.connect(env.MONGODB_URI);
-  const webDist = path.resolve(__dirname, '../../web/dist');
+  const webDistCandidate = path.resolve(__dirname, '../../web/dist');
+  const webDist = existsSync(path.join(webDistCandidate, 'index.html')) ? webDistCandidate : undefined;
   const app = createApp({
     clientOrigin: env.CLIENT_ORIGIN,
     adminToken: env.ADMIN_TOKEN,

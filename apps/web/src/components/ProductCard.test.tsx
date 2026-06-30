@@ -1,8 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { ProductCard } from './ProductCard';
+import { AuthProvider } from '../features/auth/AuthContext';
 import type { ProductDTO } from '@herencia/shared';
+import * as api from '../lib/api';
 
 const product: ProductDTO = {
   id: '1', name: 'Royal Oud', slug: 'royal-oud', type: 'perfume', shortDesc: 'Regal', description: 'd',
@@ -11,15 +13,32 @@ const product: ProductDTO = {
   gender: 'unisex', concentration: 'EDP', rating: { avg: 4.5, count: 10 }, isFeatured: true, isActive: true, seo: {},
 };
 
+// WishlistButton calls useAuth() which mounts AuthProvider which calls fetchMe.
+// Mock it so tests don't make real network calls.
+beforeEach(() => {
+  vi.spyOn(api, 'fetchMe').mockRejectedValue(new api.ApiError(401, 'no'));
+});
+afterEach(() => vi.restoreAllMocks());
+
+function wrap(ui: React.ReactElement) {
+  return render(
+    <MemoryRouter>
+      <AuthProvider>
+        {ui}
+      </AuthProvider>
+    </MemoryRouter>,
+  );
+}
+
 describe('ProductCard', () => {
   it('renders name, price, and links to the detail page', () => {
-    render(<MemoryRouter><ProductCard product={product} /></MemoryRouter>);
+    wrap(<ProductCard product={product} />);
     expect(screen.getByText('Royal Oud')).toBeInTheDocument();
     expect(screen.getByText('EGP 1,200')).toBeInTheDocument();
     expect(screen.getByRole('link')).toHaveAttribute('href', '/products/royal-oud');
   });
   it('links bundles to the /bundles path', () => {
-    render(<MemoryRouter><ProductCard product={{ ...product, type: 'bundle', slug: 'woody-duo' }} /></MemoryRouter>);
+    wrap(<ProductCard product={{ ...product, type: 'bundle', slug: 'woody-duo' }} />);
     expect(screen.getByRole('link')).toHaveAttribute('href', '/bundles/woody-duo');
   });
   it('shows the compareAt price of the cheapest size, not sizes[0]', () => {
@@ -33,7 +52,7 @@ describe('ProductCard', () => {
         { label: '50ml', price: 800, compareAtPrice: 1000, stock: 5 },
       ],
     } as const;
-    render(<MemoryRouter><ProductCard product={p as never} /></MemoryRouter>);
+    wrap(<ProductCard product={p as never} />);
     // compareAt for the basePrice (800) size is 1000, not 1500
     expect(screen.getByText(/1,?000/)).toBeInTheDocument();
     expect(screen.queryByText(/1,?500/)).not.toBeInTheDocument();

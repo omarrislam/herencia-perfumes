@@ -1,6 +1,7 @@
 import { lazy } from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import { StorefrontLayout } from './StorefrontLayout';
+import { RequireAuth } from '../features/auth/RequireAuth';
 
 const Home = lazy(() => import('../pages/Home'));
 const Products = lazy(() => import('../pages/Products'));
@@ -13,6 +14,7 @@ const Login = lazy(() => import('../pages/Login'));
 const Register = lazy(() => import('../pages/Register'));
 const Checkout = lazy(() => import('../pages/Checkout'));
 const OrderConfirmation = lazy(() => import('../pages/OrderConfirmation'));
+const Account = lazy(() => import('../pages/Account'));
 
 export const router = createBrowserRouter([
   {
@@ -28,6 +30,7 @@ export const router = createBrowserRouter([
       { path: '/register', element: <Register /> },
       { path: '/checkout', element: <Checkout /> },
       { path: '/order-confirmation', element: <OrderConfirmation /> },
+      { path: '/account', element: <RequireAuth><Account /></RequireAuth> },
     ],
   },
   { path: '/admin/*', element: <Admin /> },

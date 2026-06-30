@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { fetchProduct, fetchRelated } from '../lib/api';
@@ -15,6 +15,7 @@ export default function ProductDetail() {
   const product = useQuery({ queryKey: ['product', slug], queryFn: () => fetchProduct(slug), enabled: !!slug });
   const related = useQuery({ queryKey: ['product', slug, 'related'], queryFn: () => fetchRelated(slug), enabled: !!slug });
   const [sizeIdx, setSizeIdx] = useState(0);
+  useEffect(() => { setSizeIdx(0); }, [slug]);
 
   useSeo({
     title: product.data ? `${product.data.name} — HERENCIA` : 'HERENCIA',
@@ -46,6 +47,8 @@ export default function ProductDetail() {
               {p.sizes.map((s, i) => (
                 <button
                   key={s.label}
+                  type="button"
+                  aria-pressed={i === sizeIdx}
                   onClick={() => setSizeIdx(i)}
                   className={`rounded-md border px-4 py-2 font-body text-sm ${
                     i === sizeIdx ? 'border-gold bg-gold/10 text-content' : 'border-line text-muted'

@@ -46,7 +46,7 @@ export default function AdminScentFamilies() {
         {families.data?.map((f) => (
           <li key={f.id} className="flex items-center justify-between py-2 font-body text-content">
             {f.name}
-            <button onClick={() => deleteMut.mutate(f.id)} className="text-red-500">
+            <button onClick={() => { if (confirm(`Delete ${f.name}?`)) deleteMut.mutate(f.id); }} className="text-red-500">
               Delete
             </button>
           </li>

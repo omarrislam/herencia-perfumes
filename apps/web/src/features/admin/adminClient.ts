@@ -31,7 +31,10 @@ export async function uploadImage(file: File): Promise<string> {
   form.append('signature', sig.signature);
   form.append('folder', sig.folder);
   const res = await fetch(`https://api.cloudinary.com/v1_1/${sig.cloudName}/image/upload`, { method: 'POST', body: form });
-  if (!res.ok) throw new Error('Cloudinary upload failed');
+  if (!res.ok) {
+    const body = await res.json().catch(() => null) as { error?: { message?: string } } | null;
+    throw new Error(body?.error?.message ?? 'Cloudinary upload failed');
+  }
   const body = (await res.json()) as { public_id: string };
   return body.public_id;
 }

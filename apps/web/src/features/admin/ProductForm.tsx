@@ -66,13 +66,17 @@ export function ProductForm({
   const sizes = useFieldArray({ control, name: 'sizes' });
   const images = watch('images');
   const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
 
   async function onPickImage(file: File | undefined) {
     if (!file) return;
     setUploading(true);
+    setUploadError(null);
     try {
       const publicId = await uploadImage(file);
       setValue('images', [...(images ?? []), publicId]);
+    } catch (err) {
+      setUploadError(err instanceof Error ? err.message : 'Upload failed — try again.');
     } finally {
       setUploading(false);
     }
@@ -233,6 +237,7 @@ export function ProductForm({
           />
         </label>
         {uploading ? <span className="ml-2 font-body text-sm text-muted">Uploading…</span> : null}
+        {uploadError ? <p className="font-body text-sm text-red-500">{uploadError}</p> : null}
       </div>
 
       <label className="flex items-center gap-2 font-body text-content">

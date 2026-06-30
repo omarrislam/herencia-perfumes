@@ -4,7 +4,7 @@ import { connectMemory, disconnectMemory, clearDb } from '../test/db';
 import { createApp } from '../app';
 import { Setting } from '../models/Setting';
 
-const app = createApp({ clientOrigin: 'http://localhost:5173' });
+const app = createApp({ clientOrigin: 'http://localhost:5173', adminToken: 'test-admin-token-1234' });
 
 beforeAll(connectMemory);
 afterAll(disconnectMemory);

@@ -1,5 +1,9 @@
-import { describe, it, expect } from 'vitest';
-import { buildHeadTags, buildSitemap, ROBOTS_TXT } from './seo';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { buildHeadTags, buildSitemap, ROBOTS_TXT, toAbsoluteImageUrl } from './seo';
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+});
 
 describe('buildHeadTags', () => {
   it('escapes and includes title, description, canonical', () => {
@@ -43,5 +47,28 @@ describe('ROBOTS_TXT', () => {
   it('disallows /admin and references the sitemap', () => {
     expect(ROBOTS_TXT).toContain('Disallow: /admin');
     expect(ROBOTS_TXT).toContain('Sitemap:');
+  });
+});
+
+describe('toAbsoluteImageUrl', () => {
+  it('returns already-absolute URLs unchanged', () => {
+    expect(toAbsoluteImageUrl('https://example.com/img.jpg')).toBe('https://example.com/img.jpg');
+    expect(toAbsoluteImageUrl('http://cdn.example.com/img.png')).toBe('http://cdn.example.com/img.png');
+  });
+
+  it('converts a public_id to an absolute Cloudinary URL when CLOUDINARY_CLOUD_NAME is set', () => {
+    vi.stubEnv('CLOUDINARY_CLOUD_NAME', 'herencia-prod');
+    expect(toAbsoluteImageUrl('herencia/royal-oud')).toBe(
+      'https://res.cloudinary.com/herencia-prod/image/upload/herencia/royal-oud',
+    );
+  });
+
+  it('returns undefined for a public_id when CLOUDINARY_CLOUD_NAME is not set', () => {
+    vi.stubEnv('CLOUDINARY_CLOUD_NAME', '');
+    expect(toAbsoluteImageUrl('herencia/royal-oud')).toBeUndefined();
+  });
+
+  it('returns undefined for undefined input', () => {
+    expect(toAbsoluteImageUrl(undefined)).toBeUndefined();
   });
 });

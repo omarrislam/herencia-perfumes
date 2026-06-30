@@ -13,6 +13,14 @@ export type RouteMeta = {
 const BRAND = 'HERENCIA';
 const DEFAULT_DESC = 'Heritage luxury perfumery. Luxury in every drop.';
 
+export function toAbsoluteImageUrl(value: string | undefined): string | undefined {
+  if (!value) return undefined;
+  if (value.startsWith('http://') || value.startsWith('https://')) return value;
+  const cloud = process.env.CLOUDINARY_CLOUD_NAME;
+  if (cloud) return `https://res.cloudinary.com/${cloud}/image/upload/${value}`;
+  return undefined;
+}
+
 export function escapeHtml(s: string): string {
   return s
     .replace(/&/g, '&amp;')
@@ -70,7 +78,7 @@ export async function routeMetaForPath(path: string): Promise<RouteMeta> {
         title: dto.seo.title ?? `${dto.name} — ${BRAND}`,
         description: dto.seo.description ?? dto.shortDesc,
         canonicalPath: canonical,
-        image: dto.images[0],
+        image: toAbsoluteImageUrl(dto.images[0]),
         jsonLd: productJsonLd(dto, canonical),
       };
     }

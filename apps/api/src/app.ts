@@ -12,7 +12,7 @@ import { Product } from './models/Product';
 
 export function createApp(opts: {
   clientOrigin: string;
-  adminToken?: string;
+  adminToken: string;
   webDist?: string;
   origin?: string;
 }): Express {
@@ -25,7 +25,7 @@ export function createApp(opts: {
   app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
   app.use('/api', catalogRouter);
   app.use('/api', settingsRouter);
-  app.use('/api/admin', adminRouter({ adminToken: opts.adminToken ?? 'test-admin-token-1234' }));
+  app.use('/api/admin', adminRouter({ adminToken: opts.adminToken }));
   app.use('/api', notFound);
 
   const origin = opts.origin ?? '';

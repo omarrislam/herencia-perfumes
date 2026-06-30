@@ -13,7 +13,7 @@ writeFileSync(
   join(dist, 'index.html'),
   '<!doctype html><html><head><title>HERENCIA</title></head><body><div id="root"></div></body></html>',
 );
-const app = createApp({ clientOrigin: 'http://localhost:5173', webDist: dist, origin: 'https://herencia.example' });
+const app = createApp({ clientOrigin: 'http://localhost:5173', adminToken: 'test-admin-token-1234', webDist: dist, origin: 'https://herencia.example' });
 
 beforeAll(connectMemory);
 afterAll(disconnectMemory);

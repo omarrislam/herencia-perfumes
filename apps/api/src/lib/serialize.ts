@@ -1,4 +1,4 @@
-import type { ProductDTO, ScentFamilyDTO, UserDTO } from '@herencia/shared';
+import type { ProductDTO, ScentFamilyDTO, UserDTO, OrderDTO } from '@herencia/shared';
 
 // `doc` is a lean Mongoose document whose shape varies (populated vs. raw refs);
 // `any` is intentional here so the mapper can read arbitrary nested fields.
@@ -59,5 +59,42 @@ export function toUserDTO(doc: AnyDoc): UserDTO {
     email: doc.email,
     role: doc.role,
     phone: doc.phone ?? undefined,
+  };
+}
+
+export function toOrderDTO(doc: AnyDoc): OrderDTO {
+  return {
+    id: String(doc._id),
+    orderNumber: doc.orderNumber,
+    items: (doc.items ?? []).map((i: AnyDoc) => ({
+      product: String(i.product),
+      name: i.name,
+      sizeLabel: i.sizeLabel,
+      unitPrice: i.unitPrice,
+      qty: i.qty,
+      image: i.image ?? '',
+    })),
+    customer: {
+      name: doc.customer.name,
+      phone: doc.customer.phone,
+      email: doc.customer.email ?? undefined,
+    },
+    shippingAddress: {
+      line1: doc.shippingAddress.line1,
+      line2: doc.shippingAddress.line2 ?? undefined,
+      city: doc.shippingAddress.city,
+      governorate: doc.shippingAddress.governorate,
+      phone: doc.shippingAddress.phone,
+    },
+    subtotal: doc.subtotal,
+    shipping: doc.shipping,
+    total: doc.total,
+    status: doc.status,
+    paymentMethod: 'cod',
+    notes: doc.notes ?? undefined,
+    createdAt: (doc.createdAt instanceof Date
+      ? doc.createdAt
+      : new Date(doc.createdAt)
+    ).toISOString(),
   };
 }

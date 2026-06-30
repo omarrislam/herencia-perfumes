@@ -6,10 +6,18 @@ import { errorHandler, notFound } from './middleware/error';
 import { catalogRouter } from './routes/catalog';
 import { settingsRouter } from './routes/settings';
 import { adminRouter } from './routes/admin';
+import { buildSitemap, ROBOTS_TXT } from './lib/seo';
+import { mountSpa } from './middleware/spa';
+import { Product } from './models/Product';
 
-export function createApp(opts: { clientOrigin: string; adminToken?: string }): Express {
+export function createApp(opts: {
+  clientOrigin: string;
+  adminToken?: string;
+  webDist?: string;
+  origin?: string;
+}): Express {
   const app = express();
-  app.use(helmet());
+  app.use(helmet({ contentSecurityPolicy: false }));
   app.use(cors({ origin: opts.clientOrigin, credentials: true }));
   app.use(express.json());
   app.use(cookieParser());
@@ -18,8 +26,25 @@ export function createApp(opts: { clientOrigin: string; adminToken?: string }): 
   app.use('/api', catalogRouter);
   app.use('/api', settingsRouter);
   app.use('/api/admin', adminRouter({ adminToken: opts.adminToken ?? 'test-admin-token-1234' }));
-
   app.use('/api', notFound);
+
+  const origin = opts.origin ?? '';
+  app.get('/robots.txt', (_req, res) =>
+    res.type('text/plain').send(ROBOTS_TXT.replace('/sitemap.xml', `${origin}/sitemap.xml`)),
+  );
+  app.get('/sitemap.xml', async (_req, res, next) => {
+    try {
+      const products = await Product.find({ isActive: true }).select('slug type').lean();
+      res
+        .type('application/xml')
+        .send(buildSitemap(origin, products.map((p) => ({ slug: p.slug, type: p.type }))));
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  if (opts.webDist) mountSpa(app, { webDist: opts.webDist, origin });
+
   app.use(errorHandler);
   return app;
 }

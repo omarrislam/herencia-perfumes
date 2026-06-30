@@ -32,13 +32,15 @@ Final whole-branch review (opus) passed "with fixes"; the 2 Important fixes (req
 - **Task 5:** Full-workspace cleanup (brand fonts, React lint rules, cross-platform dev script, test isolation); lint/typecheck/test/build all green.
 
 ## In progress
-- Milestone 1 complete; final whole-branch (opus) review is the remaining gate before finishing the branch.
+- Nothing — Milestones 0 and 1 complete and merged to `master`. Ready to start Milestone 2.
 
 ## Next (todo)
-- Final whole-branch review of `feat/milestone-1-catalog` (triage the minor-findings list in the SDD ledger),
-  apply any Critical/Important fixes, then finish the branch (merge to main per finishing-a-development-branch).
-- Then Milestone 2 (commerce): cart, COD checkout + WhatsApp, orders (customer + admin), real JWT-cookie auth
-  (replacing the interim `x-admin-token` guard), account + wishlist.
+- **Milestone 2 (Commerce).** Write the M2 plan via writing-plans, then execute via
+  subagent-driven-development on `feat/milestone-2-commerce`. See `next-session.md` for the full M2 scope:
+  cart (local + account merge), COD checkout + WhatsApp link, customer + admin orders, **real JWT httpOnly-cookie
+  auth + roles replacing the interim `requireAdmin` internals** (same seam), account + wishlist.
+- Fold in early (cheap M1 final-review carry-overs): type-filter `/products/:slug/related` [F-min-5];
+  ProductCard compareAt/basePrice size pairing [F-min-4]. Full deferred list at the bottom of the SDD ledger.
 
 ## Resolved open items
 - Body font: **Cinzel (display) + Jost (body/UI)** — now loaded in index.html.

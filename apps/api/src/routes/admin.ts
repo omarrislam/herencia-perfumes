@@ -7,9 +7,9 @@ import { requireAdmin } from '../middleware/requireAdmin';
 import { isCloudinaryConfigured, signUploadParams } from '../lib/cloudinary';
 import { toProductDTO, toScentFamilyDTO } from '../lib/serialize';
 
-export function adminRouter(opts: { adminToken: string }): Router {
+export function adminRouter(): Router {
   const router = Router();
-  router.use(requireAdmin(opts.adminToken));
+  router.use(requireAdmin);
 
   // ---- Scent families ----
   router.post('/scent-families', async (req, res, next) => {

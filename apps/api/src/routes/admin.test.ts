@@ -4,9 +4,10 @@ import { connectMemory, disconnectMemory, clearDb } from '../test/db';
 import { createApp } from '../app';
 import { ScentFamily } from '../models/ScentFamily';
 import { Product } from '../models/Product';
+import { authCookie } from '../test/auth';
 
-const TOKEN = 'test-admin-token-1234';
-const app = createApp({ clientOrigin: 'http://localhost:5173', adminToken: TOKEN });
+const app = createApp({ clientOrigin: 'http://localhost:5173' });
+const ADMIN = authCookie('000000000000000000000001', 'admin');
 
 beforeAll(connectMemory);
 afterAll(disconnectMemory);
@@ -26,11 +27,16 @@ describe('admin auth guard', () => {
     const res = await request(app).post('/api/admin/scent-families').send({ name: 'Woody' });
     expect(res.status).toBe(401);
   });
+  it('rejects a non-admin user with 403', async () => {
+    const res = await request(app).post('/api/admin/scent-families')
+      .set('Cookie', authCookie('000000000000000000000002', 'customer')).send({ name: 'Woody' });
+    expect(res.status).toBe(403);
+  });
 });
 
 describe('admin scent-families', () => {
   it('creates a family with the token', async () => {
-    const res = await request(app).post('/api/admin/scent-families').set('x-admin-token', TOKEN).send({ name: 'Woody' });
+    const res = await request(app).post('/api/admin/scent-families').set('Cookie', ADMIN).send({ name: 'Woody' });
     expect(res.status).toBe(201);
     expect(res.body.slug).toBe('woody');
   });
@@ -39,24 +45,24 @@ describe('admin scent-families', () => {
 describe('admin products', () => {
   it('creates, updates, and deletes a product', async () => {
     const fam = await ScentFamily.create({ name: 'Woody', slug: 'woody', order: 1 });
-    const create = await request(app).post('/api/admin/products').set('x-admin-token', TOKEN).send(validProduct(String(fam._id)));
+    const create = await request(app).post('/api/admin/products').set('Cookie', ADMIN).send(validProduct(String(fam._id)));
     expect(create.status).toBe(201);
     expect(create.body.basePrice).toBe(1200);
     const id = create.body.id;
 
-    const update = await request(app).put(`/api/admin/products/${id}`).set('x-admin-token', TOKEN)
+    const update = await request(app).put(`/api/admin/products/${id}`).set('Cookie', ADMIN)
       .send({ ...validProduct(String(fam._id)), name: 'Royal Oud Reserve' });
     expect(update.status).toBe(200);
     expect(update.body.name).toBe('Royal Oud Reserve');
 
-    const del = await request(app).delete(`/api/admin/products/${id}`).set('x-admin-token', TOKEN);
+    const del = await request(app).delete(`/api/admin/products/${id}`).set('Cookie', ADMIN);
     expect(del.status).toBe(204);
     expect(await Product.countDocuments()).toBe(0);
   });
 
   it('rejects an invalid product with 400', async () => {
     const fam = await ScentFamily.create({ name: 'Woody', slug: 'woody', order: 1 });
-    const res = await request(app).post('/api/admin/products').set('x-admin-token', TOKEN)
+    const res = await request(app).post('/api/admin/products').set('Cookie', ADMIN)
       .send({ ...validProduct(String(fam._id)), sizes: [] });
     expect(res.status).toBe(400);
   });
@@ -64,7 +70,7 @@ describe('admin products', () => {
   it('returns 400 for a malformed product id', async () => {
     const res = await request(app)
       .delete('/api/admin/products/not-a-valid-id')
-      .set('x-admin-token', TOKEN);
+      .set('Cookie', ADMIN);
     expect(res.status).toBe(400);
     expect(res.body.error.code).toBe('invalid_id');
   });
@@ -72,13 +78,13 @@ describe('admin products', () => {
   it('returns 409 on duplicate scent-family slug', async () => {
     const first = await request(app)
       .post('/api/admin/scent-families')
-      .set('x-admin-token', TOKEN)
+      .set('Cookie', ADMIN)
       .send({ name: 'Woody' });
     expect(first.status).toBe(201);
 
     const second = await request(app)
       .post('/api/admin/scent-families')
-      .set('x-admin-token', TOKEN)
+      .set('Cookie', ADMIN)
       .send({ name: 'Woody' });
     expect(second.status).toBe(409);
     expect(second.body.error.code).toBe('conflict');
@@ -88,14 +94,14 @@ describe('admin products', () => {
     const fam = await ScentFamily.create({ name: 'Woody', slug: 'woody', order: 1 });
     const perfumeRes = await request(app)
       .post('/api/admin/products')
-      .set('x-admin-token', TOKEN)
+      .set('Cookie', ADMIN)
       .send(validProduct(String(fam._id)));
     expect(perfumeRes.status).toBe(201);
     const perfumeId: string = perfumeRes.body.id;
 
     const bundleRes = await request(app)
       .post('/api/admin/products')
-      .set('x-admin-token', TOKEN)
+      .set('Cookie', ADMIN)
       .send({
         ...validProduct(String(fam._id)),
         name: 'Oud Bundle',

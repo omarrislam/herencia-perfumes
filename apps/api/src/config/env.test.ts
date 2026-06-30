@@ -8,7 +8,6 @@ describe('loadEnv', () => {
     MONGODB_URI: 'mongodb://127.0.0.1:27017/herencia',
     JWT_SECRET: 'x'.repeat(16),
     CLIENT_ORIGIN: 'http://localhost:5173',
-    ADMIN_TOKEN: 'y'.repeat(16),
   };
 
   it('parses a valid env and coerces PORT to number', () => {
@@ -19,9 +18,5 @@ describe('loadEnv', () => {
 
   it('throws when JWT_SECRET is too short', () => {
     expect(() => loadEnv({ ...base, JWT_SECRET: 'short' })).toThrow();
-  });
-
-  it('throws when ADMIN_TOKEN is too short', () => {
-    expect(() => loadEnv({ ...base, ADMIN_TOKEN: 'short' })).toThrow();
   });
 });

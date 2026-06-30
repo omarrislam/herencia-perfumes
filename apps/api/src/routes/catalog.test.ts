@@ -5,7 +5,7 @@ import { createApp } from '../app';
 import { ScentFamily } from '../models/ScentFamily';
 import { Product } from '../models/Product';
 
-const app = createApp({ clientOrigin: 'http://localhost:5173', adminToken: 'test-admin-token-1234' });
+const app = createApp({ clientOrigin: 'http://localhost:5173' });
 
 beforeAll(connectMemory);
 afterAll(disconnectMemory);

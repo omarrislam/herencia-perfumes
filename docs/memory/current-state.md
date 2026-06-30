@@ -3,8 +3,8 @@
 _Last updated: 2026-07-01_
 
 ## Phase
-**Milestone 2 (Commerce) COMPLETE on branch `feat/milestone-2-commerce` (19 commits, head `3fedb86` + a docs/cleanup commit). Final whole-branch review (opus) verdict = READY TO MERGE (no Critical/Important blockers).** Ready to merge to `master`, then start Milestone 3 (Engagement).
-Full workspace green: `npm run lint` (0), `npm run typecheck` (0), `npm run build` (clean), `npm run test` — **api 76, web 22, shared ~28** all passing.
+**Milestone 2 (Commerce) COMPLETE & MERGED to `master` (merge commit `ed6036e`, feature branch deleted). Next = Milestone 3 (Engagement).**
+Final whole-branch review (opus) = READY TO MERGE (no Critical/Important blockers); tests re-verified green on merged `master`. Full workspace green: `npm run lint` (0), `npm run typecheck` (0), `npm run build` (clean), `npm run test` — **api 76, web 22, shared ~28** all passing.
 
 ## Milestone 2 deliverables (branch `feat/milestone-2-commerce`)
 - **Shared:** auth/account/cart/order Zod schemas + DTOs; `ORDER_STATUS` + `ORDER_STATUS_TRANSITIONS` (Tasks 1–2).
@@ -21,10 +21,9 @@ Full workspace green: `npm run lint` (0), `npm run typecheck` (0), `npm run buil
 - Milestone 2 built via subagent-driven development (Tasks 1–15), each task spec+quality reviewed, final whole-branch review (opus) = READY TO MERGE.
 
 ## In progress
-- Task 15 (verification + docs) — finishing: docs updated; next step is `finishing-a-development-branch` (merge to `master`).
+- Nothing — Milestone 2 complete and merged to `master`. Ready to start Milestone 3.
 
 ## Next (todo)
-- **Merge `feat/milestone-2-commerce` → `master`** (no remote yet; add a GitHub remote first only if pushing/PR is requested).
 - **Milestone 3 (Engagement):** ratings & reviews + admin moderation, Find Your Scent quiz, offer banners, blog. Same workflow: writing-plans → review → subagent-driven-development on `feat/milestone-3-engagement`.
 
 ## Resolved open items

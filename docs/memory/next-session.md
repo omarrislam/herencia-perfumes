@@ -3,13 +3,9 @@
 _Last updated: 2026-07-01_
 
 ## TL;DR
-Milestones 0, 1 are merged to `master`. **Milestone 2 (Commerce) is COMPLETE on `feat/milestone-2-commerce`** (final whole-branch review on opus = READY TO MERGE, no Critical/Important blockers; full suite green: api 76, web 22, shared ~28; lint/typecheck/build clean). **First job: merge M2 to `master`** (via finishing-a-development-branch), **then build Milestone 3 (Engagement).**
+Milestones 0, 1, **and 2 (Commerce) are all merged to `master`** (M2 merge commit `ed6036e`, feature branch deleted; tests re-verified green on merged master: api 76, web 22, shared ~28; lint/typecheck/build clean). **Your job: build Milestone 3 (Engagement).** Still no git remote — add one first only if the user asks to push/PR.
 
-## Immediate step: merge M2
-- Use **finishing-a-development-branch** on `feat/milestone-2-commerce` → merge into `master` (no-ff). No git remote yet — do NOT push; add a GitHub remote first only if the user asks to push/PR.
-- After merge: delete the feature branch, confirm `master` is green, update `current-state.md` to "M2 merged".
-
-## Then: Milestone 3 (Engagement) — build all of it
+## Milestone 3 (Engagement) — build all of it
 - **Ratings & reviews:** customer review submit (auth, one per product, pending), admin moderation (approve/reject/delete), recompute `Product.rating` on approve/delete, show approved reviews on product detail.
 - **Find Your Scent quiz:** question config (admin), flow, runtime result from accumulated weights → recommended active products.
 - **Offer banners:** scheduling (startsAt/endsAt, placement), admin CRUD, render active banners by placement.

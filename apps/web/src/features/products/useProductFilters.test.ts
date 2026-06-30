@@ -11,4 +11,9 @@ describe('parseFiltersFromParams', () => {
     expect(f.q).toBeUndefined();
     expect(f.gender).toBeUndefined();
   });
+  it('drops non-numeric values for numeric keys', () => {
+    const f = parseFiltersFromParams(new URLSearchParams('minPrice=abc&page=xyz'));
+    expect(f.minPrice).toBeUndefined();
+    expect(f.page).toBeUndefined();
+  });
 });

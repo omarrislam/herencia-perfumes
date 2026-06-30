@@ -8,7 +8,7 @@ import { Skeleton } from '../components/Skeleton';
 
 export default function Products() {
   useSeo({ title: 'Shop Perfumes — HERENCIA', description: 'Browse the HERENCIA perfume collection.' });
-  const { filters, setFilter, reset } = useProductFilters();
+  const { filters, setFilter, reset, resetKey } = useProductFilters();
   const families = useQuery({ queryKey: ['scent-families'], queryFn: fetchScentFamilies });
   const products = useQuery({
     queryKey: ['products', filters],
@@ -19,7 +19,7 @@ export default function Products() {
   return (
     <div>
       <h1 className="mb-6 font-display text-3xl text-content">Perfumes</h1>
-      <FilterBar families={families.data ?? []} filters={filters} onChange={setFilter} onReset={reset} />
+      <FilterBar key={resetKey} families={families.data ?? []} filters={filters} onChange={setFilter} onReset={reset} />
 
       {products.isLoading ? (
         <div className="grid grid-cols-2 gap-4 md:grid-cols-4">

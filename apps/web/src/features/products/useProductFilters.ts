@@ -1,8 +1,9 @@
+import { useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import type { ProductFilters } from '../../lib/api';
 
 const NUMERIC = new Set(['minPrice', 'maxPrice', 'page']);
-const KEYS = ['q', 'type', 'scentFamily', 'gender', 'concentration', 'minPrice', 'maxPrice', 'sort', 'page'] as const;
+const KEYS = ['q', 'scentFamily', 'gender', 'concentration', 'minPrice', 'maxPrice', 'sort', 'page'] as const;
 
 export function parseFiltersFromParams(params: URLSearchParams): ProductFilters {
   const out: ProductFilters = {};
@@ -21,6 +22,7 @@ export function parseFiltersFromParams(params: URLSearchParams): ProductFilters 
 
 export function useProductFilters() {
   const [params, setParams] = useSearchParams();
+  const resetCountRef = useRef(0);
   const filters = parseFiltersFromParams(params);
 
   function setFilter(key: keyof ProductFilters, value: string | number | undefined) {
@@ -32,8 +34,9 @@ export function useProductFilters() {
   }
 
   function reset() {
+    resetCountRef.current += 1;
     setParams(new URLSearchParams(), { replace: true });
   }
 
-  return { filters, setFilter, reset };
+  return { filters, setFilter, reset, resetKey: resetCountRef.current };
 }

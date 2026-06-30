@@ -1,4 +1,4 @@
-import type { ProductDTO, ProductListDTO, ScentFamilyDTO } from '@herencia/shared';
+import type { ProductDTO, ProductListDTO, ScentFamilyDTO, UserDTO, LoginInput, RegisterInput } from '@herencia/shared';
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -76,3 +76,8 @@ export type PublicSettings = {
   contactEmail?: string;
 };
 export const fetchSettings = () => apiGet<PublicSettings>('/api/settings');
+
+export const login = (input: LoginInput) => apiSend<UserDTO>('POST', '/api/auth/login', input);
+export const register = (input: RegisterInput) => apiSend<UserDTO>('POST', '/api/auth/register', input);
+export const logout = () => apiSend<void>('POST', '/api/auth/logout');
+export const fetchMe = () => apiGet<UserDTO>('/api/auth/me');

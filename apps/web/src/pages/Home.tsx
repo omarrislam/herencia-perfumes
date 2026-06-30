@@ -17,7 +17,7 @@ export default function Home() {
     <div className="space-y-12">
       <section className="relative overflow-hidden rounded-xl border border-line bg-surface">
         {hero ? (
-          <ProductImage publicId={hero.image} alt={hero.title} w={1200} className="h-72 w-full object-cover opacity-60" />
+          <ProductImage publicId={hero.image} alt={hero.title} w={1200} loading="eager" className="h-72 w-full object-cover opacity-60" />
         ) : (
           <Skeleton className="h-72 w-full" />
         )}
@@ -39,6 +39,9 @@ export default function Home() {
             ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="aspect-square" />)
             : featuredItems.map((p) => <ProductCard key={p.id} product={p} />)}
         </div>
+        {!featured.isLoading && featuredItems.length === 0 && (
+          <p className="font-body text-muted">No featured products yet.</p>
+        )}
       </section>
     </div>
   );

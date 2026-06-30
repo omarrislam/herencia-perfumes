@@ -4,4 +4,6 @@ export * from './schemas/catalog';
 export * from './schemas/auth';
 export * from './schemas/account';
 export * from './schemas/cart';
+export * from './schemas/review';
+export * from './schemas/banner';
 export * from './util/slugify';

@@ -1,11 +1,23 @@
 # Next Session — START HERE
 
-_Last updated: 2026-06-29_
+_Last updated: 2026-06-30_
 
 ## TL;DR
-Milestone 0 is DONE and merged to `master`. **Your job: build Milestone 1 (Catalog & Content).**
-Start by writing the Milestone 1 plan with the **writing-plans** skill, get it reviewed, then
-execute via **subagent-driven-development** (same workflow used for M0).
+Milestone 1 (Catalog & Content) is CODE-COMPLETE on branch `feat/milestone-1-catalog` — all 12 plan
+tasks implemented, each task-reviewed and fixed, full workspace suite green. **Remaining gate: the FINAL
+whole-branch review** (dispatch on the most capable model per subagent-driven-development), triaging the
+minor-findings list at the bottom of `.superpowers/sdd/progress.md`; apply any Critical/Important fixes,
+then **finish the branch** via the finishing-a-development-branch skill (merge to `main`). After that,
+**Milestone 2 (Commerce)**: cart, COD checkout + WhatsApp, orders (customer + admin), and **real JWT
+httpOnly-cookie auth + role guard that REPLACES the interim `requireAdmin` `x-admin-token` middleware
+internals** (same seam — route defs unchanged), plus account area + wishlist.
+
+## ⚠️ Machine health (act on this)
+The **C: drive is 100% full (~0.26 GB free)**. This already broke the MongoMemoryServer tests (needs
+≥500 MB temp) — worked around by redirecting mongod temp to E: on Windows (`apps/api/vitest.config.ts`,
+win32-only, `MONGOMS_TMPDIR`-overridable). Free up C: space; and before CI/VPS, replace the machine-specific
+temp redirect with an env-driven/OS-default approach (it's guarded to win32 so Linux is unaffected, but the
+hardcoded `E:\Temp\mongodb-mem` default is local-only).
 
 ## Read first (in order)
 1. `docs/memory/current-state.md` — live status

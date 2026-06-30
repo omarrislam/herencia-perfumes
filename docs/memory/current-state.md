@@ -1,9 +1,23 @@
 # Current State
 
-_Last updated: 2026-06-29_
+_Last updated: 2026-06-30_
 
 ## Phase
-**Milestone 0 COMPLETE; next = write Milestone 1 (catalog) plan**
+**Milestone 1 (Catalog & Content) COMPLETE — all 12 plan tasks done, suite green; next = final whole-branch review then Milestone 2 (commerce)**
+
+## Milestone 1 deliverables (branch `feat/milestone-1-catalog`)
+- Shared: catalog Zod schemas + DTOs + `slugify` (Task 1).
+- API: ScentFamily/Product/Setting/User models + in-memory test harness (T2,4); public catalog read API
+  with filter/sort/pagination (T3); public `/api/settings` + Cloudinary signing + seed script (T4);
+  interim `x-admin-token` admin guard + scent-family/product/bundle CRUD + upload signing (T5);
+  SSR-lite SEO — request-time `<head>` injection + JSON-LD + sitemap.xml + robots.txt + SPA serving (T6).
+  errorHandler maps CastError→400 and dup-key→409.
+- Web: router + React Query + typed API client + SEO/cloudinary helpers (T7); catalog components + Home (T8);
+  Products list with URL-driven filter/sort/pagination (T9); Product detail (gallery/notes/sizes/related)
+  + Bundles (T10); admin UI — token gate, product CRUD, scent families, Cloudinary upload (T11).
+- Verification (T12): full workspace green (lint/typecheck/test/build). API tests serialized + index-prebuilt
+  for determinism; Windows mongod temp redirected off the full C: drive.
+- SDD ledger: `.superpowers/sdd/progress.md` (Tasks 1–11 reviewed+fixed; minors triaged there).
 
 ## Done
 - Explored prompt, suggested structure, and full brand identity.
@@ -17,11 +31,13 @@ _Last updated: 2026-06-29_
 - **Task 5:** Full-workspace cleanup (brand fonts, React lint rules, cross-platform dev script, test isolation); lint/typecheck/test/build all green.
 
 ## In progress
-- Nothing — Milestone 0 complete.
+- Milestone 1 complete; final whole-branch (opus) review is the remaining gate before finishing the branch.
 
 ## Next (todo)
-- Write Milestone 1 (catalog & content) implementation plan via writing-plans skill.
-- Execute Milestone 1: Product + ScentFamily models, Admin CRUD, Storefront pages, SEO.
+- Final whole-branch review of `feat/milestone-1-catalog` (triage the minor-findings list in the SDD ledger),
+  apply any Critical/Important fixes, then finish the branch (merge to main per finishing-a-development-branch).
+- Then Milestone 2 (commerce): cart, COD checkout + WhatsApp, orders (customer + admin), real JWT-cookie auth
+  (replacing the interim `x-admin-token` guard), account + wishlist.
 
 ## Resolved open items
 - Body font: **Cinzel (display) + Jost (body/UI)** — now loaded in index.html.

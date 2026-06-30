@@ -23,3 +23,11 @@ _2026-06-29_
 | 15 | Fonts | Cinzel (display) + Jost (body/UI) | Elegant heritage pairing, perf-friendly variable font |
 | 16 | Images | Cloudinary confirmed by user | Performance + image quality |
 | 17 | Spec | Approved by user 2026-06-29 | Ready for implementation planning |
+
+_2026-06-30 (Milestone 1)_
+
+| # | Decision | Choice | Rationale |
+|---|---|---|---|
+| 18 | Admin auth (M1 interim) | `x-admin-token` header checked against `env.ADMIN_TOKEN` via `requireAdmin(token)` middleware; web stores token in `sessionStorage` behind an `AdminTokenGate` | Unblocks admin CRUD before the M2 auth system. **M2 replaces ONLY the middleware internals** (JWT httpOnly cookie + role check per decision #7) — route definitions and the gate seam stay identical. |
+| 19 | SSR-lite implementation | Request-time `<head>` injection (server reads built `index.html`, strips `<title>`, injects per-route meta + OG + JSON-LD before `</head>`) + `/sitemap.xml` + `/robots.txt`. Build-time static prerender deferred to M4 perf pass. | Delivers per-route SEO now with minimal complexity; satisfies decision #5 Option A. |
+| 20 | API test harness | `mongodb-memory-server`, with vitest `fileParallelism: false` + model `init()` index prebuild for determinism; on Windows, mongod temp redirected off the (full) C: drive via `MONGOMS_TMPDIR` (win32-only, env-overridable). | No external DB in tests; serialized to avoid parallel-mongod contention. Temp redirect is a local-machine workaround — revisit for CI/VPS (see next-session). |

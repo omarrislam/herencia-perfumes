@@ -14,7 +14,9 @@ export async function createOrder(
 ): Promise<CreateOrderResultDTO> {
   const priced = await priceItems(input.items);
   if (priced.hasUnavailable || priced.items.length === 0) {
-    throw new HttpError(409, 'Some items are unavailable or out of stock', 'cart_unavailable');
+    throw new HttpError(409, 'Some items are unavailable or out of stock', 'cart_unavailable', {
+      items: priced.items.filter((i) => !i.available),
+    });
   }
 
   // Atomically decrement stock; roll back on any failure to avoid oversell.
@@ -43,29 +45,39 @@ export async function createOrder(
     decremented.push({ id: line.productId, label: line.sizeLabel, qty: line.qty });
   }
 
-  const setting = await Setting.findOne().lean();
-  const doc = await Order.create({
-    orderNumber: generateOrderNumber(),
-    items: priced.items.map((l) => ({
-      product: l.productId,
-      name: l.name,
-      sizeLabel: l.sizeLabel,
-      unitPrice: l.unitPrice,
-      qty: l.qty,
-      image: l.image,
-    })),
-    customer: input.customer,
-    shippingAddress: input.shippingAddress,
-    subtotal: priced.subtotal,
-    shipping: priced.shipping,
-    total: priced.total,
-    status: 'pending',
-    paymentMethod: 'cod',
-    notes: input.notes,
-    user: userId,
-  });
+  try {
+    const setting = await Setting.findOne().lean();
+    const doc = await Order.create({
+      orderNumber: generateOrderNumber(),
+      items: priced.items.map((l) => ({
+        product: l.productId,
+        name: l.name,
+        sizeLabel: l.sizeLabel,
+        unitPrice: l.unitPrice,
+        qty: l.qty,
+        image: l.image,
+      })),
+      customer: input.customer,
+      shippingAddress: input.shippingAddress,
+      subtotal: priced.subtotal,
+      shipping: priced.shipping,
+      total: priced.total,
+      status: 'pending',
+      paymentMethod: 'cod',
+      notes: input.notes,
+      user: userId,
+    });
 
-  const order = toOrderDTO(doc.toObject());
-  const whatsappUrl = buildWhatsAppUrl(setting?.whatsappNumber ?? '', order);
-  return { order, whatsappUrl };
+    const order = toOrderDTO(doc.toObject());
+    const whatsappUrl = buildWhatsAppUrl(setting?.whatsappNumber ?? '', order);
+    return { order, whatsappUrl };
+  } catch (err) {
+    for (const d of decremented) {
+      await Product.updateOne(
+        { _id: d.id, 'sizes.label': d.label },
+        { $inc: { 'sizes.$.stock': d.qty } },
+      );
+    }
+    throw err;
+  }
 }

@@ -46,4 +46,16 @@ describe('createOrder', () => {
   it('throws 409 when a line exceeds stock', async () => {
     await expect(createOrder(input(5))).rejects.toMatchObject({ status: 409 });
   });
+  it('409 cart_unavailable carries details.items listing the unavailable lines', async () => {
+    let caught: unknown;
+    try {
+      await createOrder(input(5));
+    } catch (e) {
+      caught = e;
+    }
+    expect(caught).toMatchObject({ status: 409, code: 'cart_unavailable' });
+    const details = (caught as { details?: { items?: unknown[] } }).details;
+    expect(Array.isArray(details?.items)).toBe(true);
+    expect((details?.items ?? []).length).toBeGreaterThan(0);
+  });
 });

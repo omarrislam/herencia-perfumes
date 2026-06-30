@@ -21,6 +21,7 @@ describe('GET /api/settings', () => {
     expect(res.status).toBe(200);
     expect(res.body.whatsappNumber).toBe('+201234567890');
     expect(res.body.hero.title).toBe('H');
+    expect(res.body._id).toBeUndefined();
   });
   it('returns 404 when settings are not seeded', async () => {
     const res = await request(app).get('/api/settings');

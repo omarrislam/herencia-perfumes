@@ -20,4 +20,8 @@ describe('loadEnv', () => {
   it('throws when JWT_SECRET is too short', () => {
     expect(() => loadEnv({ ...base, JWT_SECRET: 'short' })).toThrow();
   });
+
+  it('throws when ADMIN_TOKEN is too short', () => {
+    expect(() => loadEnv({ ...base, ADMIN_TOKEN: 'short' })).toThrow();
+  });
 });

@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ProductCard } from './ProductCard';
 import { AuthProvider } from '../features/auth/AuthContext';
 import type { ProductDTO } from '@herencia/shared';
@@ -21,12 +22,15 @@ beforeEach(() => {
 afterEach(() => vi.restoreAllMocks());
 
 function wrap(ui: React.ReactElement) {
+  const qc = new QueryClient();
   return render(
-    <MemoryRouter>
-      <AuthProvider>
-        {ui}
-      </AuthProvider>
-    </MemoryRouter>,
+    <QueryClientProvider client={qc}>
+      <MemoryRouter>
+        <AuthProvider>
+          {ui}
+        </AuthProvider>
+      </MemoryRouter>
+    </QueryClientProvider>,
   );
 }
 

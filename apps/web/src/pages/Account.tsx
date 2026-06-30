@@ -1,4 +1,4 @@
-import { useState, useEffect, type FormEvent } from 'react';
+import { useState, useEffect, useId, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { addressSchema } from '@herencia/shared';
@@ -27,10 +27,12 @@ function Field({
   label: string; value: string; onChange: (v: string) => void;
   type?: string; className?: string;
 }) {
+  const id = useId();
   return (
     <div className={className}>
-      <label className="font-body text-xs text-muted block mb-0.5">{label}</label>
+      <label htmlFor={id} className="font-body text-xs text-muted block mb-0.5">{label}</label>
       <input
+        id={id}
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -43,6 +45,7 @@ function Field({
 // ---- Profile section ----
 
 function ProfileSection() {
+  const qc = useQueryClient();
   const profileQ = useQuery({ queryKey: ['account', 'profile'], queryFn: fetchProfile });
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -62,6 +65,7 @@ function ProfileSection() {
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
       setError('');
+      void qc.invalidateQueries({ queryKey: ['account', 'profile'] });
     },
     onError: (err) => {
       setError(err instanceof ApiError ? err.message : 'Update failed');
@@ -97,11 +101,12 @@ function ProfileSection() {
 // ---- Address form ----
 
 function AddressForm({
-  initial, onSave, onCancel,
+  initial, onSave, onCancel, serverError = '',
 }: {
   initial?: AddressInput;
   onSave: (input: AddressInput) => void;
   onCancel: () => void;
+  serverError?: string;
 }) {
   const [label, setLabel] = useState(initial?.label ?? '');
   const [line1, setLine1] = useState(initial?.line1 ?? '');
@@ -145,6 +150,7 @@ function AddressForm({
         Set as default
       </label>
       {error && <p className="font-body text-xs text-red-500">{error}</p>}
+      {serverError && <p className="font-body text-xs text-red-500">{serverError}</p>}
       <div className="flex gap-2">
         <Button type="submit">Save address</Button>
         <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>
@@ -160,6 +166,7 @@ function AddressesSection() {
   const addressesQ = useQuery({ queryKey: ['account', 'addresses'], queryFn: fetchAddresses });
   const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [formError, setFormError] = useState('');
 
   const invalidate = () => {
     void qc.invalidateQueries({ queryKey: ['account', 'addresses'] });
@@ -167,11 +174,13 @@ function AddressesSection() {
 
   const addMut = useMutation({
     mutationFn: addAddress,
-    onSuccess: () => { setAdding(false); invalidate(); },
+    onSuccess: () => { setAdding(false); setFormError(''); invalidate(); },
+    onError: (err) => setFormError(err instanceof ApiError ? err.message : 'Failed to save address'),
   });
   const editMut = useMutation({
     mutationFn: ({ id, input }: { id: string; input: AddressInput }) => updateAddress(id, input),
-    onSuccess: () => { setEditingId(null); invalidate(); },
+    onSuccess: () => { setEditingId(null); setFormError(''); invalidate(); },
+    onError: (err) => setFormError(err instanceof ApiError ? err.message : 'Failed to save address'),
   });
   const deleteMut = useMutation({
     mutationFn: (id: string) => deleteAddress(id),
@@ -199,7 +208,8 @@ function AddressesSection() {
             <AddressForm
               initial={addr}
               onSave={(input) => editMut.mutate({ id: addr.id, input })}
-              onCancel={() => setEditingId(null)}
+              onCancel={() => { setEditingId(null); setFormError(''); }}
+              serverError={formError}
             />
           </div>
         ) : (
@@ -233,7 +243,8 @@ function AddressesSection() {
         <div className="rounded-md border border-gold p-3">
           <AddressForm
             onSave={(input) => addMut.mutate(input)}
-            onCancel={() => setAdding(false)}
+            onCancel={() => { setAdding(false); setFormError(''); }}
+            serverError={formError}
           />
         </div>
       )}

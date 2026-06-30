@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../features/auth/AuthContext';
 import * as api from '../lib/api';
 
 export function WishlistButton({ productId, initial = false }: { productId: string; initial?: boolean }) {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const [on, setOn] = useState(initial);
   const [busy, setBusy] = useState(false);
 
@@ -20,6 +22,7 @@ export function WishlistButton({ productId, initial = false }: { productId: stri
         await api.addWishlist(productId);
         setOn(true);
       }
+      void qc.invalidateQueries({ queryKey: ['account', 'wishlist'] });
     } finally {
       setBusy(false);
     }

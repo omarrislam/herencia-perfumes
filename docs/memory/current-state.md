@@ -3,7 +3,8 @@
 _Last updated: 2026-06-30_
 
 ## Phase
-**Milestone 1 (Catalog & Content) COMPLETE — all 12 plan tasks done, suite green; next = final whole-branch review then Milestone 2 (commerce)**
+**Milestone 1 (Catalog & Content) COMPLETE & MERGED to `master` (merge commit `423e763`, feature branch deleted). Next = Milestone 2 (commerce).**
+Final whole-branch review (opus) passed "with fixes"; the 2 Important fixes (require adminToken; absolute og:image URL) applied in `ee97a1a`. Full suite green on merged master (64 tests: shared 15, api 35, web 14); lint/typecheck/build clean.
 
 ## Milestone 1 deliverables (branch `feat/milestone-1-catalog`)
 - Shared: catalog Zod schemas + DTOs + `slugify` (Task 1).

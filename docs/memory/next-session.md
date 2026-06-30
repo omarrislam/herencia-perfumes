@@ -3,14 +3,20 @@
 _Last updated: 2026-06-30_
 
 ## TL;DR
-Milestone 1 (Catalog & Content) is CODE-COMPLETE on branch `feat/milestone-1-catalog` — all 12 plan
-tasks implemented, each task-reviewed and fixed, full workspace suite green. **Remaining gate: the FINAL
-whole-branch review** (dispatch on the most capable model per subagent-driven-development), triaging the
-minor-findings list at the bottom of `.superpowers/sdd/progress.md`; apply any Critical/Important fixes,
-then **finish the branch** via the finishing-a-development-branch skill (merge to `main`). After that,
-**Milestone 2 (Commerce)**: cart, COD checkout + WhatsApp, orders (customer + admin), and **real JWT
-httpOnly-cookie auth + role guard that REPLACES the interim `requireAdmin` `x-admin-token` middleware
-internals** (same seam — route defs unchanged), plus account area + wishlist.
+Milestone 1 (Catalog & Content) is DONE and **merged to `master`** (merge commit `423e763`; feature branch
+deleted; final whole-branch review passed with fixes applied). **Your job: build Milestone 2 (Commerce).**
+Start by writing the M2 plan with the **writing-plans** skill (review it), then execute via
+**subagent-driven-development** on a feature branch `feat/milestone-2-commerce` (same workflow as M0/M1).
+
+**M2 scope:** cart (local + account merge), COD checkout → order + WhatsApp link → confirmation, orders
+(customer view + admin status lifecycle), **real JWT httpOnly-cookie auth + role guard that REPLACES the
+interim `requireAdmin` `x-admin-token` middleware INTERNALS** (same seam — route definitions unchanged;
+the web `AdminTokenGate` becomes a real login), account area + wishlist. Keep reviews/quiz/banners/blog OUT (M3).
+
+**Before M2, also fold in (cheap, from M1 final review):** [F-min-5] type-filter `/products/:slug/related`
+so bundles don't surface in a perfume's related; consider [F-min-4] ProductCard compareAt/basePrice size
+pairing. See `.superpowers/sdd/progress.md` deferred-findings + deploy runbook for the rest (CSP, CLOUDINARY
+env vars, full-C:-drive, win32 mongo-temp redirect).
 
 ## ⚠️ Machine health (act on this)
 The **C: drive is 100% full (~0.26 GB free)**. This already broke the MongoMemoryServer tests (needs

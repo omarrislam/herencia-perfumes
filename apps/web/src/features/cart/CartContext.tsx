@@ -37,6 +37,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   // logged-in → server PUT which returns the priced cart).
   useEffect(() => {
     if (loading) return;
+    if (user && !mergedRef.current) return;
     let cancelled = false;
     (async () => {
       if (user) {
@@ -50,6 +51,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
     })().catch(() => undefined);
     return () => { cancelled = true; };
   }, [items, user, loading]);
+
+  // Reset merge flag on logout so next login re-runs the merge.
+  useEffect(() => {
+    if (!user) mergedRef.current = false;
+  }, [user]);
 
   // On login, merge the guest cart server-side once, then adopt the server cart.
   useEffect(() => {

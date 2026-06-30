@@ -91,7 +91,7 @@ async function seed() {
     contactEmail: 'hello@herencia.example',
   });
 
-  const passwordHash = await bcrypt.hash('admin1234', 10);
+  const passwordHash = await bcrypt.hash('admin1234', 12);
   await User.create({ name: 'HERENCIA Admin', email: 'admin@herencia.example', passwordHash, role: 'admin' });
 
   console.log('Seed complete: 3 families, 4 perfumes, 2 bundles, settings, admin user (admin@herencia.example / admin1234).');

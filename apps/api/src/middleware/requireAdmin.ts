@@ -1,13 +1,12 @@
-import type { NextFunction, Request, Response } from 'express';
-import { HttpError } from './error';
+import type { RequestHandler } from 'express';
+import { authenticate, requireRole } from './auth';
 
-// INTERIM (Milestone 1): header-token guard. Milestone 2 replaces the body of this
-// middleware with JWT httpOnly-cookie verification + role check. Route definitions stay.
-export function requireAdmin(token: string) {
-  return (req: Request, _res: Response, next: NextFunction) => {
-    if (req.header('x-admin-token') !== token) {
-      return next(new HttpError(401, 'Admin authorization required', 'unauthorized'));
-    }
-    next();
-  };
-}
+// Milestone 2: same seam name, JWT-cookie + admin-role internals (replaces the interim
+// x-admin-token check). Mount as `router.use(requireAdmin)`.
+const adminRole = requireRole('admin');
+export const requireAdmin: RequestHandler = (req, res, next) => {
+  authenticate(req, res, (err?: unknown) => {
+    if (err) return next(err as Error);
+    adminRole(req, res, next);
+  });
+};

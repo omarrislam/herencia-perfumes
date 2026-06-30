@@ -13,6 +13,9 @@ export default defineConfig({
     fileParallelism: false,
     hookTimeout: 30000,
     testTimeout: 30000,
-    ...(memTmp ? { env: { MONGOMS_TMPDIR: memTmp, TEMP: memTmp, TMP: memTmp } } : {}),
+    env: {
+      JWT_SECRET: 'test-jwt-secret-at-least-16-chars',
+      ...(memTmp ? { MONGOMS_TMPDIR: memTmp, TEMP: memTmp, TMP: memTmp } : {}),
+    },
   },
 });

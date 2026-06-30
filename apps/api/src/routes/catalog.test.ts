@@ -5,7 +5,7 @@ import { createApp } from '../app';
 import { ScentFamily } from '../models/ScentFamily';
 import { Product } from '../models/Product';
 
-const app = createApp({ clientOrigin: 'http://localhost:5173', adminToken: 'test-admin-token-1234' });
+const app = createApp({ clientOrigin: 'http://localhost:5173' });
 
 beforeAll(connectMemory);
 afterAll(disconnectMemory);
@@ -29,6 +29,12 @@ beforeEach(async () => {
     sizes: [{ label: '50ml', price: 500, stock: 0 }], scentFamily: woody._id,
     notes: { top: [], heart: [], base: [] }, gender: 'men', concentration: 'EDT', isActive: false,
   });
+  await Product.create({
+    name: 'Woody Bundle', type: 'bundle', shortDesc: 's', description: 'd', images: ['x'],
+    sizes: [{ label: 'set', price: 1500, stock: 3 }], scentFamily: woody._id,
+    notes: { top: [], heart: [], base: [] }, gender: 'unisex', concentration: 'Other',
+    bundleItems: [{ product: (await Product.findOne({ slug: 'royal-oud' }))!._id, qty: 1 }],
+  });
 });
 
 describe('GET /api/scent-families', () => {
@@ -43,7 +49,7 @@ describe('GET /api/products', () => {
   it('lists only active products with paging envelope', async () => {
     const res = await request(app).get('/api/products');
     expect(res.status).toBe(200);
-    expect(res.body.total).toBe(2);
+    expect(res.body.total).toBe(3);
     expect(res.body.page).toBe(1);
     expect(res.body.items.every((p: { isActive: boolean }) => p.isActive)).toBe(true);
   });
@@ -79,5 +85,10 @@ describe('GET /api/products/:slug/related', () => {
     const res = await request(app).get('/api/products/royal-oud/related');
     expect(res.status).toBe(200);
     expect(res.body.every((p: { slug: string }) => p.slug !== 'royal-oud')).toBe(true);
+  });
+  it('excludes products of a different type from related', async () => {
+    const res = await request(app).get('/api/products/royal-oud/related');
+    expect(res.status).toBe(200);
+    expect(res.body.every((p: { type: string }) => p.type === 'perfume')).toBe(true);
   });
 });

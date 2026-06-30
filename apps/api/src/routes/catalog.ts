@@ -84,6 +84,7 @@ catalogRouter.get('/products/:slug/related', async (req, res, next) => {
       _id: { $ne: product._id },
       isActive: true,
       scentFamily: product.scentFamily,
+      type: product.type,
     })
       .limit(4)
       .populate('scentFamily')

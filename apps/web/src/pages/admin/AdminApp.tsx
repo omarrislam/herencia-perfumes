@@ -1,12 +1,15 @@
 // apps/web/src/pages/admin/AdminApp.tsx
 import { Routes, Route, Link } from 'react-router-dom';
-import { AdminTokenGate } from '../../features/admin/AdminTokenGate';
+import { RequireAdmin } from '../../features/auth/RequireAdmin';
+import { useAuth } from '../../features/auth/AuthContext';
 import AdminProducts from './AdminProducts';
 import AdminScentFamilies from './AdminScentFamilies';
+import AdminOrders from './AdminOrders';
 
 export default function AdminApp() {
+  const { logout } = useAuth();
   return (
-    <AdminTokenGate>
+    <RequireAdmin>
       <div className="min-h-screen">
         <header className="border-b border-line">
           <nav className="mx-auto flex max-w-6xl items-center gap-6 p-4 font-body text-sm">
@@ -19,9 +22,18 @@ export default function AdminApp() {
             <Link to="/admin/scent-families" className="text-content hover:text-accent">
               Scent families
             </Link>
-            <Link to="/" className="ml-auto text-muted hover:text-accent">
+            <Link to="/admin/orders" className="text-content hover:text-accent">
+              Orders
+            </Link>
+            <Link to="/" className="text-muted hover:text-accent">
               View store
             </Link>
+            <button
+              onClick={() => void logout()}
+              className="ml-auto font-body text-sm text-muted hover:text-accent"
+            >
+              Sign out
+            </button>
           </nav>
         </header>
         <main className="mx-auto max-w-6xl p-4">
@@ -29,9 +41,10 @@ export default function AdminApp() {
             <Route path="/" element={<AdminProducts />} />
             <Route path="/products" element={<AdminProducts />} />
             <Route path="/scent-families" element={<AdminScentFamilies />} />
+            <Route path="/orders" element={<AdminOrders />} />
           </Routes>
         </main>
       </div>
-    </AdminTokenGate>
+    </RequireAdmin>
   );
 }

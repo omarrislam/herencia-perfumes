@@ -1,14 +1,10 @@
 // apps/web/src/features/admin/adminClient.test.ts
-import { describe, it, expect, beforeEach } from 'vitest';
-import { getAdminToken, setAdminToken, adminHeaders } from './adminClient';
+// Token-gate helpers were removed in Milestone 2 (auth now uses JWT cookies).
+// This file kept as a placeholder; functional tests live in API integration tests.
+import { describe, it } from 'vitest';
 
-beforeEach(() => sessionStorage.clear());
-
-describe('admin token storage', () => {
-  it('persists and reads the token', () => {
-    expect(getAdminToken()).toBe('');
-    setAdminToken('secret-token-123456');
-    expect(getAdminToken()).toBe('secret-token-123456');
-    expect(adminHeaders()).toEqual({ 'x-admin-token': 'secret-token-123456' });
+describe('adminClient', () => {
+  it('module loads without errors', async () => {
+    await import('./adminClient');
   });
 });

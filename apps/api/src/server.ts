@@ -14,7 +14,6 @@ async function main() {
   const webDist = existsSync(path.join(webDistCandidate, 'index.html')) ? webDistCandidate : undefined;
   const app = createApp({
     clientOrigin: env.CLIENT_ORIGIN,
-    adminToken: env.ADMIN_TOKEN,
     webDist,
     origin: env.CLIENT_ORIGIN,
   });

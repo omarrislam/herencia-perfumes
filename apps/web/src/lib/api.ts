@@ -1,4 +1,4 @@
-import type { ProductDTO, ProductListDTO, ScentFamilyDTO } from '@herencia/shared';
+import type { ProductDTO, ProductListDTO, ScentFamilyDTO, UserDTO, LoginInput, RegisterInput, PricedCartDTO, CartItemInput, CreateOrderInput, CreateOrderResultDTO, AddressDTO, UpdateProfileInput, AddressInput, OrderDTO } from '@herencia/shared';
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -76,3 +76,26 @@ export type PublicSettings = {
   contactEmail?: string;
 };
 export const fetchSettings = () => apiGet<PublicSettings>('/api/settings');
+
+export const login = (input: LoginInput) => apiSend<UserDTO>('POST', '/api/auth/login', input);
+export const register = (input: RegisterInput) => apiSend<UserDTO>('POST', '/api/auth/register', input);
+export const logout = () => apiSend<void>('POST', '/api/auth/logout');
+export const fetchMe = () => apiGet<UserDTO>('/api/auth/me');
+
+export const priceCart = (items: CartItemInput[]) => apiSend<PricedCartDTO>('POST', '/api/cart/price', { items });
+export const getServerCart = () => apiGet<PricedCartDTO>('/api/cart');
+export const setServerCart = (items: CartItemInput[]) => apiSend<PricedCartDTO>('PUT', '/api/cart', { items });
+export const mergeServerCart = (items: CartItemInput[]) => apiSend<PricedCartDTO>('POST', '/api/cart/merge', { items });
+
+export const createOrder = (input: CreateOrderInput) => apiSend<CreateOrderResultDTO>('POST', '/api/orders', input);
+
+export const fetchProfile = () => apiGet<UserDTO>('/api/account/profile');
+export const updateProfile = (input: UpdateProfileInput) => apiSend<UserDTO>('PUT', '/api/account/profile', input);
+export const fetchAddresses = () => apiGet<AddressDTO[]>('/api/account/addresses');
+export const addAddress = (input: AddressInput) => apiSend<AddressDTO>('POST', '/api/account/addresses', input);
+export const updateAddress = (id: string, input: AddressInput) => apiSend<AddressDTO[]>('PUT', `/api/account/addresses/${id}`, input);
+export const deleteAddress = (id: string) => apiSend<AddressDTO[]>('DELETE', `/api/account/addresses/${id}`);
+export const fetchWishlist = () => apiGet<ProductDTO[]>('/api/account/wishlist');
+export const addWishlist = (productId: string) => apiSend<{ ok: true }>('POST', '/api/account/wishlist', { productId });
+export const removeWishlist = (productId: string) => apiSend<ProductDTO[]>('DELETE', `/api/account/wishlist/${productId}`);
+export const fetchMyOrders = () => apiGet<{ items: OrderDTO[]; total: number; page: number; pages: number }>('/api/orders/me');

@@ -1,7 +1,12 @@
 import type { NextFunction, Request, Response } from 'express';
 
 export class HttpError extends Error {
-  constructor(public status: number, message: string, public code = 'error') {
+  constructor(
+    public status: number,
+    message: string,
+    public code = 'error',
+    public details?: unknown,
+  ) {
     super(message);
   }
 }
@@ -13,7 +18,9 @@ export function notFound(_req: Request, res: Response) {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function errorHandler(err: unknown, _req: Request, res: Response, _next: NextFunction) {
   if (err instanceof HttpError) {
-    return res.status(err.status).json({ error: { message: err.message, code: err.code } });
+    const body: Record<string, unknown> = { message: err.message, code: err.code };
+    if (err.details !== undefined) body.details = err.details;
+    return res.status(err.status).json({ error: body });
   }
 
   // Mongoose CastError — malformed ObjectId in route param → 400

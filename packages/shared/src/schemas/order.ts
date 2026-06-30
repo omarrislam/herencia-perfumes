@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import { ORDER_STATUS, type OrderStatus } from '../enums';
+
+export { ORDER_STATUS, type OrderStatus } from '../enums';
 
 const objectId = z.string().regex(/^[a-fA-F0-9]{24}$/, 'invalid id');
 
@@ -28,3 +31,38 @@ export const createOrderSchema = z.object({
 });
 
 export type CreateOrderInput = z.infer<typeof createOrderSchema>;
+
+export const ORDER_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
+  pending: ['confirmed', 'cancelled'],
+  confirmed: ['shipped', 'cancelled'],
+  shipped: ['delivered'],
+  delivered: [],
+  cancelled: [],
+};
+
+export const updateOrderStatusSchema = z.object({ status: z.enum(ORDER_STATUS) });
+export type UpdateOrderStatusInput = z.infer<typeof updateOrderStatusSchema>;
+
+export type OrderItemDTO = {
+  product: string;
+  name: string;
+  sizeLabel: string;
+  unitPrice: number;
+  qty: number;
+  image: string;
+};
+export type OrderDTO = {
+  id: string;
+  orderNumber: string;
+  items: OrderItemDTO[];
+  customer: { name: string; phone: string; email?: string };
+  shippingAddress: { line1: string; line2?: string; city: string; governorate: string; phone: string };
+  subtotal: number;
+  shipping: number;
+  total: number;
+  status: OrderStatus;
+  paymentMethod: 'cod';
+  notes?: string;
+  createdAt: string;
+};
+export type CreateOrderResultDTO = { order: OrderDTO; whatsappUrl: string };

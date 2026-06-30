@@ -1,25 +1,20 @@
 // apps/web/src/features/admin/adminClient.ts
-import type { AdminProductInput, ProductDTO, ScentFamilyDTO } from '@herencia/shared';
+import type { AdminProductInput, ProductDTO, ScentFamilyDTO, OrderDTO, OrderStatus } from '@herencia/shared';
 import { apiSend, apiGet } from '../../lib/api';
 
-const KEY = 'herencia.adminToken';
-export const getAdminToken = (): string => sessionStorage.getItem(KEY) ?? '';
-export const setAdminToken = (t: string): void => sessionStorage.setItem(KEY, t);
-export const adminHeaders = (): Record<string, string> => ({ 'x-admin-token': getAdminToken() });
-
 export const adminCreateProduct = (data: AdminProductInput) =>
-  apiSend<ProductDTO>('POST', '/api/admin/products', data, adminHeaders());
+  apiSend<ProductDTO>('POST', '/api/admin/products', data);
 export const adminUpdateProduct = (id: string, data: AdminProductInput) =>
-  apiSend<ProductDTO>('PUT', `/api/admin/products/${id}`, data, adminHeaders());
+  apiSend<ProductDTO>('PUT', `/api/admin/products/${id}`, data);
 export const adminDeleteProduct = (id: string) =>
-  apiSend<void>('DELETE', `/api/admin/products/${id}`, undefined, adminHeaders());
+  apiSend<void>('DELETE', `/api/admin/products/${id}`);
 export const adminCreateFamily = (data: { name: string; order?: number; description?: string }) =>
-  apiSend<ScentFamilyDTO>('POST', '/api/admin/scent-families', data, adminHeaders());
+  apiSend<ScentFamilyDTO>('POST', '/api/admin/scent-families', data);
 export const adminDeleteFamily = (id: string) =>
-  apiSend<void>('DELETE', `/api/admin/scent-families/${id}`, undefined, adminHeaders());
+  apiSend<void>('DELETE', `/api/admin/scent-families/${id}`);
 
 type SignResponse = { timestamp: number; signature: string; apiKey: string; cloudName: string; folder: string };
-export const adminSignUpload = () => apiSend<SignResponse>('POST', '/api/admin/uploads/sign', {}, adminHeaders());
+export const adminSignUpload = () => apiSend<SignResponse>('POST', '/api/admin/uploads/sign', {});
 
 // Signs, then uploads directly to Cloudinary; returns the stored public_id.
 export async function uploadImage(file: File): Promise<string> {
@@ -38,5 +33,12 @@ export async function uploadImage(file: File): Promise<string> {
   const body = (await res.json()) as { public_id: string };
   return body.public_id;
 }
+
+export const adminFetchOrders = (status?: OrderStatus) =>
+  apiGet<{ items: OrderDTO[]; total: number; page: number; pages: number }>(
+    `/api/admin/orders${status ? `?status=${status}` : ''}`,
+  );
+export const adminUpdateOrderStatus = (id: string, status: OrderStatus) =>
+  apiSend<OrderDTO>('PUT', `/api/admin/orders/${id}/status`, { status });
 
 export { apiGet };

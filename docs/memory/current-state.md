@@ -1,59 +1,38 @@
 # Current State
 
-_Last updated: 2026-06-30_
+_Last updated: 2026-07-01_
 
 ## Phase
-**Milestone 1 (Catalog & Content) COMPLETE & MERGED to `master` (merge commit `423e763`, feature branch deleted). Next = Milestone 2 (commerce).**
-Final whole-branch review (opus) passed "with fixes"; the 2 Important fixes (require adminToken; absolute og:image URL) applied in `ee97a1a`. Full suite green on merged master (64 tests: shared 15, api 35, web 14); lint/typecheck/build clean.
+**Milestone 2 (Commerce) COMPLETE on branch `feat/milestone-2-commerce` (19 commits, head `3fedb86` + a docs/cleanup commit). Final whole-branch review (opus) verdict = READY TO MERGE (no Critical/Important blockers).** Ready to merge to `master`, then start Milestone 3 (Engagement).
+Full workspace green: `npm run lint` (0), `npm run typecheck` (0), `npm run build` (clean), `npm run test` — **api 76, web 22, shared ~28** all passing.
 
-## Milestone 1 deliverables (branch `feat/milestone-1-catalog`)
-- Shared: catalog Zod schemas + DTOs + `slugify` (Task 1).
-- API: ScentFamily/Product/Setting/User models + in-memory test harness (T2,4); public catalog read API
-  with filter/sort/pagination (T3); public `/api/settings` + Cloudinary signing + seed script (T4);
-  interim `x-admin-token` admin guard + scent-family/product/bundle CRUD + upload signing (T5);
-  SSR-lite SEO — request-time `<head>` injection + JSON-LD + sitemap.xml + robots.txt + SPA serving (T6).
-  errorHandler maps CastError→400 and dup-key→409.
-- Web: router + React Query + typed API client + SEO/cloudinary helpers (T7); catalog components + Home (T8);
-  Products list with URL-driven filter/sort/pagination (T9); Product detail (gallery/notes/sizes/related)
-  + Bundles (T10); admin UI — token gate, product CRUD, scent families, Cloudinary upload (T11).
-- Verification (T12): full workspace green (lint/typecheck/test/build). API tests serialized + index-prebuilt
-  for determinism; Windows mongod temp redirected off the full C: drive.
-- SDD ledger: `.superpowers/sdd/progress.md` (Tasks 1–11 reviewed+fixed; minors triaged there).
+## Milestone 2 deliverables (branch `feat/milestone-2-commerce`)
+- **Shared:** auth/account/cart/order Zod schemas + DTOs; `ORDER_STATUS` + `ORDER_STATUS_TRANSITIONS` (Tasks 1–2).
+- **Carry-overs (Task 3):** `[F-min-5]` related route now type-filters; `[F-min-4]` ProductCard pairs basePrice with its own size's compareAt.
+- **API auth (Tasks 4–5):** `lib/jwt`, `lib/authCookie`, `middleware/auth` (authenticate/requireAuth/requireRole); `requireAdmin` internals swapped to JWT-cookie+admin-role (interim `x-admin-token`/`ADMIN_TOKEN`/`AdminTokenGate` fully removed); register/login/logout/me; User gained `addresses`+`wishlist`; seed admin password (bcrypt 12).
+- **API cart (Task 6):** `Cart` model + `priceItems` service (DB-authoritative pricing, unavailable lines excluded, shipping/threshold rules) + `/api/cart` price(public)/get/put/merge.
+- **API orders (Tasks 7–8):** `Order` model, `lib/whatsapp` + `lib/orderNumber`, `createOrder` (re-price → atomic stock decrement w/ rollback → WhatsApp link), `POST /orders` (guest-allowed) + `GET /orders/me`; admin order list (filter/paginate) + status-lifecycle PUT (422 on illegal). `HttpError` gained optional `details`.
+- **API account (Task 9):** profile, addresses CRUD (single-default invariant), wishlist add/list/remove.
+- **Web (Tasks 10–14):** AuthContext + login/register + RequireAuth/RequireAdmin (token gate removed); CartContext (guest localStorage + merge-on-login, login-race fixed) + drawer + `/cart` + add-to-cart; COD checkout + WhatsApp confirmation; account area + WishlistButton; admin orders UI.
+- **SDD ledger:** `.superpowers/sdd/progress.md` — Tasks 1–14 reviewed+fixed (4 Important fixes applied across Tasks 4/7/11/13); Minor findings triaged by the final review.
 
 ## Done
-- Explored prompt, suggested structure, and full brand identity.
-- Locked all major decisions (see `decisions.md`).
-- Wrote master spec: `docs/superpowers/specs/2026-06-29-herencia-design.md`.
-- Wrote docs scaffolding `00`–`17`, `TASKS.md`, and memory files.
-- **Task 1:** Root monorepo — npm workspaces, root scripts, TS base config, ESLint, Prettier.
-- **Task 2:** `packages/shared` — types, Zod schemas (createOrderSchema / CreateOrderInput), enums/constants.
-- **Task 3:** `apps/api` — env validation (loadEnv/Env), Mongoose connection, error handler, base middleware.
-- **Task 4:** `apps/web` — Vite/React/Tailwind shell, brand tokens + CSS custom properties, light/dark ThemeProvider, Button primitive, app shell skeleton.
-- **Task 5:** Full-workspace cleanup (brand fonts, React lint rules, cross-platform dev script, test isolation); lint/typecheck/test/build all green.
+- Milestones 0 + 1 complete and merged to `master` (M1 merge `423e763`).
+- Milestone 2 built via subagent-driven development (Tasks 1–15), each task spec+quality reviewed, final whole-branch review (opus) = READY TO MERGE.
 
 ## In progress
-- Nothing — Milestones 0 and 1 complete and merged to `master`. Ready to start Milestone 2.
+- Task 15 (verification + docs) — finishing: docs updated; next step is `finishing-a-development-branch` (merge to `master`).
 
 ## Next (todo)
-- **Milestone 2 (Commerce).** Write the M2 plan via writing-plans, then execute via
-  subagent-driven-development on `feat/milestone-2-commerce`. See `next-session.md` for the full M2 scope:
-  cart (local + account merge), COD checkout + WhatsApp link, customer + admin orders, **real JWT httpOnly-cookie
-  auth + roles replacing the interim `requireAdmin` internals** (same seam), account + wishlist.
-- Fold in early (cheap M1 final-review carry-overs): type-filter `/products/:slug/related` [F-min-5];
-  ProductCard compareAt/basePrice size pairing [F-min-4]. Full deferred list at the bottom of the SDD ledger.
+- **Merge `feat/milestone-2-commerce` → `master`** (no remote yet; add a GitHub remote first only if pushing/PR is requested).
+- **Milestone 3 (Engagement):** ratings & reviews + admin moderation, Find Your Scent quiz, offer banners, blog. Same workflow: writing-plans → review → subagent-driven-development on `feat/milestone-3-engagement`.
 
 ## Resolved open items
-- Body font: **Cinzel (display) + Jost (body/UI)** — now loaded in index.html.
-- Images: **Cloudinary** (confirmed).
-- Hosting: single VPS.
-- Spec approved by user.
+- Auth, cart, checkout, orders, account, admin-orders all implemented and green.
+- Price integrity verified end-to-end by the final review: client never sends/persists a price; `priceItems` is single-sourced.
 
 ## Notes
-- Git initialized; Milestone 0 implemented via subagent-driven development (Tasks 1–5),
-  final whole-branch review (opus) passed with fixes applied, then **merged to `master`**
-  (merge commit `572a2ed`); feature branch deleted. Working tree clean, full suite green.
-- Seed script and full router/layouts deferred to Milestone 1 (per 17_ROADMAP.md).
-- No git remote yet — when ready to push/PR, add a GitHub remote first.
-- Final-review fixes in `f198369`: shared builds before typecheck/test; tests excluded from
-  emitted dist; 500s logged. Deferred minors (theme FOUC, lint config files, Button cosmetic,
-  shared `"*"` pin) tracked for the Milestone 4 polish pass.
+- ⚠️ **C: drive still ~full** — MongoMemoryServer api tests rely on the win32 temp redirect to E: in `apps/api/vitest.config.ts` (+ a test `JWT_SECRET` injected there). Free up C: and replace the redirect for CI/VPS.
+- Deferred (M3): test-coverage minors (M2-min-1/2/3/5/6/8/9/14/16/17/19). Deferred (M4 polish/a11y): M2-min-11 (router future-flags + act() warnings), M2-min-20/21/24 (aria-labels, CartDrawer focus trap), M2-min-22 (raw `bg-gold/10`), M2-min-23 ("(optional)" copy), plus new minors from final review: CartContext writes the logged-in cart to guest localStorage on logout (privacy on shared devices — or product decision), WishlistButton initial heart state not server-derived. Full list at the bottom of the SDD ledger.
+- `.env` has `JWT_SECRET` (used) + the now-ignored `ADMIN_TOKEN` (harmless leftover key); `ADMIN_TOKEN` removed from `.env.example` and the env schema.
+- Seed: `npm run seed --workspace apps/api` → families, perfumes, bundles, Settings (with shipping fields), admin user `admin@herencia.example` / `admin1234`.

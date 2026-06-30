@@ -3,16 +3,19 @@ import cors from 'cors';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
 import { errorHandler, notFound } from './middleware/error';
+import { authRouter } from './routes/auth';
 import { catalogRouter } from './routes/catalog';
 import { settingsRouter } from './routes/settings';
 import { adminRouter } from './routes/admin';
+import { cartRouter } from './routes/cart';
+import { orderRouter } from './routes/orders';
+import { accountRouter } from './routes/account';
 import { buildSitemap, ROBOTS_TXT } from './lib/seo';
 import { mountSpa } from './middleware/spa';
 import { Product } from './models/Product';
 
 export function createApp(opts: {
   clientOrigin: string;
-  adminToken: string;
   webDist?: string;
   origin?: string;
 }): Express {
@@ -23,9 +26,13 @@ export function createApp(opts: {
   app.use(cookieParser());
 
   app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
+  app.use('/api/auth', authRouter());
   app.use('/api', catalogRouter);
   app.use('/api', settingsRouter);
-  app.use('/api/admin', adminRouter({ adminToken: opts.adminToken }));
+  app.use('/api/admin', adminRouter());
+  app.use('/api/cart', cartRouter());
+  app.use('/api/orders', orderRouter());
+  app.use('/api/account', accountRouter());
   app.use('/api', notFound);
 
   const origin = opts.origin ?? '';

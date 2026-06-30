@@ -5,7 +5,7 @@
 
 Legend: `[x]` done · `[~]` in progress · `[ ]` todo
 
-_Last updated: 2026-06-30_
+_Last updated: 2026-07-01_
 
 ---
 
@@ -38,12 +38,12 @@ _Last updated: 2026-06-30_
 - [x] SEO: meta injection + JSON-LD + sitemap + robots
 
 ## Milestone 2 — Commerce
-- [ ] Cart (local + account merge)
-- [ ] Checkout (COD) → order + WhatsApp link → confirmation
-- [ ] Orders: customer view
-- [ ] Orders: admin management (status lifecycle)
-- [ ] Auth (register/login/logout) + guards
-- [ ] Account area + wishlist
+- [x] Cart (local + account merge)
+- [x] Checkout (COD) → order + WhatsApp link → confirmation
+- [x] Orders: customer view
+- [x] Orders: admin management (status lifecycle)
+- [x] Auth (register/login/logout) + guards
+- [x] Account area + wishlist
 
 ## Milestone 3 — Engagement
 - [ ] Ratings & reviews + admin moderation

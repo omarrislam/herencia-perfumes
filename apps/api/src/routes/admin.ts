@@ -1,15 +1,16 @@
 import { Router } from 'express';
-import { adminProductSchema, scentFamilySchema, slugify } from '@herencia/shared';
+import { adminProductSchema, scentFamilySchema, slugify, updateOrderStatusSchema, ORDER_STATUS, ORDER_STATUS_TRANSITIONS, type OrderStatus } from '@herencia/shared';
 import { Product } from '../models/Product';
 import { ScentFamily } from '../models/ScentFamily';
+import { Order } from '../models/Order';
 import { HttpError } from '../middleware/error';
 import { requireAdmin } from '../middleware/requireAdmin';
 import { isCloudinaryConfigured, signUploadParams } from '../lib/cloudinary';
-import { toProductDTO, toScentFamilyDTO } from '../lib/serialize';
+import { toProductDTO, toScentFamilyDTO, toOrderDTO } from '../lib/serialize';
 
-export function adminRouter(opts: { adminToken: string }): Router {
+export function adminRouter(): Router {
   const router = Router();
-  router.use(requireAdmin(opts.adminToken));
+  router.use(requireAdmin);
 
   // ---- Scent families ----
   router.post('/scent-families', async (req, res, next) => {
@@ -98,6 +99,46 @@ export function adminRouter(opts: { adminToken: string }): Router {
     try {
       if (!isCloudinaryConfigured()) throw new HttpError(503, 'Image uploads are not configured', 'unconfigured');
       res.json(signUploadParams('herencia'));
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // ---- Orders ----
+  router.get('/orders', async (req, res, next) => {
+    try {
+      const status = req.query['status'];
+      const filter: Record<string, unknown> = {};
+      if (typeof status === 'string') {
+        if (!ORDER_STATUS.includes(status as OrderStatus)) throw new HttpError(400, 'Invalid status', 'invalid');
+        filter['status'] = status;
+      }
+      const page = Math.max(1, Number(req.query['page'] ?? 1) || 1);
+      const limit = Math.min(50, Math.max(1, Number(req.query['limit'] ?? 20) || 20));
+      const [docs, total] = await Promise.all([
+        Order.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).lean(),
+        Order.countDocuments(filter),
+      ]);
+      res.json({ items: docs.map(toOrderDTO), total, page, pages: Math.ceil(total / limit) || 1 });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  router.put('/orders/:id/status', async (req, res, next) => {
+    try {
+      const parsed = updateOrderStatusSchema.safeParse(req.body);
+      if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? 'Invalid', 'invalid');
+      const order = await Order.findById(req.params['id']);
+      if (!order) throw new HttpError(404, 'Order not found', 'not_found');
+      const from = order.status as OrderStatus;
+      const to = parsed.data.status;
+      if (from !== to && !ORDER_STATUS_TRANSITIONS[from].includes(to)) {
+        throw new HttpError(422, `Cannot move an order from ${from} to ${to}`, 'invalid_transition');
+      }
+      order.status = to;
+      await order.save();
+      res.json(toOrderDTO(order.toObject()));
     } catch (err) {
       next(err);
     }

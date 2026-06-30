@@ -51,6 +51,7 @@ export type ProductFilters = {
   maxPrice?: number;
   sort?: string;
   page?: number;
+  limit?: number;
 };
 
 export function fetchProducts(filters: ProductFilters): Promise<ProductListDTO> {

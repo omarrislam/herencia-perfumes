@@ -11,6 +11,8 @@ const NotFound = lazy(() => import('../pages/NotFound'));
 const Admin = lazy(() => import('../pages/admin/AdminApp'));
 const Login = lazy(() => import('../pages/Login'));
 const Register = lazy(() => import('../pages/Register'));
+const Checkout = lazy(() => import('../pages/Checkout'));
+const OrderConfirmation = lazy(() => import('../pages/OrderConfirmation'));
 
 export const router = createBrowserRouter([
   {
@@ -24,6 +26,8 @@ export const router = createBrowserRouter([
       { path: '/cart', element: <Cart /> },
       { path: '/login', element: <Login /> },
       { path: '/register', element: <Register /> },
+      { path: '/checkout', element: <Checkout /> },
+      { path: '/order-confirmation', element: <OrderConfirmation /> },
     ],
   },
   { path: '/admin/*', element: <Admin /> },

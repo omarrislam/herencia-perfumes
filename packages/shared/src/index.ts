@@ -5,5 +5,8 @@ export * from './schemas/auth';
 export * from './schemas/account';
 export * from './schemas/cart';
 export * from './schemas/review';
-export * from './schemas/banner';
+// BANNER_PLACEMENT/BannerPlacement reach the barrel via `export * from './enums'`;
+// re-export only banner's own symbols to avoid a duplicate `export *` of the same name.
+export { bannerSchema } from './schemas/banner';
+export type { BannerInput, BannerDTO } from './schemas/banner';
 export * from './util/slugify';

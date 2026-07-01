@@ -192,7 +192,7 @@ function BlogFormPanel({
           )}
           {uploading && <span className="font-body text-xs text-muted">Uploading…</span>}
         </div>
-        {uploadError && <p className="mt-1 font-body text-xs text-red-500">{uploadError}</p>}
+        {uploadError && <p className="mt-1 font-body text-xs text-danger">{uploadError}</p>}
       </label>
 
       <label className="flex items-center gap-2">
@@ -206,7 +206,7 @@ function BlogFormPanel({
       </label>
 
       {error && (
-        <p className="font-body text-sm text-red-500">
+        <p className="font-body text-sm text-danger">
           {error instanceof ApiError ? `Error ${error.status}: ${error.message}` : error.message}
         </p>
       )}
@@ -285,7 +285,7 @@ export default function AdminBlog() {
       )}
 
       {isLoading && <p className="font-body text-muted">Loading…</p>}
-      {isError && <p className="font-body text-red-500">Failed to load posts.</p>}
+      {isError && <p className="font-body text-danger">Failed to load posts.</p>}
 
       {data && data.items.length === 0 && !creating && (
         <p className="font-body text-muted">No posts yet.</p>
@@ -309,7 +309,7 @@ export default function AdminBlog() {
                   <div className="flex flex-wrap gap-3 font-body text-xs text-muted">
                     <span>
                       Status:{' '}
-                      <strong className={post.isPublished ? 'text-green-600' : 'text-amber-500'}>
+                      <strong className={post.isPublished ? 'text-success' : 'text-warning'}>
                         {post.isPublished ? 'Published' : 'Draft'}
                       </strong>
                     </span>
@@ -333,7 +333,7 @@ export default function AdminBlog() {
                         deleteMut.mutate(post.id);
                       }
                     }}
-                    className="font-body text-sm text-red-500 hover:underline"
+                    className="font-body text-sm text-danger hover:underline"
                   >
                     Delete
                   </button>
@@ -345,7 +345,7 @@ export default function AdminBlog() {
       </div>
 
       {deleteMut.isError && (
-        <p className="mt-3 font-body text-sm text-red-500">Delete failed.</p>
+        <p className="mt-3 font-body text-sm text-danger">Delete failed.</p>
       )}
     </div>
   );

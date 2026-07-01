@@ -95,7 +95,7 @@ export function CartDrawer() {
                           type="button"
                           aria-label="Decrease quantity"
                           onClick={() => updateQty(line.productId, line.sizeLabel, line.qty - 1)}
-                          className="flex h-6 w-6 items-center justify-center rounded border border-line font-body text-sm text-content hover:bg-gold/10"
+                          className="flex h-6 w-6 items-center justify-center rounded border border-line font-body text-sm text-content hover:bg-accent/10"
                         >
                           −
                         </button>
@@ -105,7 +105,7 @@ export function CartDrawer() {
                           aria-label="Increase quantity"
                           onClick={() => updateQty(line.productId, line.sizeLabel, line.qty + 1)}
                           disabled={line.qty >= line.maxQty}
-                          className="flex h-6 w-6 items-center justify-center rounded border border-line font-body text-sm text-content hover:bg-gold/10 disabled:opacity-50"
+                          className="flex h-6 w-6 items-center justify-center rounded border border-line font-body text-sm text-content hover:bg-accent/10 disabled:opacity-50"
                         >
                           +
                         </button>

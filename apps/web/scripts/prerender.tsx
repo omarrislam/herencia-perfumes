@@ -15,6 +15,11 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const dist = resolve(__dirname, '../dist');
 const template = readFileSync(resolve(dist, 'index.html'), 'utf-8');
 
+// Preserve the pristine empty-#root template as the SPA fallback shell.
+// The API middleware serves this for non-prerendered routes so the client
+// always gets createRoot (no hydration mismatch) instead of stale home markup.
+writeFileSync(resolve(dist, 'spa-shell.html'), template);
+
 const ROUTES = ['/', '/find-your-scent', '/login', '/register', '/blog'];
 
 for (const url of ROUTES) {

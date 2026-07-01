@@ -3,12 +3,9 @@
 _Last updated: 2026-07-01_
 
 ## TL;DR
-Milestones 0, 1, 2 are merged to `master`. **Milestone 3 (Engagement) is COMPLETE on `feat/milestone-3-engagement`** (final whole-branch review on opus = READY TO MERGE, no Critical/Important; full suite green: shared 10 files, api 26 files/~105 tests, web 17 files/27 tests; lint/typecheck/build clean). **First job: merge M3 to `master`, then build Milestone 4 (Polish & ship).** Still no git remote — add one only if the user asks to push/PR.
+Milestones 0, 1, 2, **and 3 (Engagement) are all merged to `master`** (M3 merge commit `a270e80`, feature branch deleted; tests re-verified green on merged master: shared 10 files, api 26 files/~105 tests, web 17 files/27 tests; lint/typecheck/build clean). **Your job: build Milestone 4 (Polish & ship)** — the final milestone. Still no git remote — add one only if the user asks to push/PR.
 
-## Immediate step: merge M3
-- Use **finishing-a-development-branch** on `feat/milestone-3-engagement` → merge into `master` (no-ff), re-verify tests on the merged result, delete the feature branch, update `current-state.md` to "M3 merged".
-
-## Then: Milestone 4 (Polish & ship) — the final milestone
+## Milestone 4 (Polish & ship) — the final milestone
 - **Animations pass:** Framer Motion + CSS, lazy, `prefers-reduced-motion`, transforms/opacity only, no CLS. Section reveals, card/button micro-interactions, cart-drawer motion, logo gold shimmer.
 - **Accessibility audit:** the deferred a11y minors (batch them — see below), focus management (CartDrawer focus trap/return), form labels, keyboard nav, contrast, semantic landmarks.
 - **Performance pass:** Lighthouse ≥ 90 mobile — code-split/lazy audit, image sizing via Cloudinary, font loading, bundle trimming, build-time static prerender for static routes (deferred from M1 decision #19).

@@ -3,8 +3,8 @@
 _Last updated: 2026-07-01_
 
 ## Phase
-**Milestone 3 (Engagement) COMPLETE on branch `feat/milestone-3-engagement` (17 commits). Final whole-branch review (opus) = READY TO MERGE (no Critical/Important).** Ready to merge to `master`, then start Milestone 4 (Polish & ship).
-Full workspace green: `npm run lint` (0), `npm run typecheck` (0), `npm run build` (clean), `npm run test` — **shared 10 files, api 26 files (~105 tests), web 17 files (27 tests)** all passing.
+**Milestone 3 (Engagement) COMPLETE & MERGED to `master` (merge commit `a270e80`, feature branch deleted). Next = Milestone 4 (Polish & ship).**
+Final whole-branch review (opus) = READY TO MERGE (no Critical/Important); tests re-verified green on merged `master`. Full workspace green: `npm run lint` (0), `npm run typecheck` (0), `npm run build` (clean), `npm run test` — **shared 10 files, api 26 files (~105 tests), web 17 files (27 tests)** all passing.
 
 ## Milestone 3 deliverables (branch `feat/milestone-3-engagement`)
 - **Shared:** review/banner/blog/quiz Zod schemas + DTOs; `BANNER_PLACEMENT` (Tasks 1–2). Barrel fixed to re-export banner symbols without duplicate `export *`.
@@ -21,10 +21,9 @@ Full workspace green: `npm run lint` (0), `npm run typecheck` (0), `npm run buil
 - Milestone 3 built via subagent-driven development (Tasks 1–12), each task spec+quality reviewed, final whole-branch review (opus) = READY TO MERGE.
 
 ## In progress
-- Task 12 (verification + docs) — finishing: docs updated; next step is `finishing-a-development-branch` (merge to `master`).
+- Nothing — Milestone 3 complete and merged to `master`. Ready to start Milestone 4.
 
 ## Next (todo)
-- **Merge `feat/milestone-3-engagement` → `master`** (no remote yet; add a GitHub remote first only if pushing/PR is requested).
 - **Milestone 4 (Polish & ship):** animations pass (perf-safe), accessibility audit, performance pass (Lighthouse ≥ 90 mobile), broader tests/E2E smoke, deployment (VPS + Nginx + PM2), Search Console + sitemap submission. Plus the batched M3 deferred-minors (below). Same workflow: writing-plans → review → subagent-driven-development on `feat/milestone-4-polish`.
 
 ## Resolved open items

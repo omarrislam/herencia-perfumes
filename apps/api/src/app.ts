@@ -36,7 +36,16 @@ export function createApp(opts: {
           defaultSrc: ["'self'"],
           scriptSrc: ["'self'"],
           styleSrc: ["'self'", "'unsafe-inline'"],
-          imgSrc: ["'self'", 'data:', 'https://res.cloudinary.com'],
+          // res.cloudinary.com = real (admin-uploaded) images. picsum.photos +
+          // fastly.picsum.photos are the demo seed placeholders — remove them once
+          // the catalog is reseeded with real Cloudinary assets.
+          imgSrc: [
+            "'self'",
+            'data:',
+            'https://res.cloudinary.com',
+            'https://picsum.photos',
+            'https://fastly.picsum.photos',
+          ],
           fontSrc: ["'self'"],
           connectSrc: ["'self'"],
           objectSrc: ["'none'"],

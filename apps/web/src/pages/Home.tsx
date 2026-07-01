@@ -5,6 +5,7 @@ import { useSeo } from '../lib/useSeo';
 import { ProductCard } from '../components/ProductCard';
 import { ProductImage } from '../components/ProductImage';
 import { Skeleton } from '../components/Skeleton';
+import { BannerStrip } from '../components/BannerStrip';
 
 export default function Home() {
   useSeo({ title: 'HERENCIA — Luxury in every drop', description: 'Heritage luxury perfumery.' });
@@ -15,6 +16,8 @@ export default function Home() {
 
   return (
     <div className="space-y-12">
+      <BannerStrip placement="home_hero" />
+
       <section className="relative overflow-hidden rounded-xl border border-line bg-surface">
         {hero ? (
           <ProductImage publicId={hero.image} alt={hero.title} w={1200} loading="eager" className="h-72 w-full object-cover opacity-60" />
@@ -31,6 +34,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <BannerStrip placement="home_strip" />
 
       <section>
         <h2 className="mb-4 font-display text-2xl text-content">Featured</h2>

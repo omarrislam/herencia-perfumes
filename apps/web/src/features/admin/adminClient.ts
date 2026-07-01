@@ -1,5 +1,5 @@
 // apps/web/src/features/admin/adminClient.ts
-import type { AdminProductInput, ProductDTO, ScentFamilyDTO, OrderDTO, OrderStatus, ReviewDTO, QuizQuestionAdminDTO, QuizQuestionInput } from '@herencia/shared';
+import type { AdminProductInput, ProductDTO, ScentFamilyDTO, OrderDTO, OrderStatus, ReviewDTO, QuizQuestionAdminDTO, QuizQuestionInput, BannerDTO, BannerInput } from '@herencia/shared';
 import { apiSend, apiGet } from '../../lib/api';
 
 export const adminCreateProduct = (data: AdminProductInput) =>
@@ -52,5 +52,10 @@ export const adminFetchQuiz = () => apiGet<QuizQuestionAdminDTO[]>('/api/admin/q
 export const adminCreateQuestion = (input: QuizQuestionInput) => apiSend<QuizQuestionAdminDTO>('POST', '/api/admin/quiz', input);
 export const adminUpdateQuestion = (id: string, input: QuizQuestionInput) => apiSend<QuizQuestionAdminDTO>('PUT', `/api/admin/quiz/${id}`, input);
 export const adminDeleteQuestion = (id: string) => apiSend<void>('DELETE', `/api/admin/quiz/${id}`);
+
+export const adminFetchBanners = () => apiGet<BannerDTO[]>('/api/admin/banners');
+export const adminCreateBanner = (input: BannerInput) => apiSend<BannerDTO>('POST', '/api/admin/banners', input);
+export const adminUpdateBanner = (id: string, input: BannerInput) => apiSend<BannerDTO>('PUT', `/api/admin/banners/${id}`, input);
+export const adminDeleteBanner = (id: string) => apiSend<void>('DELETE', `/api/admin/banners/${id}`);
 
 export { apiGet };

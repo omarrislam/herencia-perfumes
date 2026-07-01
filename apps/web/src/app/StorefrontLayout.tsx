@@ -4,6 +4,7 @@ import { useAuth } from '../features/auth/AuthContext';
 import { useCart } from '../features/cart/CartContext';
 import { CartDrawer } from '../features/cart/CartDrawer';
 import { Button } from '../components/Button';
+import { BannerStrip } from '../components/BannerStrip';
 
 export function StorefrontLayout() {
   const { theme, toggle } = useTheme();
@@ -43,6 +44,7 @@ export function StorefrontLayout() {
           </div>
         </nav>
       </header>
+      <BannerStrip placement="global_top" />
       <main className="mx-auto w-full max-w-6xl flex-1 p-4">
         <Outlet />
       </main>

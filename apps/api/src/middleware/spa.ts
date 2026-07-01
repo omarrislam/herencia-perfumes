@@ -9,7 +9,9 @@ import { buildHeadTags, routeMetaForPath } from '../lib/seo';
 // empty-#root spa-shell.html so the client calls createRoot (no stale home markup).
 export function mountSpa(app: Express, opts: { webDist: string; origin: string }) {
   // Static assets (hashed files) served directly; index disabled so the fallback runs.
-  app.use(express.static(opts.webDist, { index: false }));
+  // redirect:false so a bare prerendered path (e.g. /login, which has a dist/login/ dir)
+  // isn't 301'd to /login/ — it falls through to the catch-all and is served directly.
+  app.use(express.static(opts.webDist, { index: false, redirect: false }));
 
   const root = resolve(opts.webDist);
   const shellPath = join(root, 'spa-shell.html');

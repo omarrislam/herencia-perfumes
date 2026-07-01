@@ -1,6 +1,8 @@
+import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { fetchProducts, fetchSettings } from '../lib/api';
+import { cld } from '../lib/cloudinary';
 import { useSeo } from '../lib/useSeo';
 import { ProductCard } from '../components/ProductCard';
 import { ProductImage } from '../components/ProductImage';
@@ -14,6 +16,17 @@ export default function Home() {
   const featured = useQuery({ queryKey: ['products', 'featured'], queryFn: () => fetchProducts({ sort: 'rating', page: 1 }) });
   const featuredItems = (featured.data?.items ?? []).filter((p) => p.isFeatured).slice(0, 4);
   const hero = settings.data?.hero;
+  const heroPublicId = hero?.image;
+
+  useEffect(() => {
+    if (!heroPublicId) return;
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'image';
+    link.href = cld(heroPublicId, { w: 1200 });
+    document.head.appendChild(link);
+    return () => { document.head.removeChild(link); };
+  }, [heroPublicId]);
 
   return (
     <div className="space-y-12">
@@ -21,7 +34,7 @@ export default function Home() {
 
       <section className="relative overflow-hidden rounded-xl border border-line bg-surface">
         {hero ? (
-          <ProductImage publicId={hero.image} alt={hero.title} w={1200} loading="eager" className="h-72 w-full object-cover opacity-60" />
+          <ProductImage publicId={hero.image} alt={hero.title} w={1200} loading="eager" sizes="100vw" className="h-72 w-full object-cover opacity-60" />
         ) : (
           <Skeleton className="h-72 w-full" />
         )}

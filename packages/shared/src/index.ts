@@ -10,3 +10,5 @@ export * from './schemas/review';
 export { bannerSchema } from './schemas/banner';
 export type { BannerInput, BannerDTO } from './schemas/banner';
 export * from './util/slugify';
+export * from './schemas/blog';
+export * from './schemas/quiz';

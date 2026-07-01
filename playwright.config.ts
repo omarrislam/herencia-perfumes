@@ -49,7 +49,6 @@ export default defineConfig({
       PORT: '4000',
       // In production mode the API serves the web dist on the same port
       CLIENT_ORIGIN: 'http://localhost:4000',
-      PLAYWRIGHT_BROWSERS_PATH: 'E:/ms-playwright',
     },
   },
 });

@@ -29,6 +29,7 @@ export function CartDrawer() {
         <>
           {/* Backdrop */}
           <motion.div
+            key="cart-backdrop"
             className="fixed inset-0 z-40 bg-black/40"
             aria-hidden="true"
             onClick={() => setOpen(false)}
@@ -40,6 +41,7 @@ export function CartDrawer() {
 
           {/* Drawer panel */}
           <motion.div
+            key="cart-panel"
             ref={trapRef}
             role="dialog"
             aria-label="Cart"
@@ -66,7 +68,7 @@ export function CartDrawer() {
             {/* Body */}
             <div className="flex-1 overflow-y-auto px-6 py-4">
               {priced && priced.hasUnavailable && (
-                <p className="mb-4 rounded-md border border-line bg-maroon/10 px-4 py-2 font-body text-sm text-maroon">
+                <p className="mb-4 rounded-md border border-line bg-danger-soft px-4 py-2 font-body text-sm text-danger">
                   Some items in your cart are unavailable or out of stock.
                 </p>
               )}
@@ -92,7 +94,7 @@ export function CartDrawer() {
                             <p className="font-body text-sm font-medium text-content">{line.name}</p>
                             <p className="font-body text-xs text-muted">{line.sizeLabel}</p>
                             {!line.available && (
-                              <p className="font-body text-xs text-maroon">Unavailable</p>
+                              <p className="font-body text-xs text-danger">Unavailable</p>
                             )}
                           </div>
                           <button

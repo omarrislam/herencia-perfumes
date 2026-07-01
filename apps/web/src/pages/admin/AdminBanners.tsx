@@ -58,8 +58,9 @@ function bannerToForm(b: BannerDTO): BannerForm {
   const toLocal = (iso?: string) => {
     if (!iso) return '';
     const d = new Date(iso);
-    // Format: YYYY-MM-DDTHH:mm
-    return d.toISOString().slice(0, 16);
+    // Adjust for local timezone so the prefilled value matches local time (not UTC)
+    const offsetMs = d.getTimezoneOffset() * 60000;
+    return new Date(d.getTime() - offsetMs).toISOString().slice(0, 16);
   };
   return {
     title: b.title,
@@ -197,7 +198,7 @@ function BannerFormPanel({
         </label>
       </div>
 
-      <div>
+      <label className="block">
         <span className="font-body text-sm text-muted">Image *</span>
         <div className="mt-1 flex items-center gap-3">
           <input
@@ -213,7 +214,7 @@ function BannerFormPanel({
           {uploading && <span className="font-body text-xs text-muted">Uploading…</span>}
         </div>
         {uploadError && <p className="mt-1 font-body text-xs text-red-500">{uploadError}</p>}
-      </div>
+      </label>
 
       <label className="flex items-center gap-2">
         <input

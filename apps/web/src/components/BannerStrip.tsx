@@ -47,16 +47,29 @@ export function BannerStrip({ placement }: BannerStripProps) {
               </p>
             )}
             {banner.ctaLink && (
-              <Link
-                to={banner.ctaLink}
-                className={
-                  isHero
-                    ? 'mt-3 inline-block rounded bg-maroon px-4 py-2 font-body text-sm text-cream hover:bg-maroon/90'
-                    : 'mt-1 inline-block font-body text-xs text-accent hover:underline'
-                }
-              >
-                {banner.ctaText ?? 'Shop now'}
-              </Link>
+              banner.ctaLink.startsWith('/')
+                ? <Link
+                    to={banner.ctaLink}
+                    className={
+                      isHero
+                        ? 'mt-3 inline-block rounded bg-maroon px-4 py-2 font-body text-sm text-cream hover:bg-maroon/90'
+                        : 'mt-1 inline-block font-body text-xs text-accent hover:underline'
+                    }
+                  >
+                    {banner.ctaText ?? 'Shop now'}
+                  </Link>
+                : <a
+                    href={banner.ctaLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={
+                      isHero
+                        ? 'mt-3 inline-block rounded bg-maroon px-4 py-2 font-body text-sm text-cream hover:bg-maroon/90'
+                        : 'mt-1 inline-block font-body text-xs text-accent hover:underline'
+                    }
+                  >
+                    {banner.ctaText ?? 'Shop now'}
+                  </a>
             )}
           </div>
         </div>

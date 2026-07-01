@@ -7,11 +7,12 @@ import { signToken } from '../lib/jwt';
 import { setAuthCookie, clearAuthCookie } from '../lib/authCookie';
 import { authenticate, requireAuth } from '../middleware/auth';
 import { toUserDTO } from '../lib/serialize';
+import { authLimiter } from '../middleware/rateLimit';
 
 export function authRouter(): Router {
   const router = Router();
 
-  router.post('/register', async (req, res, next) => {
+  router.post('/register', authLimiter, async (req, res, next) => {
     try {
       const parsed = registerSchema.safeParse(req.body);
       if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? 'Invalid', 'invalid');
@@ -26,7 +27,7 @@ export function authRouter(): Router {
     }
   });
 
-  router.post('/login', async (req, res, next) => {
+  router.post('/login', authLimiter, async (req, res, next) => {
     try {
       const parsed = loginSchema.safeParse(req.body);
       if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? 'Invalid', 'invalid');

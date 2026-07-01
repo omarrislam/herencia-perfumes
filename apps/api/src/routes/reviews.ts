@@ -5,6 +5,7 @@ import { Review } from '../models/Review';
 import { HttpError } from '../middleware/error';
 import { authenticate, requireAuth } from '../middleware/auth';
 import { toReviewDTO } from '../lib/serialize';
+import { reviewLimiter } from '../middleware/rateLimit';
 
 export function reviewRouter(): Router {
   const router = Router();
@@ -26,7 +27,7 @@ export function reviewRouter(): Router {
     }
   });
 
-  router.post('/products/:slug/reviews', authenticate, requireAuth, async (req, res, next) => {
+  router.post('/products/:slug/reviews', reviewLimiter, authenticate, requireAuth, async (req, res, next) => {
     try {
       const parsed = createReviewSchema.safeParse(req.body);
       if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? 'Invalid', 'invalid');

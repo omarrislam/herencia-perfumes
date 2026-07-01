@@ -13,6 +13,7 @@
     "@herencia/shared": "*",
     "@tanstack/react-query": "^5.101.2",
     "dompurify": "^3.4.11",
+    "framer-motion": "^12.42.2",
     "marked": "^18.0.5",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",

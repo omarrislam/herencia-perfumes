@@ -1,9 +1,21 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type RefObject } from 'react';
 
 const FOCUSABLE =
   'a[href],button:not([disabled]),textarea,input,select,[tabindex]:not([tabindex="-1"])';
 
-export function useFocusTrap(active: boolean) {
+/**
+ * Traps focus within the returned ref's element while `active`, and restores
+ * focus to the previously-focused element on deactivate. Attach the ref to a
+ * modal/dialog container.
+ *
+ * Visibility caveat: focusables are filtered by the `[hidden]` attribute and
+ * `disabled` only — NOT by CSS `display:none`/`visibility:hidden` (jsdom has no
+ * layout engine, so `offsetParent`-based detection can't be unit-tested). Safe
+ * for containers whose focusables are all visible when open (e.g. the cart
+ * drawer). Before reusing this hook in a modal that contains CSS-hidden
+ * focusables, add a `getComputedStyle` visibility check to the filter.
+ */
+export function useFocusTrap(active: boolean): RefObject<HTMLDivElement> {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!active) return;

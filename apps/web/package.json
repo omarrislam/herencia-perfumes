@@ -12,6 +12,8 @@
   "dependencies": {
     "@herencia/shared": "*",
     "@tanstack/react-query": "^5.101.2",
+    "dompurify": "^3.4.11",
+    "marked": "^18.0.5",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-hook-form": "^7.80.0",
@@ -21,6 +23,7 @@
     "@testing-library/jest-dom": "^6.4.0",
     "@testing-library/react": "^16.0.0",
     "@testing-library/user-event": "^14.5.0",
+    "@types/dompurify": "^3.0.5",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.0",

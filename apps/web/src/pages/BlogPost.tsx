@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchBlogPost } from '../lib/api';
 import { useSeo } from '../lib/useSeo';
 import { cld } from '../lib/cloudinary';
+import { renderMarkdownSafe } from '../lib/markdown';
 
 export default function BlogPost() {
   const { slug } = useParams<{ slug: string }>();
@@ -29,8 +30,6 @@ export default function BlogPost() {
     );
   }
 
-  const paragraphs = post.body.split(/\n\n+/);
-
   return (
     <article className="mx-auto max-w-2xl py-10">
       <h1 className="mb-4 font-display text-3xl text-content">{post.title}</h1>
@@ -41,11 +40,10 @@ export default function BlogPost() {
           className="mb-6 w-full rounded-lg object-cover"
         />
       )}
-      <div className="space-y-4 font-body text-content">
-        {paragraphs.map((p, i) => (
-          <p key={i}>{p}</p>
-        ))}
-      </div>
+      <div
+        className="prose-herencia font-body text-content"
+        dangerouslySetInnerHTML={{ __html: renderMarkdownSafe(post.body) }}
+      />
     </article>
   );
 }

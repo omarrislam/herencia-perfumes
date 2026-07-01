@@ -1,8 +1,14 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
-import { buildHeadTags, buildSitemap, ROBOTS_TXT, toAbsoluteImageUrl } from './seo';
+import { describe, it, expect, vi, afterEach, beforeAll, afterAll } from 'vitest';
+import { buildHeadTags, buildSitemap, ROBOTS_TXT, toAbsoluteImageUrl, routeMetaForPath } from './seo';
+import { connectMemory, disconnectMemory, clearDb } from '../test/db';
+import { BlogPost } from '../models/BlogPost';
+
+beforeAll(connectMemory);
+afterAll(disconnectMemory);
 
 afterEach(() => {
   vi.unstubAllEnvs();
+  return clearDb();
 });
 
 describe('buildHeadTags', () => {
@@ -70,5 +76,28 @@ describe('toAbsoluteImageUrl', () => {
 
   it('returns undefined for undefined input', () => {
     expect(toAbsoluteImageUrl(undefined)).toBeUndefined();
+  });
+});
+
+describe('blog SEO', () => {
+  it('builds Article meta + JSON-LD for a published post', async () => {
+    await BlogPost.create({
+      title: 'Notes on Oud', slug: 'notes-on-oud', excerpt: 'A primer on oud', body: '# Oud',
+      coverImage: 'blog/oud', tags: ['oud'], isPublished: true, publishedAt: new Date(),
+    });
+    const meta = await routeMetaForPath('/blog/notes-on-oud');
+    expect(meta.title).toContain('Notes on Oud');
+    expect(meta.description).toBe('A primer on oud');
+    expect(meta.jsonLd).toContain('"@type":"Article"');
+    expect(meta.canonicalPath).toBe('/blog/notes-on-oud');
+  });
+  it('omits a draft post from sitemap helper input and falls back to default meta', async () => {
+    const meta = await routeMetaForPath('/blog/does-not-exist');
+    expect(meta.title).toContain('HERENCIA');
+  });
+  it('includes blog slugs in the sitemap', () => {
+    const xml = buildSitemap('https://h.test', [{ slug: 'royal-oud', type: 'perfume' }], ['notes-on-oud']);
+    expect(xml).toContain('https://h.test/blog/notes-on-oud');
+    expect(xml).toContain('https://h.test/blog');
   });
 });

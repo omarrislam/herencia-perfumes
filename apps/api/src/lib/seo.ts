@@ -1,5 +1,6 @@
 import type { ProductDTO } from '@herencia/shared';
 import { Product } from '../models/Product';
+import { BlogPost } from '../models/BlogPost';
 import { toProductDTO } from './serialize';
 
 export type RouteMeta = {
@@ -33,9 +34,24 @@ const STATIC_META: Record<string, { title: string; description: string }> = {
   '/': { title: `${BRAND} — Luxury in every drop`, description: DEFAULT_DESC },
   '/products': { title: `Shop Perfumes — ${BRAND}`, description: 'Browse the HERENCIA perfume collection.' },
   '/bundles': { title: `Bundles — ${BRAND}`, description: 'Curated HERENCIA perfume bundles.' },
+  '/blog': { title: `Journal — ${BRAND}`, description: 'Notes on scent, heritage, and craft from HERENCIA.' },
   '/about': { title: `About — ${BRAND}`, description: 'The HERENCIA story.' },
   '/contact': { title: `Contact — ${BRAND}`, description: 'Get in touch with HERENCIA.' },
 };
+
+export function articleJsonLd(post: { title: string; excerpt: string; coverImage: string; publishedAt?: string }, canonical: string): string {
+  const data: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: post.title,
+    description: post.excerpt,
+    image: toAbsoluteImageUrl(post.coverImage),
+    url: canonical,
+    publisher: { '@type': 'Organization', name: BRAND },
+  };
+  if (post.publishedAt) data.datePublished = post.publishedAt;
+  return JSON.stringify(data).replace(/</g, '\\u003c');
+}
 
 export function productJsonLd(p: ProductDTO, canonical: string): string {
   const offer = {
@@ -84,6 +100,25 @@ export async function routeMetaForPath(path: string): Promise<RouteMeta> {
     }
   }
 
+  const blog = clean.match(/^\/blog\/([^/]+)$/);
+  if (blog) {
+    const slug = blog[1]!;
+    const doc = await BlogPost.findOne({ slug, isPublished: true }).lean();
+    if (doc) {
+      const canonical = `/blog/${slug}`;
+      return {
+        title: doc.seo?.title ?? `${doc.title} — ${BRAND}`,
+        description: doc.seo?.description ?? doc.excerpt,
+        canonicalPath: canonical,
+        image: toAbsoluteImageUrl(doc.coverImage),
+        jsonLd: articleJsonLd(
+          { title: doc.title, excerpt: doc.excerpt, coverImage: doc.coverImage, publishedAt: doc.publishedAt ? new Date(doc.publishedAt).toISOString() : undefined },
+          canonical,
+        ),
+      };
+    }
+  }
+
   const stat = STATIC_META[clean];
   if (stat) return { ...stat, canonicalPath: clean };
   return { title: `${BRAND} — Luxury in every drop`, description: DEFAULT_DESC, canonicalPath: clean };
@@ -109,11 +144,12 @@ export function buildHeadTags(meta: RouteMeta, origin = ''): string {
   return parts.join('\n    ');
 }
 
-export function buildSitemap(origin: string, products: { slug: string; type: string }[]): string {
-  const staticPaths = ['/', '/products', '/bundles', '/about', '/contact'];
+export function buildSitemap(origin: string, products: { slug: string; type: string }[], blogSlugs: string[] = []): string {
+  const staticPaths = ['/', '/products', '/bundles', '/blog', '/about', '/contact'];
   const urls = [
     ...staticPaths.map((p) => `${origin}${p}`),
     ...products.map((p) => `${origin}/${p.type === 'bundle' ? 'bundles' : 'products'}/${p.slug}`),
+    ...blogSlugs.map((s) => `${origin}/blog/${s}`),
   ];
   const body = urls.map((u) => `  <url><loc>${u}</loc></url>`).join('\n');
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>`;

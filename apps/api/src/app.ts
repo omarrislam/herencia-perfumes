@@ -17,6 +17,7 @@ import { blogRouter } from './routes/blog';
 import { buildSitemap, ROBOTS_TXT } from './lib/seo';
 import { mountSpa } from './middleware/spa';
 import { Product } from './models/Product';
+import { BlogPost } from './models/BlogPost';
 
 export function createApp(opts: {
   clientOrigin: string;
@@ -49,10 +50,13 @@ export function createApp(opts: {
   );
   app.get('/sitemap.xml', async (_req, res, next) => {
     try {
-      const products = await Product.find({ isActive: true }).select('slug type').lean();
+      const [products, posts] = await Promise.all([
+        Product.find({ isActive: true }).select('slug type').lean(),
+        BlogPost.find({ isPublished: true }).select('slug').lean(),
+      ]);
       res
         .type('application/xml')
-        .send(buildSitemap(origin, products.map((p) => ({ slug: p.slug, type: p.type }))));
+        .send(buildSitemap(origin, products.map((p) => ({ slug: p.slug, type: p.type })), posts.map((p) => p.slug)));
     } catch (err) {
       next(err);
     }

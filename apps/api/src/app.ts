@@ -25,6 +25,10 @@ export function createApp(opts: {
   origin?: string;
 }): Express {
   const app = express();
+  // Behind a reverse proxy (nginx) in production, trust the first proxy hop so
+  // express-rate-limit keys on the real client IP (X-Forwarded-For), not the
+  // proxy socket. Left off in dev/test to avoid trusting spoofable headers.
+  if (process.env.NODE_ENV === 'production') app.set('trust proxy', 1);
   app.use(
     helmet({
       contentSecurityPolicy: {

@@ -35,6 +35,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
   const [justAdded, setJustAdded] = useState(false);
   const mergedRef = useRef(false);
+  const justAddedTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  // Clear any pending "just added" pulse timer on unmount.
+  useEffect(() => () => clearTimeout(justAddedTimer.current), []);
 
   // Persist + re-price whenever items change (guest → localStorage + price endpoint;
   // logged-in → server PUT which returns the priced cart).
@@ -82,7 +86,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       return next;
     });
     setJustAdded(true);
-    setTimeout(() => setJustAdded(false), 600);
+    clearTimeout(justAddedTimer.current);
+    justAddedTimer.current = setTimeout(() => setJustAdded(false), 600);
   };
   const updateQty: CartValue['updateQty'] = (productId, sizeLabel, qty) =>
     setItems((prev) => prev.map((x) => (x.productId === productId && x.sizeLabel === sizeLabel ? { ...x, qty } : x)).filter((x) => x.qty > 0));

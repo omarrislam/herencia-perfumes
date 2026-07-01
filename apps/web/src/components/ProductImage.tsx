@@ -7,6 +7,9 @@ export function ProductImage({
   if (!publicId) return <div className={className} role="img" aria-label={alt} />;
   const srcSet = cldSrcSet(publicId);
   const blur = cldBlur(publicId);
+  // Only use the blur-up background when it's a real (Cloudinary) URL — cldBlur
+  // returns the raw id when no cloud is configured, which would be invalid CSS.
+  const hasBlur = /^https?:\/\//.test(blur);
   return (
     <img
       src={cld(publicId, { w })}
@@ -14,7 +17,7 @@ export function ProductImage({
       alt={alt}
       loading={loading}
       decoding="async"
-      style={blur ? { backgroundImage: `url(${blur})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
+      style={hasBlur ? { backgroundImage: `url(${blur})`, backgroundSize: 'cover', backgroundPosition: 'center' } : undefined}
       className={className}
     />
   );

@@ -36,28 +36,28 @@ async function seed() {
     {
       name: 'Royal Oud', type: 'perfume', shortDesc: 'A regal oud with smoky depth.',
       description: 'Royal Oud opens with bergamot before settling into a heart of rose and a base of aged oud and sandalwood.',
-      images: ['herencia/royal-oud'], sizes: [{ label: '50ml', price: 1200, stock: 12 }, { label: '100ml', price: 1900, stock: 8 }],
+      images: ['https://picsum.photos/seed/royal-oud/800/800'], sizes: [{ label: '50ml', price: 1200, stock: 12 }, { label: '100ml', price: 1900, stock: 8 }],
       scentFamily: woody!._id, notes: { top: ['Bergamot'], heart: ['Rose'], base: ['Oud', 'Sandalwood'] },
       gender: 'unisex', concentration: 'EDP', isFeatured: true, rating: { avg: 4.7, count: 23 },
     },
     {
       name: 'Rose Veil', type: 'perfume', shortDesc: 'A luminous, dewy rose.',
       description: 'Rose Veil layers Damascus rose over peony and a soft musk drydown.',
-      images: ['herencia/rose-veil'], sizes: [{ label: '50ml', price: 950, stock: 15 }],
+      images: ['https://picsum.photos/seed/rose-veil/800/800'], sizes: [{ label: '50ml', price: 950, stock: 15 }],
       scentFamily: floral!._id, notes: { top: ['Pink Pepper'], heart: ['Damascus Rose', 'Peony'], base: ['White Musk'] },
       gender: 'women', concentration: 'EDP', isFeatured: true, rating: { avg: 4.5, count: 18 },
     },
     {
       name: 'Amber Noir', type: 'perfume', shortDesc: 'Spiced amber for the evening.',
       description: 'Amber Noir is a warm, resinous amber wrapped in incense and vanilla.',
-      images: ['herencia/amber-noir'], sizes: [{ label: '50ml', price: 1100, stock: 10 }, { label: '100ml', price: 1750, stock: 5 }],
+      images: ['https://picsum.photos/seed/amber-noir/800/800'], sizes: [{ label: '50ml', price: 1100, stock: 10 }, { label: '100ml', price: 1750, stock: 5 }],
       scentFamily: oriental!._id, notes: { top: ['Saffron'], heart: ['Incense'], base: ['Amber', 'Vanilla'] },
       gender: 'men', concentration: 'Extrait', isFeatured: false, rating: { avg: 4.8, count: 31 },
     },
     {
       name: 'Cedar Smoke', type: 'perfume', shortDesc: 'Dry cedar and vetiver.',
       description: 'Cedar Smoke is a crisp, woody composition built on cedar, vetiver, and a whisper of leather.',
-      images: ['herencia/cedar-smoke'], sizes: [{ label: '50ml', price: 880, stock: 20 }],
+      images: ['https://picsum.photos/seed/cedar-smoke/800/800'], sizes: [{ label: '50ml', price: 880, stock: 20 }],
       scentFamily: woody!._id, notes: { top: ['Cardamom'], heart: ['Cedar'], base: ['Vetiver', 'Leather'] },
       gender: 'unisex', concentration: 'EDT', isFeatured: false, rating: { avg: 4.3, count: 9 },
     },
@@ -67,7 +67,7 @@ async function seed() {
     {
       name: 'Heritage Trio', type: 'bundle', shortDesc: 'Three signature scents, curated.',
       description: 'A discovery set pairing Royal Oud, Rose Veil, and Amber Noir.',
-      images: ['herencia/heritage-trio'], sizes: [{ label: 'Set', price: 2900, compareAtPrice: 3250, stock: 6 }],
+      images: ['https://picsum.photos/seed/heritage-trio/800/800'], sizes: [{ label: 'Set', price: 2900, compareAtPrice: 3250, stock: 6 }],
       scentFamily: woody!._id, notes: { top: [], heart: [], base: [] }, gender: 'unisex', concentration: 'Other',
       isFeatured: true, rating: { avg: 4.9, count: 7 },
       bundleItems: [
@@ -79,7 +79,7 @@ async function seed() {
     {
       name: 'Woody Duo', type: 'bundle', shortDesc: 'Two woods, one gift box.',
       description: 'Royal Oud and Cedar Smoke together at a bundle price.',
-      images: ['herencia/woody-duo'], sizes: [{ label: 'Set', price: 1900, compareAtPrice: 2080, stock: 9 }],
+      images: ['https://picsum.photos/seed/woody-duo/800/800'], sizes: [{ label: 'Set', price: 1900, compareAtPrice: 2080, stock: 9 }],
       scentFamily: woody!._id, notes: { top: [], heart: [], base: [] }, gender: 'unisex', concentration: 'Other',
       isFeatured: false, rating: { avg: 4.6, count: 4 },
       bundleItems: [
@@ -95,7 +95,7 @@ async function seed() {
     socialLinks: { instagram: 'https://instagram.com/herencia' },
     hero: {
       title: 'Luxury in every drop', subtitle: 'Heritage perfumery, crafted for the modern connoisseur.',
-      ctaText: 'Shop the collection', ctaLink: '/products', image: 'herencia/hero',
+      ctaText: 'Shop the collection', ctaLink: '/products', image: 'https://picsum.photos/seed/herencia-hero/1600/900',
     },
     contactEmail: 'hello@herencia.example',
   });
@@ -109,7 +109,7 @@ async function seed() {
     {
       title: 'Discover Our Heritage',
       subtitle: 'Luxury perfumery, crafted for the modern connoisseur.',
-      image: 'herencia/banner-hero',
+      image: 'https://picsum.photos/seed/banner-hero/1600/600',
       ctaText: 'Shop Now',
       ctaLink: '/products',
       placement: 'home_hero',
@@ -118,7 +118,7 @@ async function seed() {
     },
     {
       title: 'Free shipping on orders over 2,000 EGP',
-      image: 'herencia/banner-strip',
+      image: 'https://picsum.photos/seed/banner-strip/1200/200',
       placement: 'global_top',
       isActive: true,
       order: 1,
@@ -130,7 +130,7 @@ async function seed() {
     slug: 'the-art-of-oud',
     excerpt: 'Explore the ancient origins and modern mastery of oud — the most prized ingredient in luxury perfumery.',
     body: 'Oud, also known as agarwood, is one of the rarest and most coveted raw materials in perfumery. Harvested from the heartwood of Aquilaria trees infected by a specific mold, genuine oud can take decades to form.\n\nIts scent is complex and impossible to replicate synthetically in full fidelity — smoky, sweet, animalic, and woody all at once. Great oud perfumes balance this intensity with softer accords: rose, amber, or sandalwood.\n\nAt Herencia, we source our oud from trusted artisans and use it as a statement material — never hidden, always the soul of the composition.',
-    coverImage: 'herencia/blog-oud',
+    coverImage: 'https://picsum.photos/seed/blog-oud/1200/675',
     tags: ['oud', 'ingredients', 'craftsmanship'],
     isPublished: true,
     publishedAt: new Date(),

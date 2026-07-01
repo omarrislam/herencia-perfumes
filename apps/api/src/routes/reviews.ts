@@ -39,6 +39,9 @@ export function reviewRouter(): Router {
       const populated = await doc.populate('user', 'name');
       res.status(201).json(toReviewDTO(populated.toObject()));
     } catch (err) {
+      if ((err as { code?: number }).code === 11000) {
+        return next(new HttpError(409, 'You have already reviewed this product', 'conflict'));
+      }
       next(err);
     }
   });

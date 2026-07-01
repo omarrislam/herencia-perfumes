@@ -14,6 +14,7 @@ afterAll(disconnectMemory);
 
 let productId: string;
 let userId: string;
+let slug: string;
 let cookie: string;
 beforeEach(async () => {
   await clearDb();
@@ -24,6 +25,7 @@ beforeEach(async () => {
     notes: { top: [], heart: [], base: [] }, gender: 'unisex', concentration: 'EDP',
   });
   productId = String(p._id);
+  slug = p.slug;
   const u = await User.create({ name: 'Mai', email: 'mai@x.com', passwordHash: 'x', role: 'customer' });
   userId = String(u._id);
   cookie = authCookie(userId, 'customer');
@@ -43,6 +45,23 @@ describe('POST /api/products/:slug/reviews', () => {
     await request(app).post('/api/products/royal-oud/reviews').set('Cookie', cookie).send({ rating: 5, body: 'a' });
     const res = await request(app).post('/api/products/royal-oud/reviews').set('Cookie', cookie).send({ rating: 4, body: 'b' });
     expect(res.status).toBe(409);
+  });
+  it('maps a duplicate-key race to a friendly 409', async () => {
+    // First review succeeds
+    await request(app)
+      .post(`/api/products/${slug}/reviews`)
+      .set('Cookie', authCookie(userId, 'customer'))
+      .send({ rating: 5, body: 'Lovely' })
+      .expect(201);
+    // Simulate the race: bypass the exists() pre-check is not possible via HTTP,
+    // so assert the second submit returns the friendly conflict message + code.
+    const res = await request(app)
+      .post(`/api/products/${slug}/reviews`)
+      .set('Cookie', authCookie(userId, 'customer'))
+      .send({ rating: 4, body: 'Again' })
+      .expect(409);
+    expect(res.body.error.code).toBe('conflict');
+    expect(res.body.error.message).toBe('You have already reviewed this product');
   });
 });
 

@@ -14,7 +14,7 @@ export function StorefrontLayout() {
     <div className="min-h-screen flex flex-col">
       <header className="border-b border-line">
         <nav className="mx-auto flex max-w-6xl items-center justify-between p-4">
-          <Link to="/" className="font-display text-xl text-content">HERENCIA</Link>
+          <Link to="/" className="font-display text-xl text-content logo-shimmer">HERENCIA</Link>
           <div className="flex items-center gap-4 font-body text-sm">
             <NavLink to="/products" className="text-content hover:text-accent">Perfumes</NavLink>
             <NavLink to="/bundles" className="text-content hover:text-accent">Bundles</NavLink>

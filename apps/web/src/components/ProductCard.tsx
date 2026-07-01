@@ -15,10 +15,10 @@ export function ProductCard({ product }: { product: ProductDTO }) {
     <div className="group relative">
       <Link
         to={href}
-        className="block rounded-lg border border-line bg-surface p-3 transition-transform hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold"
+        className="block rounded-lg border border-line bg-surface p-3 transition-transform hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold motion-reduce:transform-none motion-reduce:transition-none"
       >
         <div className="aspect-square overflow-hidden rounded-md bg-bg">
-          <ProductImage publicId={product.images[0] ?? ''} alt={product.name} w={400} className="h-full w-full object-cover transition-transform group-hover:scale-105" />
+          <ProductImage publicId={product.images[0] ?? ''} alt={product.name} w={400} className="h-full w-full object-cover transition-transform group-hover:scale-105 motion-reduce:transform-none motion-reduce:transition-none" />
         </div>
         <h3 className="mt-3 font-display text-lg text-content">{product.name}</h3>
         <p className="font-body text-sm text-muted">{product.scentFamily?.name ?? ''}</p>

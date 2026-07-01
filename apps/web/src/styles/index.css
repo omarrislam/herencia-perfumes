@@ -45,6 +45,22 @@ body {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
 
+@keyframes herencia-shimmer {
+  0% { background-position: -120% 0; }
+  100% { background-position: 220% 0; }
+}
+.logo-shimmer {
+  background: linear-gradient(90deg, var(--text) 0%, var(--text) 40%, var(--accent) 50%, var(--text) 60%, var(--text) 100%);
+  background-size: 220% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: herencia-shimmer 6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .logo-shimmer { animation: none; color: var(--text); -webkit-text-fill-color: currentColor; }
+}
+
 .prose-herencia h1, .prose-herencia h2, .prose-herencia h3 { font-family: 'Cinzel', serif; margin: 1.25rem 0 0.5rem; }
 .prose-herencia p { margin: 0.75rem 0; line-height: 1.7; }
 .prose-herencia a { color: var(--accent); text-decoration: underline; }

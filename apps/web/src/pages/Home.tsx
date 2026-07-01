@@ -6,6 +6,7 @@ import { ProductCard } from '../components/ProductCard';
 import { ProductImage } from '../components/ProductImage';
 import { Skeleton } from '../components/Skeleton';
 import { BannerStrip } from '../components/BannerStrip';
+import { Reveal } from '../components/Reveal';
 
 export default function Home() {
   useSeo({ title: 'HERENCIA — Luxury in every drop', description: 'Heritage luxury perfumery.' });
@@ -37,17 +38,19 @@ export default function Home() {
 
       <BannerStrip placement="home_strip" />
 
-      <section>
-        <h2 className="mb-4 font-display text-2xl text-content">Featured</h2>
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          {featured.isLoading
-            ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="aspect-square" />)
-            : featuredItems.map((p) => <ProductCard key={p.id} product={p} />)}
-        </div>
-        {!featured.isLoading && featuredItems.length === 0 && (
-          <p className="font-body text-muted">No featured products yet.</p>
-        )}
-      </section>
+      <Reveal>
+        <section>
+          <h2 className="mb-4 font-display text-2xl text-content">Featured</h2>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            {featured.isLoading
+              ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="aspect-square" />)
+              : featuredItems.map((p) => <ProductCard key={p.id} product={p} />)}
+          </div>
+          {!featured.isLoading && featuredItems.length === 0 && (
+            <p className="font-body text-muted">No featured products yet.</p>
+          )}
+        </section>
+      </Reveal>
     </div>
   );
 }

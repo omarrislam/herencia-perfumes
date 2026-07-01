@@ -3,6 +3,7 @@ import { fetchProducts } from '../lib/api';
 import { useSeo } from '../lib/useSeo';
 import { ProductCard } from '../components/ProductCard';
 import { Skeleton } from '../components/Skeleton';
+import { Reveal } from '../components/Reveal';
 
 export default function Bundles() {
   useSeo({ title: 'Bundles — HERENCIA', description: 'Curated HERENCIA perfume bundles.' });
@@ -18,9 +19,11 @@ export default function Bundles() {
       ) : bundles.data && bundles.data.items.length === 0 ? (
         <p className="font-body text-muted">No bundles available yet.</p>
       ) : (
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          {bundles.data?.items.map((p) => <ProductCard key={p.id} product={p} />)}
-        </div>
+        <Reveal>
+          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            {bundles.data?.items.map((p) => <ProductCard key={p.id} product={p} />)}
+          </div>
+        </Reveal>
       )}
     </div>
   );

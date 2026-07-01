@@ -3,7 +3,7 @@ import type { ButtonHTMLAttributes } from 'react';
 type Variant = 'primary' | 'secondary' | 'ghost';
 
 const base =
-  'inline-flex items-center justify-center rounded-md px-4 py-2 font-body text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold disabled:opacity-50';
+  'inline-flex items-center justify-center rounded-md px-4 py-2 font-body text-sm transition-transform transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold disabled:opacity-50 active:scale-[0.97] motion-reduce:transform-none motion-reduce:transition-none';
 
 const variants: Record<Variant, string> = {
   primary: 'bg-maroon text-cream hover:bg-maroon/90',

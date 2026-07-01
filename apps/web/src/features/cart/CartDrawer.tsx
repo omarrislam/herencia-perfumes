@@ -2,9 +2,11 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useCart } from './CartContext';
 import { Price } from '../../components/Price';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 
 export function CartDrawer() {
   const { priced, open, setOpen, updateQty, removeItem } = useCart();
+  const trapRef = useFocusTrap(open);
 
   // Close on Escape
   useEffect(() => {
@@ -29,6 +31,7 @@ export function CartDrawer() {
 
       {/* Drawer panel */}
       <div
+        ref={trapRef}
         role="dialog"
         aria-label="Cart"
         aria-modal="true"

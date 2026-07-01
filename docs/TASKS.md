@@ -5,7 +5,7 @@
 
 Legend: `[x]` done · `[~]` in progress · `[ ]` todo
 
-_Last updated: 2026-07-01_
+_Last updated: 2026-07-01 (Milestone 3 complete)_
 
 ---
 
@@ -46,10 +46,10 @@ _Last updated: 2026-07-01_
 - [x] Account area + wishlist
 
 ## Milestone 3 — Engagement
-- [ ] Ratings & reviews + admin moderation
-- [ ] Find Your Scent quiz (config + flow + recommendations)
-- [ ] Offer banners (scheduling)
-- [ ] Blog (CRUD + index/post + SEO)
+- [x] Ratings & reviews + admin moderation
+- [x] Find Your Scent quiz (config + flow + recommendations)
+- [x] Offer banners (scheduling)
+- [x] Blog (CRUD + index/post + SEO)
 
 ## Milestone 4 — Polish & ship
 - [ ] Animations pass (perf-safe)

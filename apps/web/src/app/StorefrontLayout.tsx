@@ -4,6 +4,7 @@ import { useAuth } from '../features/auth/AuthContext';
 import { useCart } from '../features/cart/CartContext';
 import { CartDrawer } from '../features/cart/CartDrawer';
 import { Button } from '../components/Button';
+import { BannerStrip } from '../components/BannerStrip';
 
 export function StorefrontLayout() {
   const { theme, toggle } = useTheme();
@@ -17,6 +18,8 @@ export function StorefrontLayout() {
           <div className="flex items-center gap-4 font-body text-sm">
             <NavLink to="/products" className="text-content hover:text-accent">Perfumes</NavLink>
             <NavLink to="/bundles" className="text-content hover:text-accent">Bundles</NavLink>
+            <NavLink to="/find-your-scent" className="text-content hover:text-accent">Find Your Scent</NavLink>
+            <NavLink to="/blog" className="text-content hover:text-accent">Journal</NavLink>
             {user ? (
               <>
                 <NavLink to="/account" className="text-content hover:text-accent">Account</NavLink>
@@ -42,6 +45,7 @@ export function StorefrontLayout() {
           </div>
         </nav>
       </header>
+      <BannerStrip placement="global_top" />
       <main className="mx-auto w-full max-w-6xl flex-1 p-4">
         <Outlet />
       </main>

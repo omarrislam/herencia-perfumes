@@ -5,6 +5,11 @@ import { ScentFamily } from './models/ScentFamily';
 import { Product } from './models/Product';
 import { Setting } from './models/Setting';
 import { User } from './models/User';
+import { Banner } from './models/Banner';
+import { BlogPost } from './models/BlogPost';
+import { QuizQuestion } from './models/QuizQuestion';
+import { Review } from './models/Review';
+import { recomputeProductRating } from './modules/review/service';
 
 async function seed() {
   const env = loadEnv(process.env);
@@ -15,6 +20,10 @@ async function seed() {
     Product.deleteMany({}),
     Setting.deleteMany({}),
     User.deleteMany({ role: 'admin' }),
+    Banner.deleteMany({}),
+    BlogPost.deleteMany({}),
+    QuizQuestion.deleteMany({}),
+    Review.deleteMany({}),
   ]);
 
   const [woody, floral, oriental] = await ScentFamily.create([
@@ -92,9 +101,95 @@ async function seed() {
   });
 
   const passwordHash = await bcrypt.hash('admin1234', 12);
-  await User.create({ name: 'HERENCIA Admin', email: 'admin@herencia.example', passwordHash, role: 'admin' });
+  const adminUser = await User.create({ name: 'HERENCIA Admin', email: 'admin@herencia.example', passwordHash, role: 'admin' });
 
-  console.log('Seed complete: 3 families, 4 perfumes, 2 bundles, settings, admin user (admin@herencia.example / admin1234).');
+  // --- Milestone 3 demo content ---
+
+  await Banner.create([
+    {
+      title: 'Discover Our Heritage',
+      subtitle: 'Luxury perfumery, crafted for the modern connoisseur.',
+      image: 'herencia/banner-hero',
+      ctaText: 'Shop Now',
+      ctaLink: '/products',
+      placement: 'home_hero',
+      isActive: true,
+      order: 1,
+    },
+    {
+      title: 'Free shipping on orders over 2,000 EGP',
+      image: 'herencia/banner-strip',
+      placement: 'global_top',
+      isActive: true,
+      order: 1,
+    },
+  ]);
+
+  await BlogPost.create({
+    title: 'The Art of Oud',
+    slug: 'the-art-of-oud',
+    excerpt: 'Explore the ancient origins and modern mastery of oud — the most prized ingredient in luxury perfumery.',
+    body: 'Oud, also known as agarwood, is one of the rarest and most coveted raw materials in perfumery. Harvested from the heartwood of Aquilaria trees infected by a specific mold, genuine oud can take decades to form.\n\nIts scent is complex and impossible to replicate synthetically in full fidelity — smoky, sweet, animalic, and woody all at once. Great oud perfumes balance this intensity with softer accords: rose, amber, or sandalwood.\n\nAt Herencia, we source our oud from trusted artisans and use it as a statement material — never hidden, always the soul of the composition.',
+    coverImage: 'herencia/blog-oud',
+    tags: ['oud', 'ingredients', 'craftsmanship'],
+    isPublished: true,
+    publishedAt: new Date(),
+  });
+
+  await QuizQuestion.create([
+    {
+      order: 1,
+      question: 'Which mood best describes you today?',
+      answers: [
+        { label: 'Warm & woody', weights: { scentFamily: woody!._id, value: 3 } },
+        { label: 'Fresh & floral', weights: { scentFamily: floral!._id, value: 3 } },
+        { label: 'Mysterious & spiced', weights: { scentFamily: oriental!._id, value: 3 } },
+      ],
+    },
+    {
+      order: 2,
+      question: 'When do you reach for a fragrance?',
+      answers: [
+        { label: 'Morning & daytime', weights: { scentFamily: floral!._id, value: 2 } },
+        { label: 'Evening & events', weights: { scentFamily: oriental!._id, value: 2 } },
+        { label: 'Everyday, all day', weights: { scentFamily: woody!._id, value: 2 } },
+      ],
+    },
+    {
+      order: 3,
+      question: 'Which note family do you gravitate toward?',
+      answers: [
+        { label: 'Cedar, oud, sandalwood', weights: { scentFamily: woody!._id, value: 3 } },
+        { label: 'Rose, jasmine, peony', weights: { scentFamily: floral!._id, value: 3 } },
+        { label: 'Amber, incense, vanilla', weights: { scentFamily: oriental!._id, value: 3 } },
+        { label: 'I love them all', weights: { value: 1 } },
+      ],
+    },
+  ]);
+
+  await Review.create([
+    {
+      product: perfumes[0]!._id,
+      user: adminUser._id,
+      rating: 5,
+      title: 'Exceptional depth',
+      body: 'Royal Oud is unlike anything I have tried — the oud is bold yet refined, and the sandalwood drydown is stunning.',
+      isApproved: true,
+    },
+    {
+      product: perfumes[1]!._id,
+      user: adminUser._id,
+      rating: 4,
+      title: 'Delicate and refined',
+      body: 'Rose Veil is a masterclass in restraint — the Damascus rose never tips into sweetness, and the musk finish is beautiful.',
+      isApproved: true,
+    },
+  ]);
+
+  await recomputeProductRating(String(perfumes[0]!._id));
+  await recomputeProductRating(String(perfumes[1]!._id));
+
+  console.log('Seed complete: 3 families, 4 perfumes, 2 bundles, settings, admin user (admin@herencia.example / admin1234), 2 banners, 1 blog post, 3 quiz questions, 2 approved reviews.');
   await mongoose.disconnect();
 }
 

@@ -9,3 +9,6 @@ export type Concentration = (typeof CONCENTRATION)[number];
 
 export const PRODUCT_TYPE = ['perfume', 'bundle'] as const;
 export type ProductType = (typeof PRODUCT_TYPE)[number];
+
+export const BANNER_PLACEMENT = ['home_hero', 'home_strip', 'global_top'] as const;
+export type BannerPlacement = (typeof BANNER_PLACEMENT)[number];

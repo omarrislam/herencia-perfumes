@@ -1,5 +1,5 @@
 // apps/web/src/features/admin/adminClient.ts
-import type { AdminProductInput, ProductDTO, ScentFamilyDTO, OrderDTO, OrderStatus } from '@herencia/shared';
+import type { AdminProductInput, ProductDTO, ScentFamilyDTO, OrderDTO, OrderStatus, ReviewDTO, QuizQuestionAdminDTO, QuizQuestionInput, BannerDTO, BannerInput, BlogPostDTO, BlogPostInput } from '@herencia/shared';
 import { apiSend, apiGet } from '../../lib/api';
 
 export const adminCreateProduct = (data: AdminProductInput) =>
@@ -40,5 +40,27 @@ export const adminFetchOrders = (status?: OrderStatus) =>
   );
 export const adminUpdateOrderStatus = (id: string, status: OrderStatus) =>
   apiSend<OrderDTO>('PUT', `/api/admin/orders/${id}/status`, { status });
+
+export const adminFetchReviews = (status?: 'pending' | 'approved') =>
+  apiGet<{ items: ReviewDTO[]; total: number; page: number; pages: number }>(`/api/admin/reviews${status ? `?status=${status}` : ''}`);
+export const adminModerateReview = (id: string, isApproved: boolean) =>
+  apiSend<ReviewDTO>('PUT', `/api/admin/reviews/${id}`, { isApproved });
+export const adminDeleteReview = (id: string) =>
+  apiSend<void>('DELETE', `/api/admin/reviews/${id}`);
+
+export const adminFetchQuiz = () => apiGet<QuizQuestionAdminDTO[]>('/api/admin/quiz');
+export const adminCreateQuestion = (input: QuizQuestionInput) => apiSend<QuizQuestionAdminDTO>('POST', '/api/admin/quiz', input);
+export const adminUpdateQuestion = (id: string, input: QuizQuestionInput) => apiSend<QuizQuestionAdminDTO>('PUT', `/api/admin/quiz/${id}`, input);
+export const adminDeleteQuestion = (id: string) => apiSend<void>('DELETE', `/api/admin/quiz/${id}`);
+
+export const adminFetchBanners = () => apiGet<BannerDTO[]>('/api/admin/banners');
+export const adminCreateBanner = (input: BannerInput) => apiSend<BannerDTO>('POST', '/api/admin/banners', input);
+export const adminUpdateBanner = (id: string, input: BannerInput) => apiSend<BannerDTO>('PUT', `/api/admin/banners/${id}`, input);
+export const adminDeleteBanner = (id: string) => apiSend<void>('DELETE', `/api/admin/banners/${id}`);
+
+export const adminFetchBlog = () => apiGet<{ items: BlogPostDTO[]; total: number; page: number; pages: number }>('/api/admin/blog');
+export const adminCreateBlogPost = (input: BlogPostInput) => apiSend<BlogPostDTO>('POST', '/api/admin/blog', input);
+export const adminUpdateBlogPost = (id: string, input: BlogPostInput) => apiSend<BlogPostDTO>('PUT', `/api/admin/blog/${id}`, input);
+export const adminDeleteBlogPost = (id: string) => apiSend<void>('DELETE', `/api/admin/blog/${id}`);
 
 export { apiGet };

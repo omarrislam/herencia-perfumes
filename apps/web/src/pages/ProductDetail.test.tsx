@@ -19,6 +19,8 @@ const product: ProductDTO = {
 beforeEach(() => {
   vi.spyOn(api, 'fetchMe').mockRejectedValue(new api.ApiError(401, 'no'));
   vi.spyOn(api, 'priceCart').mockResolvedValue({ items: [], subtotal: 0, shipping: 0, total: 0, hasUnavailable: false });
+  // ReviewsSection is now rendered inside ProductDetail — mock to avoid real fetch
+  vi.spyOn(api, 'fetchReviews').mockResolvedValue({ items: [], total: 0, page: 1, pages: 0 });
 });
 afterEach(() => vi.restoreAllMocks());
 

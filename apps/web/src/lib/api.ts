@@ -1,4 +1,4 @@
-import type { ProductDTO, ProductListDTO, ScentFamilyDTO, UserDTO, LoginInput, RegisterInput, PricedCartDTO, CartItemInput, CreateOrderInput, CreateOrderResultDTO, AddressDTO, UpdateProfileInput, AddressInput, OrderDTO } from '@herencia/shared';
+import type { ProductDTO, ProductListDTO, ScentFamilyDTO, UserDTO, LoginInput, RegisterInput, PricedCartDTO, CartItemInput, CreateOrderInput, CreateOrderResultDTO, AddressDTO, UpdateProfileInput, AddressInput, OrderDTO, ReviewDTO, CreateReviewInput, QuizQuestionPublicDTO, QuizResultDTO, QuizResultInput, BannerDTO, BannerPlacement, BlogListDTO, BlogPostDTO } from '@herencia/shared';
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -99,3 +99,18 @@ export const fetchWishlist = () => apiGet<ProductDTO[]>('/api/account/wishlist')
 export const addWishlist = (productId: string) => apiSend<{ ok: true }>('POST', '/api/account/wishlist', { productId });
 export const removeWishlist = (productId: string) => apiSend<ProductDTO[]>('DELETE', `/api/account/wishlist/${productId}`);
 export const fetchMyOrders = () => apiGet<{ items: OrderDTO[]; total: number; page: number; pages: number }>('/api/orders/me');
+
+export const fetchReviews = (slug: string, page = 1) =>
+  apiGet<{ items: ReviewDTO[]; total: number; page: number; pages: number }>(`/api/products/${slug}/reviews?page=${page}`);
+export const submitReview = (slug: string, input: CreateReviewInput) =>
+  apiSend<ReviewDTO>('POST', `/api/products/${slug}/reviews`, input);
+
+export const fetchQuiz = () => apiGet<QuizQuestionPublicDTO[]>('/api/quiz');
+export const submitQuizResult = (input: QuizResultInput) => apiSend<QuizResultDTO>('POST', '/api/quiz/result', input);
+
+export const fetchBanners = (placement?: BannerPlacement) =>
+  apiGet<BannerDTO[]>(`/api/banners${placement ? `?placement=${placement}` : ''}`);
+
+export const fetchBlogList = (page = 1, tag?: string) =>
+  apiGet<BlogListDTO>(`/api/blog?page=${page}${tag ? `&tag=${encodeURIComponent(tag)}` : ''}`);
+export const fetchBlogPost = (slug: string) => apiGet<BlogPostDTO>(`/api/blog/${slug}`);

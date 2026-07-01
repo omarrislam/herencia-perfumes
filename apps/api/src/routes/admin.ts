@@ -1,14 +1,15 @@
 import { Router } from 'express';
-import { adminProductSchema, scentFamilySchema, slugify, updateOrderStatusSchema, updateReviewSchema, quizQuestionSchema, ORDER_STATUS, ORDER_STATUS_TRANSITIONS, type OrderStatus } from '@herencia/shared';
+import { adminProductSchema, scentFamilySchema, slugify, updateOrderStatusSchema, updateReviewSchema, quizQuestionSchema, bannerSchema, ORDER_STATUS, ORDER_STATUS_TRANSITIONS, type OrderStatus } from '@herencia/shared';
 import { Product } from '../models/Product';
 import { ScentFamily } from '../models/ScentFamily';
 import { Order } from '../models/Order';
 import { Review } from '../models/Review';
 import { QuizQuestion } from '../models/QuizQuestion';
+import { Banner } from '../models/Banner';
 import { HttpError } from '../middleware/error';
 import { requireAdmin } from '../middleware/requireAdmin';
 import { isCloudinaryConfigured, signUploadParams } from '../lib/cloudinary';
-import { toProductDTO, toScentFamilyDTO, toOrderDTO, toReviewDTO, toQuizQuestionAdminDTO } from '../lib/serialize';
+import { toProductDTO, toScentFamilyDTO, toOrderDTO, toReviewDTO, toQuizQuestionAdminDTO, toBannerDTO } from '../lib/serialize';
 import { recomputeProductRating } from '../modules/review/service';
 
 export function adminRouter(): Router {
@@ -224,6 +225,46 @@ export function adminRouter(): Router {
     try {
       const doc = await QuizQuestion.findByIdAndDelete(req.params['id']).lean();
       if (!doc) throw new HttpError(404, 'Question not found', 'not_found');
+      res.status(204).end();
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // ---- Banners ----
+  router.get('/banners', async (_req, res, next) => {
+    try {
+      const docs = await Banner.find().sort({ order: 1, createdAt: -1 }).lean();
+      res.json(docs.map(toBannerDTO));
+    } catch (err) {
+      next(err);
+    }
+  });
+  router.post('/banners', async (req, res, next) => {
+    try {
+      const parsed = bannerSchema.safeParse(req.body);
+      if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? 'Invalid', 'invalid');
+      const doc = await Banner.create(parsed.data);
+      res.status(201).json(toBannerDTO(doc.toObject()));
+    } catch (err) {
+      next(err);
+    }
+  });
+  router.put('/banners/:id', async (req, res, next) => {
+    try {
+      const parsed = bannerSchema.safeParse(req.body);
+      if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? 'Invalid', 'invalid');
+      const doc = await Banner.findByIdAndUpdate(req.params['id'], parsed.data, { new: true }).lean();
+      if (!doc) throw new HttpError(404, 'Banner not found', 'not_found');
+      res.json(toBannerDTO(doc));
+    } catch (err) {
+      next(err);
+    }
+  });
+  router.delete('/banners/:id', async (req, res, next) => {
+    try {
+      const doc = await Banner.findByIdAndDelete(req.params['id']).lean();
+      if (!doc) throw new HttpError(404, 'Banner not found', 'not_found');
       res.status(204).end();
     } catch (err) {
       next(err);

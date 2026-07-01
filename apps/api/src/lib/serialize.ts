@@ -1,4 +1,4 @@
-import type { ProductDTO, ScentFamilyDTO, UserDTO, OrderDTO, AddressDTO, ReviewDTO, QuizQuestionPublicDTO, QuizQuestionAdminDTO } from '@herencia/shared';
+import type { ProductDTO, ScentFamilyDTO, UserDTO, OrderDTO, AddressDTO, ReviewDTO, QuizQuestionPublicDTO, QuizQuestionAdminDTO, BannerDTO } from '@herencia/shared';
 
 // `doc` is a lean Mongoose document whose shape varies (populated vs. raw refs);
 // `any` is intentional here so the mapper can read arbitrary nested fields.
@@ -106,6 +106,23 @@ export function toQuizQuestionAdminDTO(doc: AnyDoc): QuizQuestionAdminDTO {
         value: a.weights?.value ?? 1,
       },
     })),
+  };
+}
+
+export function toBannerDTO(doc: AnyDoc): BannerDTO {
+  const iso = (d: unknown) => (d ? (d instanceof Date ? d : new Date(d as string)).toISOString() : undefined);
+  return {
+    id: String(doc._id),
+    title: doc.title,
+    subtitle: doc.subtitle ?? undefined,
+    image: doc.image,
+    ctaText: doc.ctaText ?? undefined,
+    ctaLink: doc.ctaLink ?? undefined,
+    placement: doc.placement,
+    startsAt: iso(doc.startsAt),
+    endsAt: iso(doc.endsAt),
+    isActive: !!doc.isActive,
+    order: doc.order ?? 0,
   };
 }
 

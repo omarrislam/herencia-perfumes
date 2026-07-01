@@ -12,6 +12,7 @@ import { orderRouter } from './routes/orders';
 import { accountRouter } from './routes/account';
 import { reviewRouter } from './routes/reviews';
 import { quizRouter } from './routes/quiz';
+import { bannerRouter } from './routes/banners';
 import { buildSitemap, ROBOTS_TXT } from './lib/seo';
 import { mountSpa } from './middleware/spa';
 import { Product } from './models/Product';
@@ -37,6 +38,7 @@ export function createApp(opts: {
   app.use('/api/account', accountRouter());
   app.use('/api', reviewRouter());
   app.use('/api', quizRouter());
+  app.use('/api', bannerRouter());
   app.use('/api', notFound);
 
   const origin = opts.origin ?? '';

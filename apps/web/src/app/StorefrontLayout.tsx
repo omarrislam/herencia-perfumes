@@ -1,4 +1,5 @@
-import { Link, NavLink, Outlet } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import { useTheme } from './ThemeProvider';
 import { useAuth } from '../features/auth/AuthContext';
 import { useCart } from '../features/cart/CartContext';
@@ -9,7 +10,8 @@ import { BannerStrip } from '../components/BannerStrip';
 export function StorefrontLayout() {
   const { theme, toggle } = useTheme();
   const { user, logout } = useAuth();
-  const { count, setOpen } = useCart();
+  const { count, setOpen, justAdded } = useCart();
+  const location = useLocation();
   return (
     <div className="min-h-screen flex flex-col">
       <header className="border-b border-line">
@@ -32,7 +34,7 @@ export function StorefrontLayout() {
               type="button"
               aria-label={`Cart${count > 0 ? `, ${count} item${count === 1 ? '' : 's'}` : ''}`}
               onClick={() => setOpen(true)}
-              className="relative font-body text-content hover:text-accent"
+              className={`relative font-body text-content hover:text-accent ${justAdded ? 'motion-safe:animate-[pulse_0.6s_ease-out]' : ''}`}
             >
               Cart
               {count > 0 && (
@@ -47,7 +49,10 @@ export function StorefrontLayout() {
       </header>
       <BannerStrip placement="global_top" />
       <main className="mx-auto w-full max-w-6xl flex-1 p-4">
-        <Outlet />
+        <motion.div key={location.pathname} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          transition={{ duration: 0.2 }}>
+          <Outlet />
+        </motion.div>
       </main>
       <footer className="border-t border-line p-6 text-center font-body text-sm text-muted">
         © {new Date().getFullYear()} HERENCIA — Luxury in every drop.

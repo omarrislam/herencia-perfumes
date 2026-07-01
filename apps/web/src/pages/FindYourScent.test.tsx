@@ -3,10 +3,15 @@ import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import FindYourScent from './FindYourScent';
+import { AuthProvider } from '../features/auth/AuthContext';
 import * as api from '../lib/api';
 
 function wrap(ui: React.ReactNode) {
-  return <QueryClientProvider client={new QueryClient()}><MemoryRouter>{ui}</MemoryRouter></QueryClientProvider>;
+  return (
+    <QueryClientProvider client={new QueryClient()}>
+      <MemoryRouter><AuthProvider>{ui}</AuthProvider></MemoryRouter>
+    </QueryClientProvider>
+  );
 }
 
 const product = {
@@ -17,7 +22,10 @@ const product = {
 };
 
 describe('FindYourScent', () => {
-  beforeEach(() => vi.restoreAllMocks());
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    vi.spyOn(api, 'fetchMe').mockRejectedValue(new api.ApiError(401, 'no'));
+  });
   it('walks a question and shows recommendations', async () => {
     vi.spyOn(api, 'fetchQuiz').mockResolvedValue([{ id: 'q1', order: 1, question: 'Pick a vibe', answers: [{ label: 'Warm woods' }, { label: 'Fresh' }] }]);
     const submit = vi.spyOn(api, 'submitQuizResult').mockResolvedValue({ scentFamily: null, gender: null, recommended: [product as never] });

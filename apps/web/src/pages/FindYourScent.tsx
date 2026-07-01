@@ -3,7 +3,6 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import type { QuizQuestionPublicDTO, QuizResultDTO, QuizResultInput } from '@herencia/shared';
 import { fetchQuiz, submitQuizResult } from '../lib/api';
 import { ProductCard } from '../components/ProductCard';
-import { AuthProvider } from '../features/auth/AuthContext';
 
 type Selection = { questionId: string; answerIndex: number };
 
@@ -55,17 +54,11 @@ export default function FindYourScent() {
           {result.scentFamily && (
             <p className="mb-4 text-center font-body text-muted">{result.scentFamily.name}</p>
           )}
-          {/* AuthProvider wraps ProductCard so WishlistButton's useAuth() is satisfied
-              even in contexts that don't provide AuthProvider (e.g. isolated unit tests).
-              In production this nests under the app-level AuthProvider; the extra fetchMe
-              call is a known minor cost documented in task-9-report.md. */}
-          <AuthProvider>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
-              {result.recommended.map((p) => (
-                <ProductCard key={p.id} product={p} />
-              ))}
-            </div>
-          </AuthProvider>
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+            {result.recommended.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
           <button
             type="button"
             onClick={reset}

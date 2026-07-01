@@ -1,4 +1,4 @@
-import type { ProductDTO, ProductListDTO, ScentFamilyDTO, UserDTO, LoginInput, RegisterInput, PricedCartDTO, CartItemInput, CreateOrderInput, CreateOrderResultDTO, AddressDTO, UpdateProfileInput, AddressInput, OrderDTO, ReviewDTO, CreateReviewInput, QuizQuestionPublicDTO, QuizResultDTO, QuizResultInput, BannerDTO, BannerPlacement } from '@herencia/shared';
+import type { ProductDTO, ProductListDTO, ScentFamilyDTO, UserDTO, LoginInput, RegisterInput, PricedCartDTO, CartItemInput, CreateOrderInput, CreateOrderResultDTO, AddressDTO, UpdateProfileInput, AddressInput, OrderDTO, ReviewDTO, CreateReviewInput, QuizQuestionPublicDTO, QuizResultDTO, QuizResultInput, BannerDTO, BannerPlacement, BlogListDTO, BlogPostDTO } from '@herencia/shared';
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -110,3 +110,7 @@ export const submitQuizResult = (input: QuizResultInput) => apiSend<QuizResultDT
 
 export const fetchBanners = (placement?: BannerPlacement) =>
   apiGet<BannerDTO[]>(`/api/banners${placement ? `?placement=${placement}` : ''}`);
+
+export const fetchBlogList = (page = 1, tag?: string) =>
+  apiGet<BlogListDTO>(`/api/blog?page=${page}${tag ? `&tag=${encodeURIComponent(tag)}` : ''}`);
+export const fetchBlogPost = (slug: string) => apiGet<BlogPostDTO>(`/api/blog/${slug}`);

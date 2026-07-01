@@ -16,6 +16,8 @@ const Checkout = lazy(() => import('../pages/Checkout'));
 const OrderConfirmation = lazy(() => import('../pages/OrderConfirmation'));
 const Account = lazy(() => import('../pages/Account'));
 const FindYourScent = lazy(() => import('../pages/FindYourScent'));
+const Blog = lazy(() => import('../pages/Blog'));
+const BlogPost = lazy(() => import('../pages/BlogPost'));
 
 export const router = createBrowserRouter([
   {
@@ -33,6 +35,8 @@ export const router = createBrowserRouter([
       { path: '/order-confirmation', element: <OrderConfirmation /> },
       { path: '/account', element: <RequireAuth><Account /></RequireAuth> },
       { path: '/find-your-scent', element: <FindYourScent /> },
+      { path: '/blog', element: <Blog /> },
+      { path: '/blog/:slug', element: <BlogPost /> },
     ],
   },
   { path: '/admin/*', element: <Admin /> },

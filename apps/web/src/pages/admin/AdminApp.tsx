@@ -8,6 +8,7 @@ import AdminOrders from './AdminOrders';
 import AdminReviews from './AdminReviews';
 import AdminQuiz from './AdminQuiz';
 import AdminBanners from './AdminBanners';
+import AdminBlog from './AdminBlog';
 
 export default function AdminApp() {
   const { logout } = useAuth();
@@ -37,6 +38,9 @@ export default function AdminApp() {
             <Link to="/admin/banners" className="text-content hover:text-accent">
               Banners
             </Link>
+            <Link to="/admin/blog" className="text-content hover:text-accent">
+              Blog
+            </Link>
             <Link to="/" className="text-muted hover:text-accent">
               View store
             </Link>
@@ -57,6 +61,7 @@ export default function AdminApp() {
             <Route path="/reviews" element={<AdminReviews />} />
             <Route path="/quiz" element={<AdminQuiz />} />
             <Route path="/banners" element={<AdminBanners />} />
+            <Route path="/blog" element={<AdminBlog />} />
           </Routes>
         </main>
       </div>

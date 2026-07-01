@@ -19,6 +19,7 @@ export function StorefrontLayout() {
             <NavLink to="/products" className="text-content hover:text-accent">Perfumes</NavLink>
             <NavLink to="/bundles" className="text-content hover:text-accent">Bundles</NavLink>
             <NavLink to="/find-your-scent" className="text-content hover:text-accent">Find Your Scent</NavLink>
+            <NavLink to="/blog" className="text-content hover:text-accent">Journal</NavLink>
             {user ? (
               <>
                 <NavLink to="/account" className="text-content hover:text-accent">Account</NavLink>

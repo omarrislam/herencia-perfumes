@@ -1,5 +1,5 @@
 // apps/web/src/features/admin/adminClient.ts
-import type { AdminProductInput, ProductDTO, ScentFamilyDTO, OrderDTO, OrderStatus, ReviewDTO, QuizQuestionAdminDTO, QuizQuestionInput, BannerDTO, BannerInput } from '@herencia/shared';
+import type { AdminProductInput, ProductDTO, ScentFamilyDTO, OrderDTO, OrderStatus, ReviewDTO, QuizQuestionAdminDTO, QuizQuestionInput, BannerDTO, BannerInput, BlogPostDTO, BlogPostInput } from '@herencia/shared';
 import { apiSend, apiGet } from '../../lib/api';
 
 export const adminCreateProduct = (data: AdminProductInput) =>
@@ -57,5 +57,10 @@ export const adminFetchBanners = () => apiGet<BannerDTO[]>('/api/admin/banners')
 export const adminCreateBanner = (input: BannerInput) => apiSend<BannerDTO>('POST', '/api/admin/banners', input);
 export const adminUpdateBanner = (id: string, input: BannerInput) => apiSend<BannerDTO>('PUT', `/api/admin/banners/${id}`, input);
 export const adminDeleteBanner = (id: string) => apiSend<void>('DELETE', `/api/admin/banners/${id}`);
+
+export const adminFetchBlog = () => apiGet<{ items: BlogPostDTO[]; total: number; page: number; pages: number }>('/api/admin/blog');
+export const adminCreateBlogPost = (input: BlogPostInput) => apiSend<BlogPostDTO>('POST', '/api/admin/blog', input);
+export const adminUpdateBlogPost = (id: string, input: BlogPostInput) => apiSend<BlogPostDTO>('PUT', `/api/admin/blog/${id}`, input);
+export const adminDeleteBlogPost = (id: string) => apiSend<void>('DELETE', `/api/admin/blog/${id}`);
 
 export { apiGet };

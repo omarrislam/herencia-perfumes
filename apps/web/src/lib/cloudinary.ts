@@ -1,4 +1,4 @@
-const CLOUD = (import.meta.env.VITE_CLOUDINARY_CLOUD_NAME as string | undefined) ?? '';
+const CLOUD = (import.meta.env?.VITE_CLOUDINARY_CLOUD_NAME as string | undefined) ?? '';
 
 // Falls back to returning the raw value if it's already a URL or no cloud configured.
 export function cld(publicId: string, opts: { w?: number } = {}): string {

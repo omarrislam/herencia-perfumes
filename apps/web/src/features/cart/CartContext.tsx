@@ -6,6 +6,7 @@ import { useAuth } from '../auth/AuthContext';
 const LS_KEY = 'herencia.cart';
 const loadGuest = (): CartItemInput[] => {
   try {
+    if (typeof window === 'undefined') return [];
     return JSON.parse(localStorage.getItem(LS_KEY) || '[]') as CartItemInput[];
   } catch {
     return [];

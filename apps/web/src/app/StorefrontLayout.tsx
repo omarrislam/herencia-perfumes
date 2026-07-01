@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useTheme } from './ThemeProvider';
@@ -51,7 +52,9 @@ export function StorefrontLayout() {
       <main className="mx-auto w-full max-w-6xl flex-1 p-4">
         <motion.div key={location.pathname} initial={{ opacity: 0 }} animate={{ opacity: 1 }}
           transition={{ duration: 0.2 }}>
-          <Outlet />
+          <Suspense fallback={null}>
+            <Outlet />
+          </Suspense>
         </motion.div>
       </main>
       <footer className="border-t border-line p-6 text-center font-body text-sm text-muted">

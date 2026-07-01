@@ -1,13 +1,14 @@
 import { Router } from 'express';
-import { adminProductSchema, scentFamilySchema, slugify, updateOrderStatusSchema, updateReviewSchema, ORDER_STATUS, ORDER_STATUS_TRANSITIONS, type OrderStatus } from '@herencia/shared';
+import { adminProductSchema, scentFamilySchema, slugify, updateOrderStatusSchema, updateReviewSchema, quizQuestionSchema, ORDER_STATUS, ORDER_STATUS_TRANSITIONS, type OrderStatus } from '@herencia/shared';
 import { Product } from '../models/Product';
 import { ScentFamily } from '../models/ScentFamily';
 import { Order } from '../models/Order';
 import { Review } from '../models/Review';
+import { QuizQuestion } from '../models/QuizQuestion';
 import { HttpError } from '../middleware/error';
 import { requireAdmin } from '../middleware/requireAdmin';
 import { isCloudinaryConfigured, signUploadParams } from '../lib/cloudinary';
-import { toProductDTO, toScentFamilyDTO, toOrderDTO, toReviewDTO } from '../lib/serialize';
+import { toProductDTO, toScentFamilyDTO, toOrderDTO, toReviewDTO, toQuizQuestionAdminDTO } from '../lib/serialize';
 import { recomputeProductRating } from '../modules/review/service';
 
 export function adminRouter(): Router {
@@ -183,6 +184,46 @@ export function adminRouter(): Router {
       const doc = await Review.findByIdAndDelete(req.params['id']).lean();
       if (!doc) throw new HttpError(404, 'Review not found', 'not_found');
       await recomputeProductRating(String(doc.product));
+      res.status(204).end();
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // ---- Quiz ----
+  router.get('/quiz', async (_req, res, next) => {
+    try {
+      const docs = await QuizQuestion.find().sort({ order: 1 }).lean();
+      res.json(docs.map(toQuizQuestionAdminDTO));
+    } catch (err) {
+      next(err);
+    }
+  });
+  router.post('/quiz', async (req, res, next) => {
+    try {
+      const parsed = quizQuestionSchema.safeParse(req.body);
+      if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? 'Invalid', 'invalid');
+      const doc = await QuizQuestion.create(parsed.data);
+      res.status(201).json(toQuizQuestionAdminDTO(doc.toObject()));
+    } catch (err) {
+      next(err);
+    }
+  });
+  router.put('/quiz/:id', async (req, res, next) => {
+    try {
+      const parsed = quizQuestionSchema.safeParse(req.body);
+      if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? 'Invalid', 'invalid');
+      const doc = await QuizQuestion.findByIdAndUpdate(req.params['id'], parsed.data, { new: true }).lean();
+      if (!doc) throw new HttpError(404, 'Question not found', 'not_found');
+      res.json(toQuizQuestionAdminDTO(doc));
+    } catch (err) {
+      next(err);
+    }
+  });
+  router.delete('/quiz/:id', async (req, res, next) => {
+    try {
+      const doc = await QuizQuestion.findByIdAndDelete(req.params['id']).lean();
+      if (!doc) throw new HttpError(404, 'Question not found', 'not_found');
       res.status(204).end();
     } catch (err) {
       next(err);

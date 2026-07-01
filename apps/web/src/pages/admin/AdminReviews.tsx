@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminFetchReviews, adminModerateReview, adminDeleteReview } from '../../features/admin/adminClient';
+import { ApiError } from '../../lib/api';
 
 type StatusFilter = 'pending' | 'approved' | undefined;
 
@@ -17,12 +18,18 @@ export default function AdminReviews() {
   const moderateMut = useMutation({
     mutationFn: ({ id, isApproved }: { id: string; isApproved: boolean }) =>
       adminModerateReview(id, isApproved),
-    onSuccess: () => void qc.invalidateQueries({ queryKey: ['admin-reviews'] }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['admin-reviews'] });
+      void qc.invalidateQueries({ queryKey: ['reviews'] }); // public product reviews
+    },
   });
 
   const deleteMut = useMutation({
     mutationFn: (id: string) => adminDeleteReview(id),
-    onSuccess: () => void qc.invalidateQueries({ queryKey: ['admin-reviews'] }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['admin-reviews'] });
+      void qc.invalidateQueries({ queryKey: ['reviews'] }); // public product reviews
+    },
   });
 
   const filters: Array<{ label: string; value: StatusFilter }> = [
@@ -121,7 +128,12 @@ export default function AdminReviews() {
       )}
 
       {(moderateMut.isError || deleteMut.isError) && (
-        <p className="mt-3 font-body text-sm text-danger">Action failed. Please try again.</p>
+        <p className="mt-3 font-body text-sm text-danger">
+          {(() => {
+            const e = moderateMut.error ?? deleteMut.error;
+            return e instanceof ApiError ? `Error ${e.status}: ${e.message}` : 'Action failed. Please try again.';
+          })()}
+        </p>
       )}
     </div>
   );

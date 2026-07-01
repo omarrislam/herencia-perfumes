@@ -241,7 +241,10 @@ export default function AdminBlog() {
     queryFn: adminFetchBlog,
   });
 
-  const invalidate = () => void qc.invalidateQueries({ queryKey: ['admin-blog'] });
+  const invalidate = () => {
+    void qc.invalidateQueries({ queryKey: ['admin-blog'] });
+    void qc.invalidateQueries({ queryKey: ['blog'] }); // list + details
+  };
 
   const createMut = useMutation({
     mutationFn: (input: BlogPostInput) => adminCreateBlogPost(input),
@@ -345,7 +348,11 @@ export default function AdminBlog() {
       </div>
 
       {deleteMut.isError && (
-        <p className="mt-3 font-body text-sm text-danger">Delete failed.</p>
+        <p className="mt-3 font-body text-sm text-danger">
+          {deleteMut.error instanceof ApiError
+            ? `Error ${deleteMut.error.status}: ${deleteMut.error.message}`
+            : 'Delete failed.'}
+        </p>
       )}
     </div>
   );

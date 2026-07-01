@@ -262,7 +262,10 @@ export default function AdminBanners() {
     queryFn: adminFetchBanners,
   });
 
-  const invalidate = () => void qc.invalidateQueries({ queryKey: ['admin-banners'] });
+  const invalidate = () => {
+    void qc.invalidateQueries({ queryKey: ['admin-banners'] });
+    void qc.invalidateQueries({ queryKey: ['banners'] }); // all placements
+  };
 
   const createMut = useMutation({
     mutationFn: (input: BannerInput) => adminCreateBanner(input),
@@ -372,7 +375,11 @@ export default function AdminBanners() {
       </div>
 
       {deleteMut.isError && (
-        <p className="mt-3 font-body text-sm text-danger">Delete failed.</p>
+        <p className="mt-3 font-body text-sm text-danger">
+          {deleteMut.error instanceof ApiError
+            ? `Error ${deleteMut.error.status}: ${deleteMut.error.message}`
+            : 'Delete failed.'}
+        </p>
       )}
     </div>
   );

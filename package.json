@@ -17,9 +17,11 @@
     "lint": "eslint . --ext .ts,.tsx",
     "typecheck": "npm run build --workspace packages/shared && npm run typecheck --workspaces --if-present",
     "test": "npm run build --workspace packages/shared && npm run test --workspaces --if-present",
+    "test:e2e": "playwright test",
     "format": "prettier --write ."
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
     "concurrently": "^9.2.3",

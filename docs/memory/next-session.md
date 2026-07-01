@@ -3,14 +3,9 @@
 _Last updated: 2026-07-02_
 
 ## TL;DR
-Milestones 0–3 are merged to `master`. **Milestone 4 (Polish — code) is fully implemented on branch `feat/milestone-4-polish`** (18 tasks + a theming sweep 2b), each task spec+quality reviewed, all Critical/Important fixed. Full suite GREEN on the branch (shared 10f/41, api 27f/118, web 22f/37; lint 0, typecheck 0, build clean incl. prerender). **Only two things remain for M4:** (1) the final whole-branch review (opus), (2) `finishing-a-development-branch` → merge to `master`. Still no git remote — add one only if the user asks to push/PR.
+Milestones 0–4 are all merged to `master` (**M4 merge commit `cbe8ba7`**, feature branch deleted; final whole-branch review passed with the one blocking prerender/hydration fix applied; tests re-verified GREEN on master: shared 10f/41, api 27f/120, web 22f/37; lint 0, typecheck 0, build clean incl. prerender). **Your job: Milestone 5 (Ops / Deploy)** — the last milestone. Still no git remote — add one only if the user asks to push/PR.
 
-## If M4 isn't merged yet — finish it
-1. Run the **final whole-branch review** on the most capable model: `scripts/review-package $(git merge-base master feat/milestone-4-polish) HEAD` → dispatch the `requesting-code-review` reviewer with that diff + the deferred-minors list at the bottom of `.superpowers/sdd/progress.md`.
-2. Fix any Critical/Important it finds with ONE fix subagent (batch findings). Minors → triage.
-3. `superpowers:finishing-a-development-branch` → merge `feat/milestone-4-polish` into `master`, delete the branch, re-verify green on master, update these docs.
-
-## Then: Milestone 5 (Ops / Deploy) — NEW plan required (this is the last milestone)
+## Milestone 5 (Ops / Deploy) — NEW plan required (this is the last milestone)
 Deployment was intentionally deferred from M4 (user chose "code-polish, leave ops for now"). Before/along with deploy:
 - ⚠️ **FIRST, HIGH PRIORITY — fix the built server so it runs on plain Node.** `node apps/api/dist/server.js` currently throws `ERR_MODULE_NOT_FOUND` (extensionless ESM relative imports; tsconfig `moduleResolution: Bundler`). It only ran via `tsx` in dev. Options: switch apps/api to `NodeNext` + add `.js` to all relative imports; OR bundle the server with esbuild; OR run prod via `tsx`. **This blocks both deploy AND the Playwright E2E run** (webServer starts the built server).
 - Then: run the Playwright E2E (`npm run test:e2e`; browsers already targeted to `E:\ms-playwright`; needs Node 20 via `.nvmrc` and the real `.env`).

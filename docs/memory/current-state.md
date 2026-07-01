@@ -3,8 +3,8 @@
 _Last updated: 2026-07-02_
 
 ## Phase
-**Milestone 4 (Polish — code) implemented on branch `feat/milestone-4-polish` (NOT yet merged).** All 18 plan tasks (+ Task 2b theming sweep) complete and task-reviewed. Final whole-branch review + merge pending.
-Full suite GREEN on the branch: `npm run lint` (0), `npm run typecheck` (0), `npm run build` (clean, incl. prerender of 5 shell routes + api build), tests — **shared 10 files/41, api 27 files/118, web 22 files/37**.
+**Milestone 4 (Polish — code) COMPLETE & MERGED to `master` (merge commit `cbe8ba7`, feature branch deleted).** All 18 plan tasks (+ Task 2b theming sweep) done, each task spec+quality reviewed; final whole-branch review (opus) = Ready-to-merge-with-fixes → the one blocking fix (prerender serving / hydration) applied. **Next = Milestone 5 (Ops/Deploy).**
+Full suite re-verified GREEN on merged `master`: `npm run lint` (0), `npm run typecheck` (0), tests — **shared 10 files/41, api 27 files/120, web 22 files/37** (`npm run build` clean incl. prerender of 5 shell routes + api build).
 
 ## Milestone 4 deliverables (branch `feat/milestone-4-polish`)
 - **Theming (T1/T2/T2b):** semantic feedback tokens `success/warning/danger/info` (+ `-soft`) as theme-aware CSS vars → Tailwind; ALL raw-palette feedback colors replaced app-wide (grep clean). Order-status badge map tokenized.
@@ -21,7 +21,7 @@ Full suite GREEN on the branch: `npm run lint` (0), `npm run typecheck` (0), `np
 - Milestone 4 code-polish built via subagent-driven development (18 tasks + 2b), each task spec+quality reviewed; Critical/Important fixed inline.
 
 ## In progress
-- **Final whole-branch review (opus) + `finishing-a-development-branch` (merge to `master`)** — the only remaining step for M4 code-polish.
+- Nothing — M4 code-polish complete and merged. Ready to start Milestone 5 (Ops/Deploy).
 
 ## Next (todo) — deferred to a separate Ops/Deploy plan (Milestone 5)
 - ⚠️ **DEPLOY BLOCKER (HIGH):** built `node apps/api/dist/server.js` fails under plain Node ESM — `ERR_MODULE_NOT_FOUND` on extensionless relative imports (tsconfig `moduleResolution: Bundler`). The server only ran via `tsx` in dev. Fix before deploy: apps/api → `NodeNext` + `.js` on relative imports, OR an esbuild bundle for the server, OR run via tsx in prod. This also **blocks the Playwright E2E run** (webServer can't start the built server).

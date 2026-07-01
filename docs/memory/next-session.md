@@ -3,21 +3,24 @@
 _Last updated: 2026-07-02_
 
 ## TL;DR
-Milestones 0–4 are all merged to `master` (**M4 merge commit `cbe8ba7`**, feature branch deleted; final whole-branch review passed with the one blocking prerender/hydration fix applied; tests re-verified GREEN on master: shared 10f/41, api 27f/120, web 22f/37; lint 0, typecheck 0, build clean incl. prerender). **Your job: Milestone 5 (Ops / Deploy)** — the last milestone. Still no git remote — add one only if the user asks to push/PR.
+Milestones 0–4 are all merged to `master` (M4 merge `cbe8ba7`), PLUS a post-M4 follow-up (merged 2026-07-02) that **made the built server runnable** (`node dist/server.js` via esbuild bundle + `--env-file`) and cleared the batched M4 minors. The app now RUNS end-to-end (verified: boots on Node 24, serves prerendered storefront + API). **Your job: Milestone 5 (Ops / Deploy)** — the last milestone. No git remote — add one only if the user asks to push/PR.
+
+## How to RUN it locally (verified working)
+- One-time seed (needs the root `.env` with MONGODB_URI etc.): `npm run seed --workspace apps/api`
+- **Dev mode (hot reload):** `npm run dev` → web on http://localhost:5173 (proxies /api to :4000). Best for feature work.
+- **Prod mode (single server, prerender + real serving):** `npm run build` then `npm run start --workspace apps/api` → whole site on http://localhost:4000.
+- Admin: http://localhost:5173/admin (or :4000/admin) — `admin@herencia.example` / `admin1234`.
 
 ## Milestone 5 (Ops / Deploy) — NEW plan required (this is the last milestone)
-Deployment was intentionally deferred from M4 (user chose "code-polish, leave ops for now"). Before/along with deploy:
-- ⚠️ **FIRST, HIGH PRIORITY — fix the built server so it runs on plain Node.** `node apps/api/dist/server.js` currently throws `ERR_MODULE_NOT_FOUND` (extensionless ESM relative imports; tsconfig `moduleResolution: Bundler`). It only ran via `tsx` in dev. Options: switch apps/api to `NodeNext` + add `.js` to all relative imports; OR bundle the server with esbuild; OR run prod via `tsx`. **This blocks both deploy AND the Playwright E2E run** (webServer starts the built server).
-- Then: run the Playwright E2E (`npm run test:e2e`; browsers already targeted to `E:\ms-playwright`; needs Node 20 via `.nvmrc` and the real `.env`).
-- Deployment: VPS + Nginx + PM2 (`docs/16_DEPLOYMENT.md` + deploy runbook at the bottom of the SDD ledger — Cloudinary env requirements, C:-drive/mongo-temp caveat).
-- Live Lighthouse ≥ 90 mobile on Home + product (levers already implemented in M4; watch the framer-motion entry-chunk lever — see minors).
+- Deployment: VPS + Nginx + PM2 (`docs/16_DEPLOYMENT.md` + deploy runbook in the SDD ledger). Runtime = `npm ci && npm run build && npm run seed && npm run start -w apps/api` under PM2; nginx reverse-proxy + TLS. Env via PM2/systemd (or `--env-file`).
+- Playwright E2E run (now unblocked): `PLAYWRIGHT_BROWSERS_PATH=E:/ms-playwright npx playwright install chromium` once, then `npm run test:e2e`.
+- Live Lighthouse ≥ 90 mobile on Home + product. **Perf lever if < 90:** framer-motion is in the entry chunk (~114 kB gzip) — lazy-load / drop the StorefrontLayout route cross-fade to move framer out of the entry.
 - Search Console + sitemap submission.
 
-## Batched M4 deferred-minors (triage in the final review; full list at bottom of SDD ledger)
-- Perf: framer-motion in the entry chunk (~114 kB gzip); lazy-load the route cross-fade if mobile Lighthouse < 90.
-- CartDrawer: keys on AnimatePresence motion.divs; clear `addItem` setTimeout on unmount.
-- ProductImage: guard blur `backgroundImage` to only set when the blur URL is http (avoids invalid CSS when no cloud).
-- Playwright: remove machine-specific `PLAYWRIGHT_BROWSERS_PATH` from webServer.env; assert COD selection.
+## Remaining low-priority minors (full list at bottom of SDD ledger)
+- `useFocusTrap` filter excludes only `[hidden]`/disabled, not CSS-hidden (documented; fine for cart drawer).
+- Playwright shop spec doesn't assert COD selection; prerender.tsx outside tsconfig + esbuild jsx pragma.
+- CSP `img-src` blocks external (non-Cloudinary) blog images.
 - `useFocusTrap`: add getComputedStyle visibility check before reusing in a modal with CSS-hidden content (documented).
 
 ## How to work (same as M0–M4)

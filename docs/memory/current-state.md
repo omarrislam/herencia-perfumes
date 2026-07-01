@@ -23,17 +23,20 @@ Full suite re-verified GREEN on merged `master`: `npm run lint` (0), `npm run ty
 ## In progress
 - Nothing — M4 code-polish complete and merged. Ready to start Milestone 5 (Ops/Deploy).
 
-## Next (todo) — deferred to a separate Ops/Deploy plan (Milestone 5)
-- ⚠️ **DEPLOY BLOCKER (HIGH):** built `node apps/api/dist/server.js` fails under plain Node ESM — `ERR_MODULE_NOT_FOUND` on extensionless relative imports (tsconfig `moduleResolution: Bundler`). The server only ran via `tsx` in dev. Fix before deploy: apps/api → `NodeNext` + `.js` on relative imports, OR an esbuild bundle for the server, OR run via tsx in prod. This also **blocks the Playwright E2E run** (webServer can't start the built server).
-- Deployment (VPS + Nginx + PM2); live Lighthouse ≥ 90 mobile verification; Search Console + sitemap submission.
+## Post-M4 follow-ups DONE (merged to master, 2026-07-02)
+- ✅ **Runnable built server (was the HIGH deploy blocker):** `node apps/api/dist/server.js` now runs on plain Node (v24) — server bundled with **esbuild** (npm deps external, `@herencia/shared` inlined from source) + `.env` loaded via Node's native `--env-file` in the `dev`/`start`/`seed` scripts. Verified end-to-end: boots, connects to Mongo, serves the prerendered storefront + API. (This also unblocks the Playwright E2E run.)
+- ✅ **Batched M4 minors:** CartDrawer AnimatePresence keys + danger tokens; CartContext `justAdded` timer cleared on unmount; ProductImage blur-up only when a real Cloudinary URL; `app.set('trust proxy', 1)` in production (rate-limit keys on real client IP behind nginx); removed the hardcoded `PLAYWRIGHT_BROWSERS_PATH` from the Playwright config.
 
-## Notes / open minors (for the final review to triage — full list in the SDD ledger)
-- **Perf lever:** framer-motion is in the entry chunk (StorefrontLayout route cross-fade + cart drawer are eager) → entry ~114 kB gzip (was ~85 kB). If mobile Lighthouse < 90, lazy-load the route cross-fade / drop it.
-- CartDrawer: no explicit `key` on the two AnimatePresence `motion.div`s; `addItem` setTimeout not cleared on unmount (dev warning only).
-- ProductImage blur `backgroundImage` is invalid CSS when `VITE_CLOUDINARY_CLOUD_NAME` unset (dev/test only; prod has cloud).
-- Playwright: dead/machine-specific `PLAYWRIGHT_BROWSERS_PATH:'E:/ms-playwright'` in webServer.env; COD not explicitly asserted.
+## Next (todo) — Milestone 5 (Ops/Deploy) — the last milestone
+- Deployment (VPS + Nginx + PM2 — `npm ci && npm run build && npm run seed && pm2 start "npm run start -w apps/api"` shape); TLS; DNS.
+- Run the Playwright E2E (`PLAYWRIGHT_BROWSERS_PATH=E:/ms-playwright npx playwright install chromium` once, then `npm run test:e2e`); now that the built server runs, the webServer can start.
+- Live Lighthouse ≥ 90 mobile on Home + product. **Perf lever if < 90:** framer-motion is in the entry chunk (StorefrontLayout route cross-fade + cart drawer are eager) → entry ~114 kB gzip (was ~85). Lazy-load / drop the route cross-fade to move framer out of the entry.
+- Search Console + sitemap submission.
+
+## Remaining open minors (low priority; full list in the SDD ledger)
 - `useFocusTrap` visibility filter doesn't exclude CSS-hidden focusables (documented in JSDoc; fine for CartDrawer; add getComputedStyle check before reuse).
-- prerender.tsx outside tsconfig (tsx/esbuild only); `@jsxRuntime` pragma is esbuild-specific.
+- Playwright shop spec doesn't explicitly assert COD selection; prerender.tsx outside tsconfig (tsx/esbuild only) + `@jsxRuntime` pragma esbuild-specific.
+- CSP `img-src` allows only self/Cloudinary → external `![](https://other-host)` blog images won't render (likely fine — content is Cloudinary-hosted).
 
 ## Machine health (still applies)
 - **C: drive ~full.** api tests rely on the win32 mongod-temp redirect + injected test `JWT_SECRET` in `apps/api/vitest.config.ts`. Playwright browsers must install to `E:\ms-playwright`. Free C: + replace the redirect for CI/VPS. Machine Node is v24; project targets Node 20 (`.nvmrc`).

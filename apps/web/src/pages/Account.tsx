@@ -88,8 +88,8 @@ function ProfileSection() {
       <form onSubmit={handleSubmit} className="space-y-3 max-w-sm">
         <Field label="Name" value={name} onChange={setName} />
         <Field label="Phone" value={phone} onChange={setPhone} type="tel" />
-        {error && <p className="font-body text-sm text-red-500">{error}</p>}
-        {saved && <p className="font-body text-sm text-green-600">Saved!</p>}
+        {error && <p className="font-body text-sm text-danger">{error}</p>}
+        {saved && <p className="font-body text-sm text-success">Saved!</p>}
         <Button type="submit" disabled={mut.isPending}>
           {mut.isPending ? 'Saving…' : 'Save changes'}
         </Button>
@@ -149,8 +149,8 @@ function AddressForm({
         />
         Set as default
       </label>
-      {error && <p className="font-body text-xs text-red-500">{error}</p>}
-      {serverError && <p className="font-body text-xs text-red-500">{serverError}</p>}
+      {error && <p className="font-body text-xs text-danger">{error}</p>}
+      {serverError && <p className="font-body text-xs text-danger">{serverError}</p>}
       <div className="flex gap-2">
         <Button type="submit">Save address</Button>
         <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>
@@ -255,11 +255,11 @@ function AddressesSection() {
 // ---- Orders section ----
 
 const STATUS_COLORS: Record<string, string> = {
-  pending: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
-  confirmed: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-  shipped: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-  delivered: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
-  cancelled: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+  pending: 'bg-warning-soft text-warning',
+  confirmed: 'bg-info-soft text-info',
+  shipped: 'bg-accent/15 text-accent',
+  delivered: 'bg-success-soft text-success',
+  cancelled: 'bg-danger-soft text-danger',
 };
 
 function OrdersSection() {

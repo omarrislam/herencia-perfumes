@@ -53,7 +53,7 @@ export default function AdminProducts() {
           onSubmit={(d) => (editing ? updateMut.mutate(d) : createMut.mutate(d))}
         />
         {createMut.isError || updateMut.isError ? (
-          <p className="mt-3 font-body text-sm text-red-500">Save failed — check fields and token.</p>
+          <p className="mt-3 font-body text-sm text-danger">Save failed — check fields and token.</p>
         ) : null}
       </div>
     );
@@ -84,7 +84,7 @@ export default function AdminProducts() {
                 onClick={() => {
                   if (confirm(`Delete ${p.name}?`)) deleteMut.mutate(p.id);
                 }}
-                className="text-red-500"
+                className="text-danger"
               >
                 Delete
               </button>

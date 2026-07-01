@@ -118,7 +118,7 @@ function AnswerFields({
             type="button"
             onClick={() => onRemove(idx)}
             disabled={answers.length <= 2}
-            className="rounded border border-line px-2 py-1 font-body text-sm text-red-500 disabled:opacity-40"
+            className="rounded border border-line px-2 py-1 font-body text-sm text-danger disabled:opacity-40"
           >
             ✕
           </button>
@@ -206,7 +206,7 @@ function QuestionFormPanel({
         onRemove={removeAnswer}
       />
       {error && (
-        <p className="mt-2 font-body text-sm text-red-500">{error.message}</p>
+        <p className="mt-2 font-body text-sm text-danger">{error.message}</p>
       )}
       <div className="mt-4 flex gap-2">
         <button
@@ -297,7 +297,7 @@ export default function AdminQuiz() {
       )}
 
       {isLoading && <p className="font-body text-muted">Loading…</p>}
-      {isError && <p className="font-body text-red-500">Failed to load questions.</p>}
+      {isError && <p className="font-body text-danger">Failed to load questions.</p>}
 
       {questions && questions.length === 0 && !creating && (
         <p className="font-body text-muted">No questions yet.</p>
@@ -344,7 +344,7 @@ export default function AdminQuiz() {
                           deleteMut.mutate(q.id);
                         }
                       }}
-                      className="font-body text-sm text-red-500 hover:underline"
+                      className="font-body text-sm text-danger hover:underline"
                     >
                       Delete
                     </button>
@@ -370,7 +370,7 @@ export default function AdminQuiz() {
       </div>
 
       {deleteMut.isError && (
-        <p className="mt-3 font-body text-sm text-red-500">Delete failed.</p>
+        <p className="mt-3 font-body text-sm text-danger">Delete failed.</p>
       )}
     </div>
   );

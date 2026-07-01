@@ -40,6 +40,16 @@ describe('POST /api/auth/login', () => {
     const res = await request(app).post('/api/auth/login').send({ email: 'mai@x.com', password: 'wrong123' });
     expect(res.status).toBe(401);
   });
+  it('login success response omits passwordHash (M2-min-8)', async () => {
+    await register();
+    const res = await request(app).post('/api/auth/login').send({ email: 'mai@x.com', password: 'secret12' });
+    expect(res.status).toBe(200);
+    expect(res.body.passwordHash).toBeUndefined();
+  });
+  it('unknown email returns 401 (M2-min-9)', async () => {
+    const res = await request(app).post('/api/auth/login').send({ email: 'ghost@x.com', password: 'secret12' });
+    expect(res.status).toBe(401);
+  });
 });
 
 describe('GET /api/auth/me', () => {

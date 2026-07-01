@@ -36,6 +36,10 @@ describe('GET /api/admin/orders', () => {
     expect(shipped.body.total).toBe(1);
     expect(shipped.body.items[0].status).toBe('shipped');
   });
+  it('?status=banana returns 400 (M2-min-17)', async () => {
+    const res = await request(app).get('/api/admin/orders?status=banana').set('Cookie', ADMIN);
+    expect(res.status).toBe(400);
+  });
 });
 
 describe('PUT /api/admin/orders/:id/status', () => {
@@ -53,5 +57,11 @@ describe('PUT /api/admin/orders/:id/status', () => {
   it('404s an unknown order id', async () => {
     const res = await request(app).put('/api/admin/orders/000000000000000000000abc/status').set('Cookie', ADMIN).send({ status: 'confirmed' });
     expect(res.status).toBe(404);
+  });
+  it('same-status no-op transition succeeds with 200 (M2-min-17)', async () => {
+    const o = await seedOrder('pending');
+    const res = await request(app).put(`/api/admin/orders/${o._id}/status`).set('Cookie', ADMIN).send({ status: 'pending' });
+    expect(res.status).toBe(200);
+    expect(res.body.status).toBe('pending');
   });
 });

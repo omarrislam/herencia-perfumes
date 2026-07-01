@@ -14,4 +14,17 @@ describe('jwt', () => {
     const bad = jwt.sign({ sub: 'abc', role: 'superadmin' }, process.env.JWT_SECRET as string, { algorithm: 'HS256' });
     expect(verifyToken(bad)).toBeNull();
   });
+  it('returns null for an expired token (M2-min-6)', () => {
+    const expired = jwt.sign(
+      { sub: 'u1', role: 'customer' },
+      process.env.JWT_SECRET as string,
+      { algorithm: 'HS256', expiresIn: -10 },
+    );
+    expect(verifyToken(expired)).toBeNull();
+  });
+  it('returns null for a tampered token signature (M2-min-6)', () => {
+    const t = signToken({ sub: 'u1', role: 'customer' });
+    const tampered = t.slice(0, -4) + 'xxxx';
+    expect(verifyToken(tampered)).toBeNull();
+  });
 });

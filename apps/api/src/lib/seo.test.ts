@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach, beforeAll, afterAll } from 'vitest';
-import { buildHeadTags, buildSitemap, ROBOTS_TXT, toAbsoluteImageUrl, routeMetaForPath } from './seo';
+import { buildHeadTags, buildSitemap, ROBOTS_TXT, toAbsoluteImageUrl, routeMetaForPath, articleJsonLd } from './seo';
 import { connectMemory, disconnectMemory, clearDb } from '../test/db';
 import { BlogPost } from '../models/BlogPost';
 
@@ -94,6 +94,25 @@ describe('blog SEO', () => {
   it('omits a draft post from sitemap helper input and falls back to default meta', async () => {
     const meta = await routeMetaForPath('/blog/does-not-exist');
     expect(meta.title).toContain('HERENCIA');
+  });
+  it('real draft post (isPublished:false) falls back to default meta — draft does not leak (M3-min-8)', async () => {
+    await BlogPost.create({
+      title: 'Secret Draft', slug: 'secret-draft', excerpt: 'Hidden content', body: '# Draft',
+      coverImage: 'blog/draft', tags: [], isPublished: false,
+    });
+    const meta = await routeMetaForPath('/blog/secret-draft');
+    expect(meta.title).toContain('HERENCIA');
+    expect(meta.description).not.toContain('Hidden content');
+    expect(meta.jsonLd).toBeUndefined();
+  });
+  it('Article JSON-LD escapes < in fields to \\u003c (M3-min-8)', () => {
+    const ld = articleJsonLd(
+      { title: 'A <script>alert(1)</script> title', excerpt: 'Smells <good>', coverImage: 'blog/x' },
+      '/blog/x',
+    );
+    expect(ld).not.toContain('<script>');
+    expect(ld).not.toContain('<good>');
+    expect(ld).toContain('\\u003c');
   });
   it('includes blog slugs in the sitemap', () => {
     const xml = buildSitemap('https://h.test', [{ slug: 'royal-oud', type: 'perfume' }], ['notes-on-oud']);

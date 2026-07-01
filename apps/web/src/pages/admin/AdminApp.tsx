@@ -5,6 +5,7 @@ import { useAuth } from '../../features/auth/AuthContext';
 import AdminProducts from './AdminProducts';
 import AdminScentFamilies from './AdminScentFamilies';
 import AdminOrders from './AdminOrders';
+import AdminReviews from './AdminReviews';
 
 export default function AdminApp() {
   const { logout } = useAuth();
@@ -25,6 +26,9 @@ export default function AdminApp() {
             <Link to="/admin/orders" className="text-content hover:text-accent">
               Orders
             </Link>
+            <Link to="/admin/reviews" className="text-content hover:text-accent">
+              Reviews
+            </Link>
             <Link to="/" className="text-muted hover:text-accent">
               View store
             </Link>
@@ -42,6 +46,7 @@ export default function AdminApp() {
             <Route path="/products" element={<AdminProducts />} />
             <Route path="/scent-families" element={<AdminScentFamilies />} />
             <Route path="/orders" element={<AdminOrders />} />
+            <Route path="/reviews" element={<AdminReviews />} />
           </Routes>
         </main>
       </div>

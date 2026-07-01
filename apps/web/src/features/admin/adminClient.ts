@@ -1,5 +1,5 @@
 // apps/web/src/features/admin/adminClient.ts
-import type { AdminProductInput, ProductDTO, ScentFamilyDTO, OrderDTO, OrderStatus } from '@herencia/shared';
+import type { AdminProductInput, ProductDTO, ScentFamilyDTO, OrderDTO, OrderStatus, ReviewDTO } from '@herencia/shared';
 import { apiSend, apiGet } from '../../lib/api';
 
 export const adminCreateProduct = (data: AdminProductInput) =>
@@ -40,5 +40,12 @@ export const adminFetchOrders = (status?: OrderStatus) =>
   );
 export const adminUpdateOrderStatus = (id: string, status: OrderStatus) =>
   apiSend<OrderDTO>('PUT', `/api/admin/orders/${id}/status`, { status });
+
+export const adminFetchReviews = (status?: 'pending' | 'approved') =>
+  apiGet<{ items: ReviewDTO[]; total: number; page: number; pages: number }>(`/api/admin/reviews${status ? `?status=${status}` : ''}`);
+export const adminModerateReview = (id: string, isApproved: boolean) =>
+  apiSend<ReviewDTO>('PUT', `/api/admin/reviews/${id}`, { isApproved });
+export const adminDeleteReview = (id: string) =>
+  apiSend<void>('DELETE', `/api/admin/reviews/${id}`);
 
 export { apiGet };

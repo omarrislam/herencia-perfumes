@@ -11,6 +11,7 @@ import { ProductCard } from '../components/ProductCard';
 import { Skeleton } from '../components/Skeleton';
 import { WishlistButton } from '../components/WishlistButton';
 import { useCart } from '../features/cart/CartContext';
+import { ReviewsSection } from '../features/reviews/ReviewsSection';
 
 export default function ProductDetail() {
   const { slug = '' } = useParams();
@@ -101,6 +102,8 @@ export default function ProductDetail() {
           <div className="prose max-w-none whitespace-pre-line font-body text-content">{p.description}</div>
         </div>
       </div>
+
+      <ReviewsSection slug={p.slug} productId={p.id} />
 
       {related.data && related.data.length > 0 ? (
         <section>

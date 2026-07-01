@@ -1,4 +1,4 @@
-import type { ProductDTO, ProductListDTO, ScentFamilyDTO, UserDTO, LoginInput, RegisterInput, PricedCartDTO, CartItemInput, CreateOrderInput, CreateOrderResultDTO, AddressDTO, UpdateProfileInput, AddressInput, OrderDTO } from '@herencia/shared';
+import type { ProductDTO, ProductListDTO, ScentFamilyDTO, UserDTO, LoginInput, RegisterInput, PricedCartDTO, CartItemInput, CreateOrderInput, CreateOrderResultDTO, AddressDTO, UpdateProfileInput, AddressInput, OrderDTO, ReviewDTO, CreateReviewInput } from '@herencia/shared';
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -99,3 +99,8 @@ export const fetchWishlist = () => apiGet<ProductDTO[]>('/api/account/wishlist')
 export const addWishlist = (productId: string) => apiSend<{ ok: true }>('POST', '/api/account/wishlist', { productId });
 export const removeWishlist = (productId: string) => apiSend<ProductDTO[]>('DELETE', `/api/account/wishlist/${productId}`);
 export const fetchMyOrders = () => apiGet<{ items: OrderDTO[]; total: number; page: number; pages: number }>('/api/orders/me');
+
+export const fetchReviews = (slug: string, page = 1) =>
+  apiGet<{ items: ReviewDTO[]; total: number; page: number; pages: number }>(`/api/products/${slug}/reviews?page=${page}`);
+export const submitReview = (slug: string, input: CreateReviewInput) =>
+  apiSend<ReviewDTO>('POST', `/api/products/${slug}/reviews`, input);

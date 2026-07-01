@@ -1,4 +1,4 @@
-import type { ProductDTO, ProductListDTO, ScentFamilyDTO, UserDTO, LoginInput, RegisterInput, PricedCartDTO, CartItemInput, CreateOrderInput, CreateOrderResultDTO, AddressDTO, UpdateProfileInput, AddressInput, OrderDTO, ReviewDTO, CreateReviewInput } from '@herencia/shared';
+import type { ProductDTO, ProductListDTO, ScentFamilyDTO, UserDTO, LoginInput, RegisterInput, PricedCartDTO, CartItemInput, CreateOrderInput, CreateOrderResultDTO, AddressDTO, UpdateProfileInput, AddressInput, OrderDTO, ReviewDTO, CreateReviewInput, QuizQuestionPublicDTO, QuizResultDTO, QuizResultInput } from '@herencia/shared';
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -104,3 +104,6 @@ export const fetchReviews = (slug: string, page = 1) =>
   apiGet<{ items: ReviewDTO[]; total: number; page: number; pages: number }>(`/api/products/${slug}/reviews?page=${page}`);
 export const submitReview = (slug: string, input: CreateReviewInput) =>
   apiSend<ReviewDTO>('POST', `/api/products/${slug}/reviews`, input);
+
+export const fetchQuiz = () => apiGet<QuizQuestionPublicDTO[]>('/api/quiz');
+export const submitQuizResult = (input: QuizResultInput) => apiSend<QuizResultDTO>('POST', '/api/quiz/result', input);

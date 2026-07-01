@@ -17,6 +17,7 @@ export function StorefrontLayout() {
           <div className="flex items-center gap-4 font-body text-sm">
             <NavLink to="/products" className="text-content hover:text-accent">Perfumes</NavLink>
             <NavLink to="/bundles" className="text-content hover:text-accent">Bundles</NavLink>
+            <NavLink to="/find-your-scent" className="text-content hover:text-accent">Find Your Scent</NavLink>
             {user ? (
               <>
                 <NavLink to="/account" className="text-content hover:text-accent">Account</NavLink>

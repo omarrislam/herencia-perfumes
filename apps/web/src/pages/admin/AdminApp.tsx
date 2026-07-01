@@ -6,6 +6,7 @@ import AdminProducts from './AdminProducts';
 import AdminScentFamilies from './AdminScentFamilies';
 import AdminOrders from './AdminOrders';
 import AdminReviews from './AdminReviews';
+import AdminQuiz from './AdminQuiz';
 
 export default function AdminApp() {
   const { logout } = useAuth();
@@ -29,6 +30,9 @@ export default function AdminApp() {
             <Link to="/admin/reviews" className="text-content hover:text-accent">
               Reviews
             </Link>
+            <Link to="/admin/quiz" className="text-content hover:text-accent">
+              Quiz
+            </Link>
             <Link to="/" className="text-muted hover:text-accent">
               View store
             </Link>
@@ -47,6 +51,7 @@ export default function AdminApp() {
             <Route path="/scent-families" element={<AdminScentFamilies />} />
             <Route path="/orders" element={<AdminOrders />} />
             <Route path="/reviews" element={<AdminReviews />} />
+            <Route path="/quiz" element={<AdminQuiz />} />
           </Routes>
         </main>
       </div>

@@ -1,5 +1,5 @@
 // apps/web/src/features/admin/adminClient.ts
-import type { AdminProductInput, ProductDTO, ScentFamilyDTO, OrderDTO, OrderStatus, ReviewDTO } from '@herencia/shared';
+import type { AdminProductInput, ProductDTO, ScentFamilyDTO, OrderDTO, OrderStatus, ReviewDTO, QuizQuestionAdminDTO, QuizQuestionInput } from '@herencia/shared';
 import { apiSend, apiGet } from '../../lib/api';
 
 export const adminCreateProduct = (data: AdminProductInput) =>
@@ -47,5 +47,10 @@ export const adminModerateReview = (id: string, isApproved: boolean) =>
   apiSend<ReviewDTO>('PUT', `/api/admin/reviews/${id}`, { isApproved });
 export const adminDeleteReview = (id: string) =>
   apiSend<void>('DELETE', `/api/admin/reviews/${id}`);
+
+export const adminFetchQuiz = () => apiGet<QuizQuestionAdminDTO[]>('/api/admin/quiz');
+export const adminCreateQuestion = (input: QuizQuestionInput) => apiSend<QuizQuestionAdminDTO>('POST', '/api/admin/quiz', input);
+export const adminUpdateQuestion = (id: string, input: QuizQuestionInput) => apiSend<QuizQuestionAdminDTO>('PUT', `/api/admin/quiz/${id}`, input);
+export const adminDeleteQuestion = (id: string) => apiSend<void>('DELETE', `/api/admin/quiz/${id}`);
 
 export { apiGet };

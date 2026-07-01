@@ -31,12 +31,21 @@ export default function Register() {
     <form onSubmit={onSubmit} className="mx-auto max-w-sm py-16">
       <h1 className="mb-6 font-display text-2xl text-content">Create account</h1>
       {error && <p className="mb-3 font-body text-sm text-danger">{error}</p>}
-      <input type="text" required value={name} onChange={(e) => setName(e.target.value)} placeholder="Full name" aria-label="Full name"
-        className="mb-3 w-full rounded-md border border-line bg-bg px-3 py-2 font-body text-content" />
-      <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" aria-label="Email"
-        className="mb-3 w-full rounded-md border border-line bg-bg px-3 py-2 font-body text-content" />
-      <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" aria-label="Password"
-        className="mb-4 w-full rounded-md border border-line bg-bg px-3 py-2 font-body text-content" />
+      <label className="mb-3 block">
+        <span className="mb-1 block font-body text-sm text-muted">Full name</span>
+        <input type="text" required value={name} onChange={(e) => setName(e.target.value)}
+          className="w-full rounded-md border border-line bg-bg px-3 py-2 font-body text-content" />
+      </label>
+      <label className="mb-3 block">
+        <span className="mb-1 block font-body text-sm text-muted">Email</span>
+        <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
+          className="w-full rounded-md border border-line bg-bg px-3 py-2 font-body text-content" />
+      </label>
+      <label className="mb-4 block">
+        <span className="mb-1 block font-body text-sm text-muted">Password</span>
+        <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
+          className="w-full rounded-md border border-line bg-bg px-3 py-2 font-body text-content" />
+      </label>
       <Button type="submit" disabled={busy} className="w-full">{busy ? 'Creating account…' : 'Create account'}</Button>
       <p className="mt-4 font-body text-sm text-muted">Already have an account? <Link to="/login" className="text-accent">Sign in</Link></p>
     </form>

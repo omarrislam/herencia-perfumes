@@ -80,6 +80,7 @@ export default function AdminOrders() {
                     <td className="py-3 pr-4">
                       <select
                         value={order.status}
+                        aria-label={`Order ${order.orderNumber} status`}
                         disabled={transitions.length === 0 || statusMut.isPending}
                         onChange={(e) =>
                           statusMut.mutate({ id: order.id, status: e.target.value as OrderStatus })

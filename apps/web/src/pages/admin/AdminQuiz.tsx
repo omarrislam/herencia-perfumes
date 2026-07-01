@@ -12,13 +12,14 @@ import {
 import { fetchScentFamilies } from '../../lib/api';
 
 type AnswerDraft = {
+  id: string;
   label: string;
   scentFamily: string;
   gender: string;
   value: number;
 };
 
-const emptyAnswer = (): AnswerDraft => ({ label: '', scentFamily: '', gender: '', value: 1 });
+const emptyAnswer = (): AnswerDraft => ({ id: crypto.randomUUID(), label: '', scentFamily: '', gender: '', value: 1 });
 
 type QuestionForm = {
   question: string;
@@ -63,7 +64,7 @@ function AnswerFields({
   return (
     <div className="mt-3 space-y-2">
       {answers.map((a, idx) => (
-        <div key={idx} className="grid grid-cols-[1fr_1fr_1fr_auto_auto] gap-2 items-end">
+        <div key={a.id} className="grid grid-cols-[1fr_1fr_1fr_auto_auto] gap-2 items-end">
           <label className="block">
             <span className="font-body text-xs text-muted">Label</span>
             <input
@@ -116,6 +117,7 @@ function AnswerFields({
           </label>
           <button
             type="button"
+            aria-label="Remove answer"
             onClick={() => onRemove(idx)}
             disabled={answers.length <= 2}
             className="rounded border border-line px-2 py-1 font-body text-sm text-danger disabled:opacity-40"
@@ -275,6 +277,7 @@ export default function AdminQuiz() {
         <h1 className="font-display text-2xl text-content">Quiz questions</h1>
         {!creating && (
           <button
+            type="button"
             onClick={() => setCreating(true)}
             className="rounded bg-maroon px-4 py-2 font-body text-sm text-cream"
           >
@@ -312,6 +315,7 @@ export default function AdminQuiz() {
                   question: q.question,
                   order: q.order,
                   answers: q.answers.map((a) => ({
+                    id: crypto.randomUUID(),
                     label: a.label,
                     scentFamily: a.weights.scentFamily ?? '',
                     gender: a.weights.gender ?? '',
@@ -333,12 +337,14 @@ export default function AdminQuiz() {
                   </div>
                   <div className="flex gap-2">
                     <button
+                      type="button"
                       onClick={() => setEditing(q)}
                       className="font-body text-sm text-accent hover:underline"
                     >
                       Edit
                     </button>
                     <button
+                      type="button"
                       onClick={() => {
                         if (confirm(`Delete "${q.question}"?`)) {
                           deleteMut.mutate(q.id);
@@ -352,7 +358,7 @@ export default function AdminQuiz() {
                 </div>
                 <ul className="mt-2 space-y-1">
                   {q.answers.map((a, idx) => (
-                    <li key={idx} className="font-body text-sm text-content">
+                    <li key={`${q.id}-${a.label || idx}`} className="font-body text-sm text-content">
                       <span className="text-muted">{idx + 1}.</span> {a.label}
                       {(a.weights.scentFamily || a.weights.gender) && (
                         <span className="ml-2 text-xs text-muted">

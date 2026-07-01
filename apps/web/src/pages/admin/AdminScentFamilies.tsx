@@ -46,14 +46,14 @@ export default function AdminScentFamilies() {
         {families.data?.map((f) => (
           <li key={f.id} className="flex items-center justify-between py-2 font-body text-content">
             {f.name}
-            <button onClick={() => { if (confirm(`Delete ${f.name}?`)) deleteMut.mutate(f.id); }} className="text-red-500">
+            <button onClick={() => { if (confirm(`Delete ${f.name}?`)) deleteMut.mutate(f.id); }} className="text-danger">
               Delete
             </button>
           </li>
         ))}
       </ul>
       {deleteMut.isError ? (
-        <p className="mt-2 font-body text-sm text-red-500">Delete failed (family may be in use).</p>
+        <p className="mt-2 font-body text-sm text-danger">Delete failed (family may be in use).</p>
       ) : null}
     </div>
   );

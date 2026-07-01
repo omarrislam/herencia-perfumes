@@ -1,43 +1,47 @@
 # Next Session — START HERE
 
-_Last updated: 2026-07-01_
+_Last updated: 2026-07-02_
 
 ## TL;DR
-Milestones 0, 1, 2, **and 3 (Engagement) are all merged to `master`** (M3 merge commit `a270e80`, feature branch deleted; tests re-verified green on merged master: shared 10 files, api 26 files/~105 tests, web 17 files/27 tests; lint/typecheck/build clean). **Your job: build Milestone 4 (Polish & ship)** — the final milestone. Still no git remote — add one only if the user asks to push/PR.
+Milestones 0–3 are merged to `master`. **Milestone 4 (Polish — code) is fully implemented on branch `feat/milestone-4-polish`** (18 tasks + a theming sweep 2b), each task spec+quality reviewed, all Critical/Important fixed. Full suite GREEN on the branch (shared 10f/41, api 27f/118, web 22f/37; lint 0, typecheck 0, build clean incl. prerender). **Only two things remain for M4:** (1) the final whole-branch review (opus), (2) `finishing-a-development-branch` → merge to `master`. Still no git remote — add one only if the user asks to push/PR.
 
-## Milestone 4 (Polish & ship) — the final milestone
-- **Animations pass:** Framer Motion + CSS, lazy, `prefers-reduced-motion`, transforms/opacity only, no CLS. Section reveals, card/button micro-interactions, cart-drawer motion, logo gold shimmer.
-- **Accessibility audit:** the deferred a11y minors (batch them — see below), focus management (CartDrawer focus trap/return), form labels, keyboard nav, contrast, semantic landmarks.
-- **Performance pass:** Lighthouse ≥ 90 mobile — code-split/lazy audit, image sizing via Cloudinary, font loading, bundle trimming, build-time static prerender for static routes (deferred from M1 decision #19).
-- **Testing:** broaden unit/integration coverage (the deferred test-hardening gaps) + an E2E smoke of browse→cart→checkout.
-- **Deployment:** VPS + Nginx + PM2 (see `docs/16_DEPLOYMENT.md` + the deploy runbook at the bottom of the SDD ledger — includes the `VITE_CLOUDINARY_CLOUD_NAME`/`CLOUDINARY_CLOUD_NAME` env requirements and the C:-drive/mongo-temp caveat). Submit sitemap to Search Console.
-- **Rate-limiting** (deferred through M2/M3): add to auth + orders + review/mutation routes here (security pass).
+## If M4 isn't merged yet — finish it
+1. Run the **final whole-branch review** on the most capable model: `scripts/review-package $(git merge-base master feat/milestone-4-polish) HEAD` → dispatch the `requesting-code-review` reviewer with that diff + the deferred-minors list at the bottom of `.superpowers/sdd/progress.md`.
+2. Fix any Critical/Important it finds with ONE fix subagent (batch findings). Minors → triage.
+3. `superpowers:finishing-a-development-branch` → merge `feat/milestone-4-polish` into `master`, delete the branch, re-verify green on master, update these docs.
 
-## Batch these deferred minors into M4 (from the M1/M2/M3 final reviews)
-- **Dark-mode/theming:** replace raw-palette status badges + error/success colors (AdminReviews/AdminBanners/AdminBlog: `green-100/yellow-100`, `red-500`, `green-600/amber-500`) with semantic tokens; qty-stepper `bg-gold/10` → semantic accent.
-- **A11y:** CartDrawer focus trap/return; AdminQuiz answer-remove `aria-label` + `type="button"`; Login/Register visible labels; AdminOrders `<select>` aria-label; `key={idx}` → stable keys where lists can reorder.
-- **Correctness/cleanup:** map review E11000→409 (concurrent double-submit); admin banner/blog mutations invalidate the public queries; blog markdown renderer; per-review Rating already fixed; admin delete errors surface `ApiError`; test-hardening (adminBanners inactive visibility, seo real-draft fallback + `<`-escape assertion, review service single `agg[0]` local, drop redundant unique-slug index).
-- Full per-item list: bottom of `.superpowers/sdd/progress.md`.
+## Then: Milestone 5 (Ops / Deploy) — NEW plan required (this is the last milestone)
+Deployment was intentionally deferred from M4 (user chose "code-polish, leave ops for now"). Before/along with deploy:
+- ⚠️ **FIRST, HIGH PRIORITY — fix the built server so it runs on plain Node.** `node apps/api/dist/server.js` currently throws `ERR_MODULE_NOT_FOUND` (extensionless ESM relative imports; tsconfig `moduleResolution: Bundler`). It only ran via `tsx` in dev. Options: switch apps/api to `NodeNext` + add `.js` to all relative imports; OR bundle the server with esbuild; OR run prod via `tsx`. **This blocks both deploy AND the Playwright E2E run** (webServer starts the built server).
+- Then: run the Playwright E2E (`npm run test:e2e`; browsers already targeted to `E:\ms-playwright`; needs Node 20 via `.nvmrc` and the real `.env`).
+- Deployment: VPS + Nginx + PM2 (`docs/16_DEPLOYMENT.md` + deploy runbook at the bottom of the SDD ledger — Cloudinary env requirements, C:-drive/mongo-temp caveat).
+- Live Lighthouse ≥ 90 mobile on Home + product (levers already implemented in M4; watch the framer-motion entry-chunk lever — see minors).
+- Search Console + sitemap submission.
 
-## How to work (same as M0–M3)
-- Process: **writing-plans** (get the M4 plan reviewed) → **subagent-driven-development** on a NEW branch `feat/milestone-4-polish` (fresh implementer per task; spec+quality review after each; fix Critical/Important; final whole-branch review on opus; then finishing-a-development-branch).
-- Models: cheapest/haiku for pure transcription-from-plan; sonnet for integration/judgment; opus for the final whole-branch review.
+## Batched M4 deferred-minors (triage in the final review; full list at bottom of SDD ledger)
+- Perf: framer-motion in the entry chunk (~114 kB gzip); lazy-load the route cross-fade if mobile Lighthouse < 90.
+- CartDrawer: keys on AnimatePresence motion.divs; clear `addItem` setTimeout on unmount.
+- ProductImage: guard blur `backgroundImage` to only set when the blur URL is http (avoids invalid CSS when no cloud).
+- Playwright: remove machine-specific `PLAYWRIGHT_BROWSERS_PATH` from webServer.env; assert COD selection.
+- `useFocusTrap`: add getComputedStyle visibility check before reusing in a modal with CSS-hidden content (documented).
+
+## How to work (same as M0–M4)
+- Process: writing-plans (for the M5 ops plan) → subagent-driven-development. Models: haiku for transcription-from-plan, sonnet for integration/judgment, opus for the final whole-branch review.
 - Helper scripts (Git Bash): `C:\Users\omare\.claude\plugins\cache\claude-plugins-official\superpowers\6.0.3\skills\subagent-driven-development\scripts\{task-brief,review-package}`.
 - Update `docs/TASKS.md` + `docs/memory/*` + `.superpowers/sdd/progress.md` at every checkpoint and before compaction.
-- ⚠️ Recurring account **session limits** interrupted a few M3 subagents mid-task. If a subagent returns a "session limit" message: check `git status`/`git log` — if it left correct-but-uncommitted partial work, dispatch a completion subagent to finish+verify+commit it (don't re-do from scratch); if the tree is clean, just re-dispatch.
-
-## ⚠️ Machine health (still applies)
-The **C: drive is ~full**. MongoMemoryServer api tests rely on the win32 temp redirect to E: + injected test `JWT_SECRET` in `apps/api/vitest.config.ts`. Free up C: and replace the redirect before CI/VPS.
+- ⚠️ Recurring account **session limits** interrupted a subagent mid-M4 (Task 4). If a subagent returns "session limit": check `git status`/`git log` — finish correct-but-uncommitted partial work (a completion subagent or controller edit), don't re-do from scratch.
 
 ## Read first (in order)
 1. `docs/memory/current-state.md` — live status
-2. `docs/memory/decisions.md` — locked decisions (do NOT re-litigate; M3 added #26–30)
-3. `docs/TASKS.md` — done/current/todo (M0–M3 done; M4 todo)
-4. `.superpowers/sdd/progress.md` — M0–M3 execution ledger + deferred-minors triage + deploy runbook
+2. `docs/memory/decisions.md` — locked decisions (M4 added #31–36; do NOT re-litigate)
+3. `docs/TASKS.md` — M0–M4 done; M5 (ops) todo
+4. `.superpowers/sdd/progress.md` — M0–M4 execution ledger + deferred-minors + deploy runbook + the Node/ESM deploy blocker
 5. Master spec: `docs/superpowers/specs/2026-06-29-herencia-design.md` (wins on conflict)
-6. Domain docs as needed: `docs/10_ANIMATIONS.md`, `docs/13_PERFORMANCE.md`, `docs/14_SECURITY.md`, `docs/15_TESTING.md`, `docs/16_DEPLOYMENT.md`.
+6. Domain docs as needed: `docs/16_DEPLOYMENT.md`, `13_PERFORMANCE.md`, `14_SECURITY.md`, `15_TESTING.md`.
+
+## Machine health
+- **C: ~full**; api tests use the win32 mongod-temp redirect; Playwright browsers → `E:\ms-playwright`. Machine Node is v24 but the project targets Node 20 (`.nvmrc`) — use `nvm use 20` for anything running the built server.
 
 ## Don't
-- Don't re-ask locked decisions. Don't rebuild/re-verify M0–M3. Don't add features beyond the spec in M4.
-- Don't commit `.env`/`dist`/`node_modules`/`.serena`. Don't push (no remote yet — add one first if asked).
-- Don't re-dispatch any task the SDD ledger marks complete — trust the ledger + `git log` after a reset/compaction.
+- Don't re-litigate locked decisions. Don't rebuild/re-verify M0–M4. Don't re-dispatch any task the SDD ledger marks complete.
+- Don't commit `.env`/`dist`/`node_modules`/`.serena`/`.superpowers`. Don't push (no remote — add one first if asked).

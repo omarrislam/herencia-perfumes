@@ -3,6 +3,7 @@ import request from 'supertest';
 import { connectMemory, disconnectMemory, clearDb } from '../test/db';
 import { createApp } from '../app';
 import { authCookie } from '../test/auth';
+import { Banner } from '../models/Banner';
 
 const app = createApp({ clientOrigin: 'http://localhost:5173' });
 const ADMIN = authCookie('000000000000000000000001', 'admin');
@@ -30,5 +31,10 @@ describe('admin banners', () => {
   it('rejects an invalid placement (400)', async () => {
     const res = await request(app).post('/api/admin/banners').set('Cookie', ADMIN).send({ ...valid, placement: 'nope' });
     expect(res.status).toBe(400);
+  });
+  it('admin GET returns inactive banners (M3-min-6)', async () => {
+    await Banner.create({ title: 'Off', image: 'banners/off', placement: 'home_hero', isActive: false, order: 0 });
+    const res = await request(app).get('/api/admin/banners').set('Cookie', ADMIN).expect(200);
+    expect(res.body.some((b: { title: string }) => b.title === 'Off')).toBe(true);
   });
 });

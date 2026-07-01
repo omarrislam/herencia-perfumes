@@ -5,12 +5,13 @@ import { authenticate, requireAuth } from '../middleware/auth';
 import { createOrder } from '../modules/order/service';
 import { Order } from '../models/Order';
 import { toOrderDTO } from '../lib/serialize';
+import { orderLimiter } from '../middleware/rateLimit';
 
 export function orderRouter(): Router {
   const router = Router();
 
   // Public checkout — attaches the user when a valid cookie is present.
-  router.post('/', authenticate, async (req, res, next) => {
+  router.post('/', orderLimiter, authenticate, async (req, res, next) => {
     try {
       const parsed = createOrderSchema.safeParse(req.body);
       if (!parsed.success)

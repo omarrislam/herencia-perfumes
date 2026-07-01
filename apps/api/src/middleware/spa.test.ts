@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import request from 'supertest';
@@ -12,6 +12,17 @@ const dist = mkdtempSync(join(tmpdir(), 'webdist-'));
 writeFileSync(
   join(dist, 'index.html'),
   '<!doctype html><html><head><title>HERENCIA</title></head><body><div id="root"></div></body></html>',
+);
+// spa-shell.html — empty #root, served as fallback for non-prerendered routes.
+writeFileSync(
+  join(dist, 'spa-shell.html'),
+  '<!doctype html><html><head><title>HERENCIA</title></head><body><div id="root"></div></body></html>',
+);
+// Prerendered login route — populated #root, served when /login is requested.
+mkdirSync(join(dist, 'login'), { recursive: true });
+writeFileSync(
+  join(dist, 'login', 'index.html'),
+  '<!doctype html><html><head><title>Login</title></head><body><div id="root"><div>PRERENDERED-LOGIN</div></div></body></html>',
 );
 const app = createApp({ clientOrigin: 'http://localhost:5173', webDist: dist, origin: 'https://herencia.example' });
 
@@ -47,5 +58,20 @@ describe('SPA + SEO injection', () => {
     const res = await request(app).get('/api/nope');
     expect(res.status).toBe(404);
     expect(res.body.error).toBeDefined();
+  });
+
+  it('serves prerendered HTML for a prerendered nested route', async () => {
+    // dist/login/index.html was written with a populated #root at setup time.
+    // express.static redirects /login → /login/ (directory), so follow the redirect.
+    const res = await request(app).get('/login').redirects(1);
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('PRERENDERED-LOGIN');
+  });
+
+  it('serves empty shell for a non-prerendered route', async () => {
+    // /some/other/route has no dist file → fallback to spa-shell.html → empty #root.
+    const res = await request(app).get('/some/other/route');
+    expect(res.status).toBe(200);
+    expect(res.text).toContain('<div id="root"></div>');
   });
 });

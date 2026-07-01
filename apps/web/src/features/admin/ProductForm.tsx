@@ -237,7 +237,7 @@ export function ProductForm({
           />
         </label>
         {uploading ? <span className="ml-2 font-body text-sm text-muted">Uploading…</span> : null}
-        {uploadError ? <p className="font-body text-sm text-red-500">{uploadError}</p> : null}
+        {uploadError ? <p className="font-body text-sm text-danger">{uploadError}</p> : null}
       </div>
 
       <label className="flex items-center gap-2 font-body text-content">

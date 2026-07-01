@@ -182,7 +182,7 @@ export default function Checkout() {
           </div>
         </section>
 
-        {formError && <p className="font-body text-sm text-red-600">{formError}</p>}
+        {formError && <p className="font-body text-sm text-danger">{formError}</p>}
 
         <Button type="submit" disabled={disabled} className="w-full py-3">
           Place Order

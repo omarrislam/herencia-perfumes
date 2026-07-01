@@ -34,4 +34,10 @@ describe('admin blog', () => {
     const res = await request(app).post('/api/admin/blog').set('Cookie', ADMIN).send(valid);
     expect(res.status).toBe(409);
   });
+  it('admin GET includes draft (isPublished:false) posts (M3-min-7)', async () => {
+    await request(app).post('/api/admin/blog').set('Cookie', ADMIN).send({ ...valid, title: 'Draft Post', isPublished: false });
+    const list = await request(app).get('/api/admin/blog').set('Cookie', ADMIN).expect(200);
+    const items: Array<{ isPublished: boolean; title: string }> = list.body.items ?? list.body;
+    expect(items.some((p) => p.title === 'Draft Post' && p.isPublished === false)).toBe(true);
+  });
 });

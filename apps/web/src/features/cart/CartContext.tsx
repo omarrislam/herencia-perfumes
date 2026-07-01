@@ -6,6 +6,7 @@ import { useAuth } from '../auth/AuthContext';
 const LS_KEY = 'herencia.cart';
 const loadGuest = (): CartItemInput[] => {
   try {
+    if (typeof window === 'undefined') return [];
     return JSON.parse(localStorage.getItem(LS_KEY) || '[]') as CartItemInput[];
   } catch {
     return [];
@@ -22,6 +23,7 @@ type CartValue = {
   updateQty: (productId: string, sizeLabel: string, qty: number) => void;
   removeItem: (productId: string, sizeLabel: string) => void;
   clear: () => void;
+  justAdded: boolean;
 };
 
 const CartCtx = createContext<CartValue | null>(null);
@@ -31,6 +33,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItemInput[]>(() => loadGuest());
   const [priced, setPriced] = useState<PricedCartDTO | null>(null);
   const [open, setOpen] = useState(false);
+  const [justAdded, setJustAdded] = useState(false);
   const mergedRef = useRef(false);
 
   // Persist + re-price whenever items change (guest → localStorage + price endpoint;
@@ -70,7 +73,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     })().catch(() => undefined);
   }, [user, loading]);
 
-  const addItem: CartValue['addItem'] = (item) =>
+  const addItem: CartValue['addItem'] = (item) => {
     setItems((prev) => {
       const i = prev.findIndex((x) => x.productId === item.productId && x.sizeLabel === item.sizeLabel);
       if (i === -1) return [...prev, item];
@@ -78,6 +81,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
       next[i] = { ...next[i]!, qty: Math.min(99, next[i]!.qty + item.qty) };
       return next;
     });
+    setJustAdded(true);
+    setTimeout(() => setJustAdded(false), 600);
+  };
   const updateQty: CartValue['updateQty'] = (productId, sizeLabel, qty) =>
     setItems((prev) => prev.map((x) => (x.productId === productId && x.sizeLabel === sizeLabel ? { ...x, qty } : x)).filter((x) => x.qty > 0));
   const removeItem: CartValue['removeItem'] = (productId, sizeLabel) =>
@@ -86,7 +92,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const count = items.reduce((n, i) => n + i.qty, 0);
   return (
-    <CartCtx.Provider value={{ items, priced, count, open, setOpen, addItem, updateQty, removeItem, clear }}>
+    <CartCtx.Provider value={{ items, priced, count, open, setOpen, addItem, updateQty, removeItem, clear, justAdded }}>
       {children}
     </CartCtx.Provider>
   );

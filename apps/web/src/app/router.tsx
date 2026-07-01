@@ -1,5 +1,5 @@
 import { lazy } from 'react';
-import { createBrowserRouter } from 'react-router-dom';
+import { type RouteObject } from 'react-router-dom';
 import { StorefrontLayout } from './StorefrontLayout';
 import { RequireAuth } from '../features/auth/RequireAuth';
 
@@ -19,7 +19,7 @@ const FindYourScent = lazy(() => import('../pages/FindYourScent'));
 const Blog = lazy(() => import('../pages/Blog'));
 const BlogPost = lazy(() => import('../pages/BlogPost'));
 
-export const router = createBrowserRouter([
+export const routes: RouteObject[] = [
   {
     element: <StorefrontLayout />,
     children: [
@@ -41,4 +41,4 @@ export const router = createBrowserRouter([
   },
   { path: '/admin/*', element: <Admin /> },
   { path: '*', element: <NotFound /> },
-]);
+];

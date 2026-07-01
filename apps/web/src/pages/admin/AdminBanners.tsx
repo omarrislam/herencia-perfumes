@@ -213,7 +213,7 @@ function BannerFormPanel({
           )}
           {uploading && <span className="font-body text-xs text-muted">Uploading…</span>}
         </div>
-        {uploadError && <p className="mt-1 font-body text-xs text-red-500">{uploadError}</p>}
+        {uploadError && <p className="mt-1 font-body text-xs text-danger">{uploadError}</p>}
       </label>
 
       <label className="flex items-center gap-2">
@@ -227,7 +227,7 @@ function BannerFormPanel({
       </label>
 
       {error && (
-        <p className="font-body text-sm text-red-500">
+        <p className="font-body text-sm text-danger">
           {error instanceof ApiError ? `Error ${error.status}: ${error.message}` : error.message}
         </p>
       )}
@@ -262,7 +262,10 @@ export default function AdminBanners() {
     queryFn: adminFetchBanners,
   });
 
-  const invalidate = () => void qc.invalidateQueries({ queryKey: ['admin-banners'] });
+  const invalidate = () => {
+    void qc.invalidateQueries({ queryKey: ['admin-banners'] });
+    void qc.invalidateQueries({ queryKey: ['banners'] }); // all placements
+  };
 
   const createMut = useMutation({
     mutationFn: (input: BannerInput) => adminCreateBanner(input),
@@ -306,7 +309,7 @@ export default function AdminBanners() {
       )}
 
       {isLoading && <p className="font-body text-muted">Loading…</p>}
-      {isError && <p className="font-body text-red-500">Failed to load banners.</p>}
+      {isError && <p className="font-body text-danger">Failed to load banners.</p>}
 
       {banners && banners.length === 0 && !creating && (
         <p className="font-body text-muted">No banners yet.</p>
@@ -335,7 +338,7 @@ export default function AdminBanners() {
                     <span>Order: <strong className="text-content">{banner.order}</strong></span>
                     <span>
                       Active:{' '}
-                      <strong className={banner.isActive ? 'text-green-600' : 'text-red-500'}>
+                      <strong className={banner.isActive ? 'text-success' : 'text-danger'}>
                         {banner.isActive ? 'Yes' : 'No'}
                       </strong>
                     </span>
@@ -360,7 +363,7 @@ export default function AdminBanners() {
                         deleteMut.mutate(banner.id);
                       }
                     }}
-                    className="font-body text-sm text-red-500 hover:underline"
+                    className="font-body text-sm text-danger hover:underline"
                   >
                     Delete
                   </button>
@@ -372,7 +375,11 @@ export default function AdminBanners() {
       </div>
 
       {deleteMut.isError && (
-        <p className="mt-3 font-body text-sm text-red-500">Delete failed.</p>
+        <p className="mt-3 font-body text-sm text-danger">
+          {deleteMut.error instanceof ApiError
+            ? `Error ${deleteMut.error.status}: ${deleteMut.error.message}`
+            : 'Delete failed.'}
+        </p>
       )}
     </div>
   );

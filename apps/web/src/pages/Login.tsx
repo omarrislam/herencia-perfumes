@@ -30,11 +30,17 @@ export default function Login() {
   return (
     <form onSubmit={onSubmit} className="mx-auto max-w-sm py-16">
       <h1 className="mb-6 font-display text-2xl text-content">Sign in</h1>
-      {error && <p className="mb-3 font-body text-sm text-red-500">{error}</p>}
-      <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email" aria-label="Email"
-        className="mb-3 w-full rounded-md border border-line bg-bg px-3 py-2 font-body text-content" />
-      <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" aria-label="Password"
-        className="mb-4 w-full rounded-md border border-line bg-bg px-3 py-2 font-body text-content" />
+      {error && <p className="mb-3 font-body text-sm text-danger">{error}</p>}
+      <label className="mb-3 block">
+        <span className="mb-1 block font-body text-sm text-muted">Email</span>
+        <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
+          className="w-full rounded-md border border-line bg-bg px-3 py-2 font-body text-content" />
+      </label>
+      <label className="mb-4 block">
+        <span className="mb-1 block font-body text-sm text-muted">Password</span>
+        <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
+          className="w-full rounded-md border border-line bg-bg px-3 py-2 font-body text-content" />
+      </label>
       <Button type="submit" disabled={busy} className="w-full">{busy ? 'Signing in…' : 'Sign in'}</Button>
       <p className="mt-4 font-body text-sm text-muted">No account? <Link to="/register" className="text-accent">Create one</Link></p>
     </form>

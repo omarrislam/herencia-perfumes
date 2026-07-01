@@ -5,6 +5,7 @@ import { useProductFilters } from '../features/products/useProductFilters';
 import { FilterBar } from '../features/products/FilterBar';
 import { ProductCard } from '../components/ProductCard';
 import { Skeleton } from '../components/Skeleton';
+import { Reveal } from '../components/Reveal';
 
 export default function Products() {
   useSeo({ title: 'Shop Perfumes — HERENCIA', description: 'Browse the HERENCIA perfume collection.' });
@@ -31,9 +32,11 @@ export default function Products() {
         <p className="font-body text-muted">No perfumes match your filters.</p>
       ) : (
         <>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-            {data?.items.map((p) => <ProductCard key={p.id} product={p} />)}
-          </div>
+          <Reveal>
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+              {data?.items.map((p) => <ProductCard key={p.id} product={p} />)}
+            </div>
+          </Reveal>
           {data && data.pages > 1 ? (
             <div className="mt-8 flex items-center justify-center gap-4 font-body">
               <button disabled={data.page <= 1} onClick={() => setFilter('page', data.page - 1)} className="rounded-md border border-line px-4 py-2 text-content disabled:opacity-40">Previous</button>

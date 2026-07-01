@@ -51,10 +51,18 @@ _Last updated: 2026-07-01 (Milestone 3 complete)_
 - [x] Offer banners (scheduling)
 - [x] Blog (CRUD + index/post + SEO)
 
-## Milestone 4 — Polish & ship
-- [ ] Animations pass (perf-safe)
-- [ ] Accessibility audit
-- [ ] Performance pass (Lighthouse ≥ 90 mobile)
-- [ ] Tests (unit/integration/E2E smoke)
+## Milestone 4 — Polish (code) — branch `feat/milestone-4-polish`
+- [x] Dark-mode/theming: semantic feedback tokens app-wide (T1, T2, T2b)
+- [x] Correctness: review dup-409, admin→public cache invalidation, blog markdown (T3–T5)
+- [x] Accessibility: cart focus trap, form labels, control aria-labels, stable keys (T6, T7)
+- [x] Animations pass (perf-safe): motion foundation + reveals + micro-interactions + cart/route motion (T8–T10)
+- [x] Performance: self-host fonts, responsive images + LCP preload, CSP, static prerender (T11–T14)
+- [x] Rate-limiting (auth/orders/reviews) (T15)
+- [x] Tests: closed deferred Vitest gaps (T16); Playwright E2E smoke authored (T17)
+- [~] E2E run: infra + specs committed; **run blocked on env** — built `node dist/server.js` fails under plain Node ESM (see deploy note)
+
+## Milestone 5 (deferred) — Ops / Deploy (separate plan)
+- [ ] **Fix built-server ESM** so `node apps/api/dist/server.js` runs on plain Node (NodeNext + `.js` imports, or esbuild bundle) — blocks E2E run + deploy
 - [ ] Deployment (VPS + Nginx + PM2)
+- [ ] Live Lighthouse ≥ 90 mobile verification (levers implemented in M4)
 - [ ] Search Console + sitemap submitted

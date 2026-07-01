@@ -60,7 +60,7 @@ export function ReviewsSection({ slug }: ReviewsSectionProps) {
       </h2>
 
       {isLoading && <p className="font-body text-sm text-muted">Loading reviews…</p>}
-      {isError && <p className="font-body text-sm text-red-500">Could not load reviews.</p>}
+      {isError && <p className="font-body text-sm text-danger">Could not load reviews.</p>}
 
       {data && data.items.length === 0 && (
         <p className="font-body text-sm text-muted">No reviews yet. Be the first!</p>
@@ -152,7 +152,7 @@ export function ReviewsSection({ slug }: ReviewsSectionProps) {
               />
             </div>
 
-            {apiErr && <p className="font-body text-sm text-red-500">{apiErr}</p>}
+            {apiErr && <p className="font-body text-sm text-danger">{apiErr}</p>}
 
             <button
               type="submit"

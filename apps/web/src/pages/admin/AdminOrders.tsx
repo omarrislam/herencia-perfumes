@@ -45,7 +45,7 @@ export default function AdminOrders() {
       </div>
 
       {isLoading && <p className="font-body text-muted">Loading…</p>}
-      {isError && <p className="font-body text-red-500">Failed to load orders.</p>}
+      {isError && <p className="font-body text-danger">Failed to load orders.</p>}
 
       {data && data.items.length === 0 && (
         <p className="font-body text-muted">No orders found.</p>
@@ -80,6 +80,7 @@ export default function AdminOrders() {
                     <td className="py-3 pr-4">
                       <select
                         value={order.status}
+                        aria-label={`Order ${order.orderNumber} status`}
                         disabled={transitions.length === 0 || statusMut.isPending}
                         onChange={(e) =>
                           statusMut.mutate({ id: order.id, status: e.target.value as OrderStatus })
@@ -102,7 +103,7 @@ export default function AdminOrders() {
       )}
 
       {statusMut.isError && (
-        <p className="mt-3 font-body text-sm text-red-500">Status update failed.</p>
+        <p className="mt-3 font-body text-sm text-danger">Status update failed.</p>
       )}
     </div>
   );

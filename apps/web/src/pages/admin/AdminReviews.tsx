@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { adminFetchReviews, adminModerateReview, adminDeleteReview } from '../../features/admin/adminClient';
+import { ApiError } from '../../lib/api';
 
 type StatusFilter = 'pending' | 'approved' | undefined;
 
@@ -17,12 +18,18 @@ export default function AdminReviews() {
   const moderateMut = useMutation({
     mutationFn: ({ id, isApproved }: { id: string; isApproved: boolean }) =>
       adminModerateReview(id, isApproved),
-    onSuccess: () => void qc.invalidateQueries({ queryKey: ['admin-reviews'] }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['admin-reviews'] });
+      void qc.invalidateQueries({ queryKey: ['reviews'] }); // public product reviews
+    },
   });
 
   const deleteMut = useMutation({
     mutationFn: (id: string) => adminDeleteReview(id),
-    onSuccess: () => void qc.invalidateQueries({ queryKey: ['admin-reviews'] }),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ['admin-reviews'] });
+      void qc.invalidateQueries({ queryKey: ['reviews'] }); // public product reviews
+    },
   });
 
   const filters: Array<{ label: string; value: StatusFilter }> = [
@@ -52,7 +59,7 @@ export default function AdminReviews() {
       </div>
 
       {isLoading && <p className="font-body text-muted">Loading…</p>}
-      {isError && <p className="font-body text-red-500">Failed to load reviews.</p>}
+      {isError && <p className="font-body text-danger">Failed to load reviews.</p>}
 
       {data && data.items.length === 0 && (
         <p className="font-body text-muted">No reviews found.</p>
@@ -84,8 +91,8 @@ export default function AdminReviews() {
                     <span
                       className={`rounded px-2 py-0.5 text-xs ${
                         review.isApproved
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-yellow-100 text-yellow-800'
+                          ? 'bg-success-soft text-success'
+                          : 'bg-warning-soft text-warning'
                       }`}
                     >
                       {review.isApproved ? 'Approved' : 'Pending'}
@@ -107,7 +114,7 @@ export default function AdminReviews() {
                           if (confirm('Delete this review?')) deleteMut.mutate(review.id);
                         }}
                         disabled={deleteMut.isPending}
-                        className="rounded border border-line px-2 py-1 text-xs text-red-500 hover:border-red-500 disabled:opacity-50"
+                        className="rounded border border-line px-2 py-1 text-xs text-danger hover:border-danger disabled:opacity-50"
                       >
                         Delete
                       </button>
@@ -121,7 +128,12 @@ export default function AdminReviews() {
       )}
 
       {(moderateMut.isError || deleteMut.isError) && (
-        <p className="mt-3 font-body text-sm text-red-500">Action failed. Please try again.</p>
+        <p className="mt-3 font-body text-sm text-danger">
+          {(() => {
+            const e = moderateMut.error ?? deleteMut.error;
+            return e instanceof ApiError ? `Error ${e.status}: ${e.message}` : 'Action failed. Please try again.';
+          })()}
+        </p>
       )}
     </div>
   );

@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchBlogList } from '../lib/api';
 import { useSeo } from '../lib/useSeo';
 import { cld } from '../lib/cloudinary';
+import { Reveal } from '../components/Reveal';
 
 export default function Blog() {
   const [page] = useState(1);
@@ -24,7 +25,8 @@ export default function Blog() {
       {data && data.items.length === 0 && (
         <p className="font-body text-muted">No posts yet.</p>
       )}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      <Reveal>
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {data?.items.map((post) => (
           <article key={post.id} className="overflow-hidden rounded-lg border border-line bg-surface">
             {post.coverImage && (
@@ -60,7 +62,8 @@ export default function Blog() {
             </div>
           </article>
         ))}
-      </div>
+        </div>
+      </Reveal>
     </div>
   );
 }

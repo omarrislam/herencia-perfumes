@@ -1,15 +1,16 @@
 import { Router } from 'express';
-import { adminProductSchema, scentFamilySchema, slugify, updateOrderStatusSchema, updateReviewSchema, quizQuestionSchema, bannerSchema, ORDER_STATUS, ORDER_STATUS_TRANSITIONS, type OrderStatus } from '@herencia/shared';
+import { adminProductSchema, scentFamilySchema, slugify, updateOrderStatusSchema, updateReviewSchema, quizQuestionSchema, bannerSchema, blogPostSchema, ORDER_STATUS, ORDER_STATUS_TRANSITIONS, type OrderStatus } from '@herencia/shared';
 import { Product } from '../models/Product';
 import { ScentFamily } from '../models/ScentFamily';
 import { Order } from '../models/Order';
 import { Review } from '../models/Review';
 import { QuizQuestion } from '../models/QuizQuestion';
 import { Banner } from '../models/Banner';
+import { BlogPost } from '../models/BlogPost';
 import { HttpError } from '../middleware/error';
 import { requireAdmin } from '../middleware/requireAdmin';
 import { isCloudinaryConfigured, signUploadParams } from '../lib/cloudinary';
-import { toProductDTO, toScentFamilyDTO, toOrderDTO, toReviewDTO, toQuizQuestionAdminDTO, toBannerDTO } from '../lib/serialize';
+import { toProductDTO, toScentFamilyDTO, toOrderDTO, toReviewDTO, toQuizQuestionAdminDTO, toBannerDTO, toBlogPostDTO } from '../lib/serialize';
 import { recomputeProductRating } from '../modules/review/service';
 
 export function adminRouter(): Router {
@@ -265,6 +266,55 @@ export function adminRouter(): Router {
     try {
       const doc = await Banner.findByIdAndDelete(req.params['id']).lean();
       if (!doc) throw new HttpError(404, 'Banner not found', 'not_found');
+      res.status(204).end();
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // ---- Blog ----
+  router.get('/blog', async (_req, res, next) => {
+    try {
+      const docs = await BlogPost.find().sort({ createdAt: -1 }).lean();
+      res.json({ items: docs.map(toBlogPostDTO), total: docs.length, page: 1, pages: 1 });
+    } catch (err) {
+      next(err);
+    }
+  });
+  router.post('/blog', async (req, res, next) => {
+    try {
+      const parsed = blogPostSchema.safeParse(req.body);
+      if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? 'Invalid', 'invalid');
+      const data = parsed.data;
+      const doc = await BlogPost.create({
+        ...data,
+        slug: data.slug ? slugify(data.slug) : slugify(data.title),
+        publishedAt: data.isPublished ? new Date() : undefined,
+      });
+      res.status(201).json(toBlogPostDTO(doc.toObject()));
+    } catch (err) {
+      next(err);
+    }
+  });
+  router.put('/blog/:id', async (req, res, next) => {
+    try {
+      const parsed = blogPostSchema.safeParse(req.body);
+      if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? 'Invalid', 'invalid');
+      const data = parsed.data;
+      const existing = await BlogPost.findById(req.params['id']);
+      if (!existing) throw new HttpError(404, 'Post not found', 'not_found');
+      const publishedAt = data.isPublished ? (existing.publishedAt ?? new Date()) : undefined;
+      existing.set({ ...data, slug: data.slug ? slugify(data.slug) : slugify(data.title), publishedAt });
+      await existing.save();
+      res.json(toBlogPostDTO(existing.toObject()));
+    } catch (err) {
+      next(err);
+    }
+  });
+  router.delete('/blog/:id', async (req, res, next) => {
+    try {
+      const doc = await BlogPost.findByIdAndDelete(req.params['id']).lean();
+      if (!doc) throw new HttpError(404, 'Post not found', 'not_found');
       res.status(204).end();
     } catch (err) {
       next(err);

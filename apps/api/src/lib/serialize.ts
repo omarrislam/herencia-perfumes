@@ -1,4 +1,4 @@
-import type { ProductDTO, ScentFamilyDTO, UserDTO, OrderDTO, AddressDTO, ReviewDTO, QuizQuestionPublicDTO, QuizQuestionAdminDTO, BannerDTO } from '@herencia/shared';
+import type { ProductDTO, ScentFamilyDTO, UserDTO, OrderDTO, AddressDTO, ReviewDTO, QuizQuestionPublicDTO, QuizQuestionAdminDTO, BannerDTO, BlogPostDTO, BlogPostListItemDTO } from '@herencia/shared';
 
 // `doc` is a lean Mongoose document whose shape varies (populated vs. raw refs);
 // `any` is intentional here so the mapper can read arbitrary nested fields.
@@ -161,4 +161,27 @@ export function toOrderDTO(doc: AnyDoc): OrderDTO {
       : new Date(doc.createdAt)
     ).toISOString(),
   };
+}
+
+export function toBlogPostDTO(doc: AnyDoc): BlogPostDTO {
+  const iso = (d: unknown) => (d ? (d instanceof Date ? d : new Date(d as string)).toISOString() : undefined);
+  return {
+    id: String(doc._id),
+    title: doc.title,
+    slug: doc.slug,
+    excerpt: doc.excerpt,
+    body: doc.body,
+    coverImage: doc.coverImage,
+    tags: doc.tags ?? [],
+    isPublished: !!doc.isPublished,
+    publishedAt: iso(doc.publishedAt),
+    seo: { title: doc.seo?.title ?? undefined, description: doc.seo?.description ?? undefined },
+    createdAt: (doc.createdAt instanceof Date ? doc.createdAt : new Date(doc.createdAt)).toISOString(),
+  };
+}
+
+export function toBlogListItemDTO(doc: AnyDoc): BlogPostListItemDTO {
+  const { body, ...rest } = toBlogPostDTO(doc);
+  void body;
+  return rest;
 }

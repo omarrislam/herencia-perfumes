@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { CreateReviewInput } from '@herencia/shared';
 import { fetchReviews, submitReview, ApiError } from '../../lib/api';
 import { useAuth } from '../auth/AuthContext';
-import { Rating } from '../../components/Rating';
+
 
 interface ReviewsSectionProps {
   slug: string;
@@ -71,7 +71,9 @@ export function ReviewsSection({ slug }: ReviewsSectionProps) {
           {data.items.map((review) => (
             <li key={review.id} className="rounded-md border border-line bg-surface p-4 space-y-1">
               <div className="flex items-center gap-2">
-                <Rating avg={review.rating} count={1} />
+                <span className="font-body text-sm text-accent" aria-label={`Rated ${review.rating} of 5`}>
+                  {'★'.repeat(Math.round(review.rating))}{'☆'.repeat(5 - Math.round(review.rating))}
+                </span>
                 <span className="font-body text-sm font-medium text-content">{review.user.name}</span>
               </div>
               {review.title && (

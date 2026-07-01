@@ -4,6 +4,8 @@ import type { BannerPlacement } from '@herencia/shared';
 import { fetchBanners } from '../lib/api';
 import { cld } from '../lib/cloudinary';
 
+const isSafeExternal = (url: string) => /^(https?:|mailto:|tel:)/i.test(url);
+
 interface BannerStripProps {
   placement: BannerPlacement;
 }
@@ -58,18 +60,20 @@ export function BannerStrip({ placement }: BannerStripProps) {
                   >
                     {banner.ctaText ?? 'Shop now'}
                   </Link>
-                : <a
-                    href={banner.ctaLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={
-                      isHero
-                        ? 'mt-3 inline-block rounded bg-maroon px-4 py-2 font-body text-sm text-cream hover:bg-maroon/90'
-                        : 'mt-1 inline-block font-body text-xs text-accent hover:underline'
-                    }
-                  >
-                    {banner.ctaText ?? 'Shop now'}
-                  </a>
+                : isSafeExternal(banner.ctaLink)
+                  ? <a
+                      href={banner.ctaLink}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={
+                        isHero
+                          ? 'mt-3 inline-block rounded bg-maroon px-4 py-2 font-body text-sm text-cream hover:bg-maroon/90'
+                          : 'mt-1 inline-block font-body text-xs text-accent hover:underline'
+                      }
+                    >
+                      {banner.ctaText ?? 'Shop now'}
+                    </a>
+                  : null
             )}
           </div>
         </div>

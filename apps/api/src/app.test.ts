@@ -14,4 +14,13 @@ describe('GET /api/health', () => {
     expect(res.status).toBe(404);
     expect(res.body.error).toBeDefined();
   });
+
+  it('sends a content-security-policy header', async () => {
+    const app = createApp({ clientOrigin: 'http://localhost:5173' });
+    const res = await request(app).get('/api/health').expect(200);
+    const csp = res.headers['content-security-policy'];
+    expect(csp).toBeTruthy();
+    expect(csp).toContain("default-src 'self'");
+    expect(csp).toContain('res.cloudinary.com');
+  });
 });

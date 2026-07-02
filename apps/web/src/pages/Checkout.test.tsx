@@ -15,6 +15,7 @@ function setup() {
     homeSections: { hero: true, essence: true, featured: true, gifting: true, craft: true, time: true, testimonials: true, values: true, quiz: true, faq: true },
     sectionOrder: ['essence', 'featured', 'gifting', 'craft', 'time', 'testimonials', 'values', 'quiz', 'faq'],
     instapay: { enabled: false },
+    promoBar: { enabled: false },
   });
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   vi.spyOn(api, 'priceCart').mockResolvedValue({

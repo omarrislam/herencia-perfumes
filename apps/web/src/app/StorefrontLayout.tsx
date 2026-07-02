@@ -1,11 +1,12 @@
 import { Suspense, useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useQuery } from '@tanstack/react-query';
 import { useTheme } from './ThemeProvider';
 import { useAuth } from '../features/auth/AuthContext';
 import { useCart } from '../features/cart/CartContext';
 import { CartDrawer } from '../features/cart/CartDrawer';
-import { BannerStrip } from '../components/BannerStrip';
+import { fetchSettings } from '../lib/api';
 
 const NAV = [
   { to: '/products', label: 'Perfumes' },
@@ -29,6 +30,7 @@ export function StorefrontLayout() {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
   const isHome = location.pathname === '/';
+  const promo = useQuery({ queryKey: ['settings'], queryFn: fetchSettings }).data?.promoBar;
   // Light (over-hero) nav only on home, at the top, with the menu closed.
   const light = isHome && !scrolled && !menuOpen;
 
@@ -45,8 +47,19 @@ export function StorefrontLayout() {
           light ? 'bg-transparent' : 'border-b border-hairline bg-bg/90 backdrop-blur-md'
         }`}
       >
-        {/* Promo / announcement bar — above the navbar (managed in Admin → Banners, placement "global_top") */}
-        <BannerStrip placement="global_top" />
+        {/* Promo / announcement bar — above the navbar (managed in Admin → Home) */}
+        {promo?.enabled && promo.text && (
+          <div className="bg-espresso px-4 py-2 text-center font-body text-xs tracking-wide text-cream sm:text-sm">
+            <span>{promo.text}</span>
+            {promo.ctaLink && promo.ctaText && (
+              promo.ctaLink.startsWith('/') ? (
+                <Link to={promo.ctaLink} className="ml-2 font-medium text-gold-hi hover:underline">{promo.ctaText}</Link>
+              ) : (
+                <a href={promo.ctaLink} className="ml-2 font-medium text-gold-hi hover:underline" target="_blank" rel="noopener noreferrer">{promo.ctaText}</a>
+              )
+            )}
+          </div>
+        )}
         <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-5 sm:py-4">
           <Link to="/" className="flex items-center gap-2.5">
             <img src="/logo.png" alt="HERENCIA crest" className="h-10 w-10 object-contain" />

@@ -77,10 +77,10 @@ export default function Home() {
           <div className="-mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-3 sm:mx-0 sm:px-0 md:grid md:grid-cols-3 md:gap-6 md:overflow-visible md:pb-0">
             {featured.isLoading
               ? Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="min-w-[60%] shrink-0 snap-start sm:min-w-[42%] md:min-w-0"><Skeleton className="aspect-square rounded-xl" /></div>
+                  <div key={i} className="min-w-[52%] shrink-0 snap-start sm:min-w-[40%] md:min-w-0"><Skeleton className="aspect-square rounded-xl" /></div>
                 ))
               : featuredItems.map((p) => (
-                  <div key={p.id} className="min-w-[60%] shrink-0 snap-start sm:min-w-[42%] md:min-w-0"><ProductCard product={p} /></div>
+                  <div key={p.id} className="min-w-[52%] shrink-0 snap-start sm:min-w-[40%] md:min-w-0"><ProductCard product={p} /></div>
                 ))}
           </div>
           {!featured.isLoading && featuredItems.length === 0 && (
@@ -127,30 +127,46 @@ export default function Home() {
       </Reveal>
     ),
     time: (
-      <Reveal>
-        <section className="rounded-2xl border border-hairline bg-surface2 px-6 py-16 text-center md:py-20">
-          <p className="eyebrow">Time as an Ingredient</p>
-          <h2 className="display mx-auto mt-3 max-w-2xl text-3xl text-content md:text-4xl">Patience is our rarest material</h2>
-          <p className="mx-auto mt-4 max-w-xl font-body leading-relaxed text-muted">
-            Months of resting allow the composition to breathe, mature, and find its perfect harmony before bottling.
-          </p>
+      // Full-bleed band (breaks out of the max-w container).
+      <div className="relative left-1/2 right-1/2 -mx-[50vw] w-screen">
+        <section className="relative overflow-hidden">
+          <img src="/time.png" alt="An hourglass in the atelier" loading="lazy" className="h-[420px] w-full object-cover md:h-[520px]" />
+          <div className="absolute inset-0 bg-gradient-to-r from-espresso/95 via-espresso/70 to-espresso/20" />
+          <div className="absolute inset-0 flex items-center">
+            <div className="mx-auto w-full max-w-6xl px-5 sm:px-6">
+              <div className="max-w-lg">
+                <p className="eyebrow text-gold-hi">Time as an Ingredient</p>
+                <h2 className="display mt-3 text-3xl text-cream sm:text-4xl md:text-5xl">Patience is our rarest material</h2>
+                <p className="mt-4 max-w-md font-body leading-relaxed text-cream/80">
+                  Months of resting allow the composition to breathe, mature, and find its perfect harmony before bottling.
+                </p>
+              </div>
+            </div>
+          </div>
         </section>
-      </Reveal>
+      </div>
     ),
     testimonials: (
       <Reveal>
         <section>
-          <div className="mb-10 text-center">
+          <div className="mb-10 flex flex-col items-center gap-2 text-center">
             <p className="eyebrow">In their words</p>
-            <h2 className="display mt-2 text-3xl text-content md:text-4xl">Loved by our patrons</h2>
-            <div className="rule-gold mx-auto mt-4 w-24" />
+            <div className="flex items-center gap-2">
+              <span className="font-body text-lg tracking-wide text-accent">★★★★★</span>
+              <span className="font-display text-2xl text-content">4.9</span>
+            </div>
+            <p className="font-body text-sm text-muted">Rated by 500+ patrons across Egypt</p>
           </div>
           <div className="grid gap-6 md:grid-cols-3">
             {TESTIMONIALS.map((t) => (
-              <figure key={t.name} className="card-lux rounded-xl p-6">
-                <div className="font-body text-sm tracking-wide text-accent">★★★★★</div>
-                <blockquote className="mt-3 font-body leading-relaxed text-content">“{t.quote}”</blockquote>
-                <figcaption className="mt-4 font-body text-sm text-muted">— {t.name}, {t.city}</figcaption>
+              <figure key={t.name} className="rounded-xl border border-hairline bg-surface p-6">
+                <blockquote className="font-body leading-relaxed text-content">“{t.quote}”</blockquote>
+                <figcaption className="mt-5 flex items-center gap-3">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/15 font-display text-sm text-accent">
+                    {t.name.charAt(0)}
+                  </span>
+                  <span className="font-body text-sm text-muted">{t.name} · {t.city}</span>
+                </figcaption>
               </figure>
             ))}
           </div>
@@ -206,7 +222,7 @@ export default function Home() {
   };
 
   return (
-    <div>
+    <div className="overflow-x-clip">
       {/* Full-bleed hero */}
       {show('hero') && (
         <section className="relative overflow-hidden">

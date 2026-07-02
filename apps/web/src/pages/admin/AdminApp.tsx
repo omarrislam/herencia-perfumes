@@ -4,8 +4,10 @@ import { useQuery } from '@tanstack/react-query';
 import { RequireAdmin } from '../../features/auth/RequireAdmin';
 import { useAuth } from '../../features/auth/AuthContext';
 import { adminFetchOrders } from '../../features/admin/adminClient';
+import AdminDashboard from './AdminDashboard';
 import AdminHome from './AdminHome';
 import AdminProducts from './AdminProducts';
+import AdminInventory from './AdminInventory';
 import AdminScentFamilies from './AdminScentFamilies';
 import AdminOrders from './AdminOrders';
 import AdminReviews from './AdminReviews';
@@ -14,8 +16,10 @@ import AdminBanners from './AdminBanners';
 import AdminBlog from './AdminBlog';
 
 const NAV = [
+  { to: '/admin/dashboard', label: 'Dashboard' },
   { to: '/admin/home', label: 'Home' },
   { to: '/admin/products', label: 'Products' },
+  { to: '/admin/inventory', label: 'Inventory' },
   { to: '/admin/scent-families', label: 'Scent families' },
   { to: '/admin/orders', label: 'Orders', badgeKey: 'orders' as const },
   { to: '/admin/reviews', label: 'Reviews' },
@@ -90,9 +94,11 @@ export default function AdminApp() {
 
           <main className="mx-auto w-full max-w-5xl flex-1 p-5 md:p-8">
             <Routes>
-              <Route path="/" element={<AdminProducts />} />
+              <Route path="/" element={<AdminDashboard />} />
+              <Route path="/dashboard" element={<AdminDashboard />} />
               <Route path="/home" element={<AdminHome />} />
               <Route path="/products" element={<AdminProducts />} />
+              <Route path="/inventory" element={<AdminInventory />} />
               <Route path="/scent-families" element={<AdminScentFamilies />} />
               <Route path="/orders" element={<AdminOrders />} />
               <Route path="/reviews" element={<AdminReviews />} />

@@ -31,6 +31,12 @@ const settingSchema = new Schema(
       handle: { type: String },
       qrImage: { type: String },
     },
+    promoBar: {
+      enabled: { type: Boolean, default: false },
+      text: { type: String },
+      ctaText: { type: String },
+      ctaLink: { type: String },
+    },
     contactEmail: { type: String },
   },
   { timestamps: true },

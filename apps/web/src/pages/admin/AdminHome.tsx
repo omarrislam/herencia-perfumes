@@ -29,6 +29,7 @@ export default function AdminHome() {
   const [sections, setSections] = useState<HomeSections>({ hero: true, essence: true, featured: true, gifting: true, craft: true, time: true, testimonials: true, values: true, quiz: true, faq: true });
   const [order, setOrder] = useState<ReorderableSection[]>(DEFAULT_SECTION_ORDER);
   const [instapay, setInstapay] = useState<{ enabled: boolean; handle: string; qrImage: string }>({ enabled: false, handle: '', qrImage: '' });
+  const [promoBar, setPromoBar] = useState<{ enabled: boolean; text: string; ctaText: string; ctaLink: string }>({ enabled: false, text: '', ctaText: '', ctaLink: '' });
   const [uploading, setUploading] = useState<'hero' | 'qr' | null>(null);
   const [uploadErr, setUploadErr] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -40,6 +41,7 @@ export default function AdminHome() {
     setSections(s.homeSections);
     setOrder(s.sectionOrder);
     setInstapay({ enabled: s.instapay.enabled, handle: s.instapay.handle ?? '', qrImage: s.instapay.qrImage ?? '' });
+    setPromoBar({ enabled: s.promoBar.enabled, text: s.promoBar.text ?? '', ctaText: s.promoBar.ctaText ?? '', ctaLink: s.promoBar.ctaLink ?? '' });
   }, [settings.data]);
 
   const move = (i: number, dir: -1 | 1) => {
@@ -85,6 +87,12 @@ export default function AdminHome() {
         enabled: instapay.enabled,
         handle: instapay.handle || undefined,
         qrImage: instapay.qrImage || undefined,
+      },
+      promoBar: {
+        enabled: promoBar.enabled,
+        text: promoBar.text || undefined,
+        ctaText: promoBar.ctaText || undefined,
+        ctaLink: promoBar.ctaLink || undefined,
       },
     });
   };
@@ -155,6 +163,30 @@ export default function AdminHome() {
             <input type="checkbox" checked={sections[key]} onChange={(e) => setSections({ ...sections, [key]: e.target.checked })} className="h-4 w-4" />
           </div>
         ))}
+      </section>
+
+      {/* Promo bar (above the navbar) */}
+      <section className="rounded-xl border border-hairline bg-surface p-5 space-y-4">
+        <h2 className="font-display text-lg text-content">Promo bar</h2>
+        <p className="font-body text-sm text-muted">A black announcement bar shown above the navbar on every page.</p>
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={promoBar.enabled} onChange={(e) => setPromoBar({ ...promoBar, enabled: e.target.checked })} className="h-4 w-4" />
+          <span className="font-body text-sm text-content">Show the promo bar</span>
+        </label>
+        <label className="block">
+          <span className="mb-1 block font-body text-sm text-muted">Message</span>
+          <input value={promoBar.text} onChange={(e) => setPromoBar({ ...promoBar, text: e.target.value })} placeholder="Free shipping on orders over 2,000 EGP" className="field-lux" />
+        </label>
+        <div className="grid grid-cols-2 gap-3">
+          <label className="block">
+            <span className="mb-1 block font-body text-sm text-muted">Link text (optional)</span>
+            <input value={promoBar.ctaText} onChange={(e) => setPromoBar({ ...promoBar, ctaText: e.target.value })} placeholder="Shop now" className="field-lux" />
+          </label>
+          <label className="block">
+            <span className="mb-1 block font-body text-sm text-muted">Link URL (optional)</span>
+            <input value={promoBar.ctaLink} onChange={(e) => setPromoBar({ ...promoBar, ctaLink: e.target.value })} placeholder="/products" className="field-lux" />
+          </label>
+        </div>
       </section>
 
       {/* InstaPay */}

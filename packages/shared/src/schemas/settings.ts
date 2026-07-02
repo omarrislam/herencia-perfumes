@@ -36,6 +36,15 @@ export const instapaySchema = z.object({
 });
 export type InstaPaySettings = z.infer<typeof instapaySchema>;
 
+// Top announcement / promo bar (above the navbar), managed in Admin → Home.
+export const promoBarSchema = z.object({
+  enabled: z.boolean(),
+  text: z.string().max(160).optional(),
+  ctaText: z.string().max(40).optional(),
+  ctaLink: z.string().max(300).optional(),
+});
+export type PromoBarSettings = z.infer<typeof promoBarSchema>;
+
 export const socialLinksSchema = z
   .object({
     instagram: z.string().max(200).optional(),
@@ -55,6 +64,7 @@ export const updateSettingsSchema = z.object({
   homeSections: homeSectionsSchema.partial().optional(),
   sectionOrder: sectionOrderSchema.optional(),
   instapay: instapaySchema.partial().optional(),
+  promoBar: promoBarSchema.partial().optional(),
 });
 export type UpdateSettingsInput = z.infer<typeof updateSettingsSchema>;
 
@@ -67,6 +77,7 @@ export type SettingDTO = {
   homeSections: HomeSections;
   sectionOrder: ReorderableSection[];
   instapay: InstaPaySettings;
+  promoBar: PromoBarSettings;
   contactEmail?: string;
 };
 

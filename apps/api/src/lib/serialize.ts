@@ -43,6 +43,12 @@ export function toSettingDTO(doc: AnyDoc): SettingDTO {
       handle: doc.instapay?.handle ?? undefined,
       qrImage: doc.instapay?.qrImage ?? undefined,
     },
+    promoBar: {
+      enabled: doc.promoBar?.enabled ?? false,
+      text: doc.promoBar?.text ?? undefined,
+      ctaText: doc.promoBar?.ctaText ?? undefined,
+      ctaLink: doc.promoBar?.ctaLink ?? undefined,
+    },
     contactEmail: doc.contactEmail ?? undefined,
   };
 }

@@ -38,20 +38,20 @@ export function ProductCard({ product }: { product: ProductDTO }) {
             </span>
           )}
         </div>
-        <div className="p-5 pb-3">
-          {product.scentFamily?.name && <p className="eyebrow mb-1.5">{product.scentFamily.name}</p>}
-          <h3 className="font-display text-lg leading-snug text-content">{product.name}</h3>
-          <div className="mt-1.5"><Rating avg={product.rating.avg} count={product.rating.count} /></div>
+        <div className="p-4 pb-2">
+          {product.scentFamily?.name && <p className="eyebrow mb-1">{product.scentFamily.name}</p>}
+          <h3 className="font-display text-base leading-snug text-content">{product.name}</h3>
+          <div className="mt-1"><Rating avg={product.rating.avg} count={product.rating.count} /></div>
         </div>
       </Link>
-      <div className="mt-auto flex items-center justify-between gap-2 px-5 pb-5">
+      <div className="mt-auto flex items-center justify-between gap-2 px-4 pb-4">
         <Price value={product.basePrice} compareAt={baseSize?.compareAtPrice} />
         <button
           type="button"
           onClick={addToCart}
           disabled={!inStock}
           aria-label={`Add ${product.name} to cart`}
-          className="rounded-md bg-espresso px-3.5 py-2 font-body text-xs font-medium tracking-wide text-cream transition-colors hover:bg-accent-strong disabled:opacity-50"
+          className="rounded-md bg-espresso px-3 py-1.5 font-body text-xs font-medium tracking-wide text-cream transition-colors hover:bg-accent-strong disabled:opacity-50"
         >
           {inStock ? 'Add to cart' : 'Sold out'}
         </button>

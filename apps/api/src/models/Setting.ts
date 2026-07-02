@@ -13,6 +13,18 @@ const settingSchema = new Schema(
       ctaLink: { type: String, required: true },
       image: { type: String, required: true },
     },
+    homeSections: {
+      hero: { type: Boolean, default: true },
+      values: { type: Boolean, default: true },
+      featured: { type: Boolean, default: true },
+      promo: { type: Boolean, default: true },
+      quiz: { type: Boolean, default: true },
+    },
+    instapay: {
+      enabled: { type: Boolean, default: false },
+      handle: { type: String },
+      qrImage: { type: String },
+    },
     contactEmail: { type: String },
   },
   { timestamps: true },

@@ -12,3 +12,4 @@ export type { BannerInput, BannerDTO } from './schemas/banner';
 export * from './util/slugify';
 export * from './schemas/blog';
 export * from './schemas/quiz';
+export * from './schemas/settings';

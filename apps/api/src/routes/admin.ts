@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { adminProductSchema, scentFamilySchema, slugify, updateOrderStatusSchema, updateReviewSchema, quizQuestionSchema, bannerSchema, blogPostSchema, ORDER_STATUS, ORDER_STATUS_TRANSITIONS, type OrderStatus } from '@herencia/shared';
+import { adminProductSchema, scentFamilySchema, slugify, updateOrderStatusSchema, updateReviewSchema, quizQuestionSchema, bannerSchema, blogPostSchema, updateSettingsSchema, ORDER_STATUS, ORDER_STATUS_TRANSITIONS, type OrderStatus } from '@herencia/shared';
 import { Product } from '../models/Product';
 import { ScentFamily } from '../models/ScentFamily';
 import { Order } from '../models/Order';
@@ -7,15 +7,41 @@ import { Review } from '../models/Review';
 import { QuizQuestion } from '../models/QuizQuestion';
 import { Banner } from '../models/Banner';
 import { BlogPost } from '../models/BlogPost';
+import { Setting } from '../models/Setting';
 import { HttpError } from '../middleware/error';
 import { requireAdmin } from '../middleware/requireAdmin';
 import { isCloudinaryConfigured, signUploadParams } from '../lib/cloudinary';
-import { toProductDTO, toScentFamilyDTO, toOrderDTO, toReviewDTO, toQuizQuestionAdminDTO, toBannerDTO, toBlogPostDTO } from '../lib/serialize';
+import { toProductDTO, toScentFamilyDTO, toOrderDTO, toReviewDTO, toQuizQuestionAdminDTO, toBannerDTO, toBlogPostDTO, toSettingDTO } from '../lib/serialize';
 import { recomputeProductRating } from '../modules/review/service';
 
 export function adminRouter(): Router {
   const router = Router();
   router.use(requireAdmin);
+
+  // ---- Settings (home CMS: hero, section toggles, InstaPay) ----
+  router.put('/settings', async (req, res, next) => {
+    try {
+      const parsed = updateSettingsSchema.safeParse(req.body);
+      if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? 'Invalid', 'invalid');
+      // Flatten one level to dot-paths so a partial save doesn't clobber sibling
+      // fields within hero / homeSections / instapay / socialLinks.
+      const $set: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(parsed.data)) {
+        if (v === undefined) continue;
+        if (v !== null && typeof v === 'object' && !Array.isArray(v)) {
+          for (const [k2, v2] of Object.entries(v)) {
+            if (v2 !== undefined) $set[`${k}.${k2}`] = v2;
+          }
+        } else {
+          $set[k] = v;
+        }
+      }
+      const s = await Setting.findOneAndUpdate({}, { $set }, { new: true, upsert: true }).lean();
+      res.json(toSettingDTO(s));
+    } catch (err) {
+      next(err);
+    }
+  });
 
   // ---- Scent families ----
   router.post('/scent-families', async (req, res, next) => {

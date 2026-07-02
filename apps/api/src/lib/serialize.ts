@@ -1,4 +1,29 @@
-import type { ProductDTO, ScentFamilyDTO, UserDTO, OrderDTO, AddressDTO, ReviewDTO, QuizQuestionPublicDTO, QuizQuestionAdminDTO, BannerDTO, BlogPostDTO, BlogPostListItemDTO } from '@herencia/shared';
+import type { ProductDTO, ScentFamilyDTO, UserDTO, OrderDTO, AddressDTO, ReviewDTO, QuizQuestionPublicDTO, QuizQuestionAdminDTO, BannerDTO, BlogPostDTO, BlogPostListItemDTO, SettingDTO } from '@herencia/shared';
+import { DEFAULT_HOME_SECTIONS } from '@herencia/shared';
+
+export function toSettingDTO(doc: AnyDoc): SettingDTO {
+  const hs = doc.homeSections ?? {};
+  return {
+    whatsappNumber: doc.whatsappNumber,
+    shippingFee: doc.shippingFee ?? 0,
+    freeShippingThreshold: doc.freeShippingThreshold ?? undefined,
+    socialLinks: doc.socialLinks ?? {},
+    hero: doc.hero,
+    homeSections: {
+      hero: hs.hero ?? DEFAULT_HOME_SECTIONS.hero,
+      values: hs.values ?? DEFAULT_HOME_SECTIONS.values,
+      featured: hs.featured ?? DEFAULT_HOME_SECTIONS.featured,
+      promo: hs.promo ?? DEFAULT_HOME_SECTIONS.promo,
+      quiz: hs.quiz ?? DEFAULT_HOME_SECTIONS.quiz,
+    },
+    instapay: {
+      enabled: doc.instapay?.enabled ?? false,
+      handle: doc.instapay?.handle ?? undefined,
+      qrImage: doc.instapay?.qrImage ?? undefined,
+    },
+    contactEmail: doc.contactEmail ?? undefined,
+  };
+}
 
 // `doc` is a lean Mongoose document whose shape varies (populated vs. raw refs);
 // `any` is intentional here so the mapper can read arbitrary nested fields.

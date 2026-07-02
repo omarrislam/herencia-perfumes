@@ -47,7 +47,7 @@ export default function Home() {
         ) : (
           <Skeleton className="h-[72vh] max-h-[760px] min-h-[440px] w-full" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-ink/90 via-ink/45 to-ink/15" />
+        <div className="absolute inset-0 bg-gradient-to-t from-espresso/90 via-espresso/45 to-espresso/15" />
         <div className="absolute inset-0 flex items-center">
           <div className="mx-auto w-full max-w-6xl px-5 sm:px-6">
             <div className="max-w-2xl space-y-6">
@@ -62,7 +62,7 @@ export default function Home() {
                 <Link to={hero?.ctaLink ?? '/products'} className="btn-lux">
                   {hero?.ctaText ?? 'Shop the collection'}
                 </Link>
-                <Link to="/find-your-scent" className="btn-outline border-cream/40 text-cream hover:bg-cream hover:text-ink">
+                <Link to="/find-your-scent" className="btn-outline border-cream/40 text-cream hover:bg-cream hover:text-espresso">
                   Find your scent
                 </Link>
               </div>
@@ -72,7 +72,8 @@ export default function Home() {
       </section>
       )}
 
-      {/* Full-width promo bar */}
+      {/* Announcement + promo bars (full-width) */}
+      <BannerStrip placement="global_top" />
       <BannerStrip placement="home_strip" />
 
       {/* Contained content */}
@@ -102,10 +103,19 @@ export default function Home() {
               <h2 className="display mt-2 text-3xl text-content md:text-4xl">Featured scents</h2>
               <div className="rule-gold mx-auto mt-4 w-24" />
             </div>
-            <div className="grid grid-cols-2 gap-5 md:grid-cols-4 md:gap-6">
+            {/* Mobile: horizontal swipe drawer · Desktop: grid */}
+            <div className="-mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-3 sm:mx-0 sm:px-0 md:grid md:grid-cols-4 md:gap-6 md:overflow-visible md:pb-0">
               {featured.isLoading
-                ? Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="aspect-[4/5] rounded-xl" />)
-                : featuredItems.map((p) => <ProductCard key={p.id} product={p} />)}
+                ? Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="min-w-[68%] shrink-0 snap-start sm:min-w-[45%] md:min-w-0">
+                      <Skeleton className="aspect-[4/5] rounded-xl" />
+                    </div>
+                  ))
+                : featuredItems.map((p) => (
+                    <div key={p.id} className="min-w-[68%] shrink-0 snap-start sm:min-w-[45%] md:min-w-0">
+                      <ProductCard product={p} />
+                    </div>
+                  ))}
             </div>
             {!featured.isLoading && featuredItems.length === 0 && (
               <p className="text-center font-body text-muted">No featured products yet.</p>
@@ -123,7 +133,7 @@ export default function Home() {
         {/* Quiz CTA band */}
         {show('quiz') && (
         <Reveal>
-          <section className="relative overflow-hidden rounded-2xl bg-ink px-6 py-16 text-center shadow-lux md:py-20">
+          <section className="relative overflow-hidden rounded-2xl bg-espresso px-6 py-16 text-center shadow-lux md:py-20">
             <p className="eyebrow text-gold-hi">Not sure where to start?</p>
             <h2 className="display mx-auto mt-3 max-w-2xl text-3xl text-cream md:text-4xl">
               Find your signature scent
@@ -131,7 +141,7 @@ export default function Home() {
             <p className="mx-auto mt-4 max-w-md font-body text-cream/70">
               A few questions reveal the family that suits you — and the bottle to match.
             </p>
-            <Link to="/find-your-scent" className="btn-outline mt-8 border-cream/40 text-cream hover:bg-cream hover:text-ink">
+            <Link to="/find-your-scent" className="btn-outline mt-8 border-cream/40 text-cream hover:bg-cream hover:text-espresso">
               Take the quiz
             </Link>
           </section>

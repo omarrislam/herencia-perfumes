@@ -14,36 +14,45 @@ const NAV = [
   { to: '/blog', label: 'Journal' },
 ];
 
-const navLink = ({ isActive }: { isActive: boolean }) =>
-  `link-underline font-body text-sm tracking-wide transition-colors ${
-    isActive ? 'text-accent' : 'text-content hover:text-accent'
-  }`;
-
 export function StorefrontLayout() {
   const { theme, toggle } = useTheme();
   const { user, logout } = useAuth();
   const { count, setOpen, justAdded } = useCart();
   const location = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   useEffect(() => setMenuOpen(false), [location.pathname]);
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
   const isHome = location.pathname === '/';
+  // Light (over-hero) nav only on home, at the top, with the menu closed.
+  const light = isHome && !scrolled && !menuOpen;
+
+  const linkColor = light ? 'text-cream/90 hover:text-cream' : 'text-content hover:text-accent';
+  const navLink = ({ isActive }: { isActive: boolean }) =>
+    `link-underline font-body text-sm tracking-wide transition-colors ${
+      isActive ? (light ? 'text-cream' : 'text-accent') : linkColor
+    }`;
 
   return (
     <div className="flex min-h-[100dvh] flex-col">
-      <header className="sticky top-0 z-40 border-b border-hairline bg-bg/85 backdrop-blur-md">
+      <header
+        className={`fixed inset-x-0 top-0 z-40 transition-colors duration-300 ${
+          light ? 'bg-transparent' : 'border-b border-hairline bg-bg/90 backdrop-blur-md'
+        }`}
+      >
         <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-5 sm:py-4">
           <Link to="/" className="flex items-center gap-2.5">
-            <img
-              src="/logo.png"
-              alt="HERENCIA crest"
-              className="h-10 w-10 object-contain"
-            />
-            <span className="logo-shimmer font-display text-xl tracking-[0.2em] text-content sm:text-2xl">
+            <img src="/logo.png" alt="HERENCIA crest" className="h-10 w-10 object-contain" />
+            <span className={`logo-shimmer font-display text-xl tracking-[0.2em] sm:text-2xl ${light ? 'text-cream' : 'text-content'}`}>
               HERENCIA
             </span>
           </Link>
 
-          {/* Desktop links */}
           <div className="hidden items-center gap-6 md:flex">
             {NAV.map((n) => (
               <NavLink key={n.to} to={n.to} className={navLink}>{n.label}</NavLink>
@@ -51,27 +60,24 @@ export function StorefrontLayout() {
             {user ? (
               <>
                 <NavLink to="/account" className={navLink}>Account</NavLink>
-                <button onClick={() => void logout()} className="link-underline font-body text-sm tracking-wide text-muted transition-colors hover:text-accent">
-                  Sign out
-                </button>
+                <button onClick={() => void logout()} className={`link-underline font-body text-sm tracking-wide transition-colors ${linkColor}`}>Sign out</button>
               </>
             ) : (
               <NavLink to="/login" className={navLink}>Sign in</NavLink>
             )}
           </div>
 
-          {/* Right cluster (always visible) */}
-          <div className="flex items-center gap-3 sm:gap-4">
+          <div className={`flex items-center gap-3 sm:gap-4 ${light ? 'text-cream' : 'text-content'}`}>
             <button
               type="button"
               aria-label={`Cart${count > 0 ? `, ${count} item${count === 1 ? '' : 's'}` : ''}`}
               onClick={() => setOpen(true)}
-              className={`relative inline-flex items-center gap-2 font-body text-sm tracking-wide text-content transition-colors hover:text-accent ${justAdded ? 'motion-safe:animate-[pulse_0.6s_ease-out]' : ''}`}
+              className={`relative inline-flex items-center gap-2 font-body text-sm tracking-wide transition-colors hover:text-accent ${justAdded ? 'motion-safe:animate-[pulse_0.6s_ease-out]' : ''}`}
             >
               <span className="hidden sm:inline">Cart</span>
               <span className="sm:hidden" aria-hidden="true">🛍</span>
               {count > 0 && (
-                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-ink px-1.5 text-xs font-medium text-surface">
+                <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-espresso px-1.5 text-xs font-medium text-cream ring-1 ring-cream/30">
                   {count}
                 </span>
               )}
@@ -80,31 +86,27 @@ export function StorefrontLayout() {
               type="button"
               onClick={toggle}
               aria-label="Toggle theme"
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-hairline text-content transition-colors hover:border-accent hover:text-accent"
+              className={`flex h-9 w-9 items-center justify-center rounded-full border transition-colors hover:border-accent hover:text-accent ${light ? 'border-cream/40' : 'border-hairline'}`}
             >
               {theme === 'light' ? '🌙' : '☀️'}
             </button>
-            {/* Hamburger (mobile only) */}
             <button
               type="button"
               onClick={() => setMenuOpen((v) => !v)}
               aria-label={menuOpen ? 'Close menu' : 'Open menu'}
               aria-expanded={menuOpen}
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-hairline text-content transition-colors hover:border-accent hover:text-accent md:hidden"
+              className={`flex h-9 w-9 items-center justify-center rounded-full border transition-colors hover:border-accent hover:text-accent md:hidden ${light ? 'border-cream/40' : 'border-hairline'}`}
             >
               {menuOpen ? '✕' : '☰'}
             </button>
           </div>
         </nav>
 
-        {/* Mobile menu */}
         {menuOpen && (
           <div className="border-t border-hairline bg-bg md:hidden">
             <div className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-3">
               {NAV.map((n) => (
-                <NavLink key={n.to} to={n.to} className="rounded-lg px-3 py-2.5 font-body text-content hover:bg-accent/10 hover:text-accent">
-                  {n.label}
-                </NavLink>
+                <NavLink key={n.to} to={n.to} className="rounded-lg px-3 py-2.5 font-body text-content hover:bg-accent/10 hover:text-accent">{n.label}</NavLink>
               ))}
               {user ? (
                 <>
@@ -119,15 +121,13 @@ export function StorefrontLayout() {
         )}
       </header>
 
-      <BannerStrip placement="global_top" />
+      {/* Off-home pages get the announcement bar + a spacer for the fixed header.
+          On home the hero sits under the transparent header (bar shown after hero). */}
+      {!isHome && <div className="h-[60px] sm:h-[68px]" aria-hidden="true" />}
+      {!isHome && <BannerStrip placement="global_top" />}
 
       <main className={isHome ? 'w-full flex-1' : 'mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-5'}>
-        <motion.div
-          key={location.pathname}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.2 }}
-        >
+        <motion.div key={location.pathname} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}>
           <Suspense fallback={null}>
             <Outlet />
           </Suspense>
@@ -166,9 +166,7 @@ export function StorefrontLayout() {
             </div>
           </div>
           <div className="rule-gold mt-12" />
-          <p className="mt-6 font-body text-xs tracking-wide text-muted">
-            © {new Date().getFullYear()} HERENCIA. Crafted in Egypt.
-          </p>
+          <p className="mt-6 font-body text-xs tracking-wide text-muted">© {new Date().getFullYear()} HERENCIA. Crafted in Egypt.</p>
         </div>
       </footer>
       <CartDrawer />

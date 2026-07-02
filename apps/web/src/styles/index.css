@@ -174,8 +174,10 @@
     gap: 0.5rem;
     overflow: hidden;
     border-radius: 0.5rem;
-    background: var(--ink);
-    color: var(--surface);
+    /* Fixed dark surface + cream text so the CTA reads in BOTH themes
+       (--ink flips to cream in dark mode). */
+    background: #241111;
+    color: #f4ead0;
     font-family: 'Jost', sans-serif;
     font-weight: 500;
     letter-spacing: 0.04em;

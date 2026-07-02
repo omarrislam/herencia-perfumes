@@ -6,6 +6,9 @@ export default {
     extend: {
       colors: {
         maroon: '#4B1D1D',
+        // Fixed deep maroon-black for "always dark" surfaces (feature bands,
+        // primary buttons, image overlays) — does NOT flip with the theme.
+        espresso: '#241111',
         gold: '#C29A5B',
         cream: '#F5EBC6',
         parchment: '#EBD6B1',

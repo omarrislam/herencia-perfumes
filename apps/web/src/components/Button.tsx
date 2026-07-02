@@ -6,7 +6,7 @@ const base =
   'inline-flex items-center justify-center rounded-md px-5 py-2.5 font-body text-sm font-medium tracking-wide transition-transform transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:opacity-50 active:scale-[0.98] motion-reduce:transform-none motion-reduce:transition-none';
 
 const variants: Record<Variant, string> = {
-  primary: 'bg-ink text-surface shadow-lux-sm hover:bg-accent-strong hover:shadow-lux',
+  primary: 'bg-espresso text-cream shadow-lux-sm hover:bg-accent-strong hover:shadow-lux',
   secondary: 'border border-accent text-content hover:bg-accent hover:text-surface',
   ghost: 'text-content hover:text-accent hover:bg-accent/5',
 };

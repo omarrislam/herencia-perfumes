@@ -30,7 +30,7 @@ export function BannerStrip({ placement }: { placement: BannerPlacement }) {
             {banner.image && (
               <img src={cld(banner.image, { w: 1600 })} alt={banner.title} className="h-64 w-full object-cover md:h-80" />
             )}
-            <div className="absolute inset-0 bg-gradient-to-t from-ink/85 via-ink/40 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-espresso/85 via-espresso/40 to-transparent" />
             <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-10">
               <p className="eyebrow text-gold-hi">Featured</p>
               <p className="mt-2 font-display text-2xl text-cream md:text-3xl">{banner.title}</p>

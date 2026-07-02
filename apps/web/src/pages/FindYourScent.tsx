@@ -44,46 +44,57 @@ export default function FindYourScent() {
     return <p className="py-8 text-center font-body text-muted">Failed to load quiz.</p>;
   }
 
+  const total = questions?.length ?? 0;
+  const pct = total ? Math.round((currentIndex / total) * 100) : 0;
+
   return (
-    <div className="mx-auto max-w-xl py-10">
-      <h1 className="mb-6 text-center font-display text-3xl text-content">Find Your Scent</h1>
+    <div className="mx-auto max-w-xl">
+      <div className="mb-8 text-center">
+        <p className="eyebrow">The Ritual</p>
+        <h1 className="display mt-2 text-3xl text-content md:text-4xl">Find Your Scent</h1>
+      </div>
 
       {result ? (
         <div>
-          <h2 className="mb-4 text-center font-display text-2xl text-content">Your scent profile</h2>
-          {result.scentFamily && (
-            <p className="mb-4 text-center font-body text-muted">{result.scentFamily.name}</p>
-          )}
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+          <div className="mb-8 text-center">
+            <p className="eyebrow">Your scent profile</p>
+            {result.scentFamily && (
+              <h2 className="display mt-2 text-3xl text-content">{result.scentFamily.name}</h2>
+            )}
+            <div className="rule-gold mx-auto mt-4 w-24" />
+          </div>
+          <div className="grid grid-cols-2 gap-5 sm:grid-cols-3">
             {result.recommended.map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
           </div>
-          <button
-            type="button"
-            onClick={reset}
-            className="mx-auto mt-8 block font-body text-sm text-muted hover:text-accent"
-          >
+          <button type="button" onClick={reset} className="btn-outline mx-auto mt-10 block">
             Start over
           </button>
         </div>
       ) : mutation.isPending ? (
-        <p className="py-8 text-center font-body text-muted">Finding your perfect scent…</p>
+        <p className="py-16 text-center font-body text-muted">Composing your recommendation…</p>
       ) : currentQuestion ? (
-        <div>
-          <p className="mb-2 text-center font-body text-sm text-muted">
-            {currentIndex + 1} / {questions?.length}
-          </p>
-          <h2 className="mb-6 text-center font-display text-2xl text-content">
+        <div className="card-lux rounded-2xl p-8">
+          <div className="mb-6">
+            <div className="mb-2 flex justify-between font-body text-xs tracking-wide text-muted">
+              <span>Question {currentIndex + 1}</span>
+              <span>{currentIndex + 1} / {total}</span>
+            </div>
+            <div className="h-1 w-full overflow-hidden rounded-full bg-hairline">
+              <div className="h-full rounded-full bg-accent transition-all duration-500" style={{ width: `${pct}%` }} />
+            </div>
+          </div>
+          <h2 className="mb-6 font-display text-2xl leading-snug text-content">
             {currentQuestion.question}
           </h2>
           <div className="grid grid-cols-1 gap-3">
             {currentQuestion.answers.map((answer, idx) => (
               <button
-                key={idx}
+                key={`${currentQuestion.id}-${idx}`}
                 type="button"
                 onClick={() => handleAnswer(currentQuestion, idx)}
-                className="w-full rounded-lg border border-line bg-surface px-4 py-3 font-body text-content transition-colors hover:bg-maroon hover:text-cream"
+                className="w-full rounded-xl border border-line bg-surface px-5 py-4 text-left font-body text-content transition-all hover:border-accent hover:bg-accent hover:text-surface"
               >
                 {answer.label}
               </button>

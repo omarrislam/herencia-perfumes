@@ -20,48 +20,41 @@ export default function Blog() {
   if (isError) return <p className="py-8 text-center font-body text-muted">Failed to load posts.</p>;
 
   return (
-    <div className="py-10">
-      <h1 className="mb-8 font-display text-3xl text-content">Journal</h1>
+    <div>
+      <div className="mb-10">
+        <p className="eyebrow">Notes on scent &amp; craft</p>
+        <h1 className="display mt-2 text-3xl text-content md:text-4xl">Journal</h1>
+        <div className="rule-gold-left mt-4" />
+      </div>
       {data && data.items.length === 0 && (
-        <p className="font-body text-muted">No posts yet.</p>
+        <p className="py-16 text-center font-body text-muted">No posts yet.</p>
       )}
       <Reveal>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {data?.items.map((post) => (
-          <article key={post.id} className="overflow-hidden rounded-lg border border-line bg-surface">
-            {post.coverImage && (
-              <img
-                src={cld(post.coverImage, { w: 600 })}
-                alt={post.title}
-                className="aspect-video w-full object-cover"
-              />
-            )}
-            <div className="space-y-2 p-4">
-              <Link
-                to={'/blog/' + post.slug}
-                className="block font-display text-lg text-content hover:text-accent"
-              >
-                {post.title}
-              </Link>
-              <p className="line-clamp-3 font-body text-sm text-muted">{post.excerpt}</p>
-              {post.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {post.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="rounded-full bg-bg px-2 py-0.5 font-body text-xs text-muted"
-                    >
-                      {tag}
-                    </span>
-                  ))}
+          {data?.items.map((post) => (
+            <article key={post.id} className="card-lux group overflow-hidden rounded-xl">
+              <Link to={'/blog/' + post.slug} className="block">
+                {post.coverImage && (
+                  <div className="aspect-[16/10] overflow-hidden bg-surface2">
+                    <img
+                      src={cld(post.coverImage, { w: 600 })}
+                      alt={post.title}
+                      className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.05] motion-reduce:transform-none motion-reduce:transition-none"
+                    />
+                  </div>
+                )}
+                <div className="space-y-2 p-5">
+                  <p className="eyebrow">
+                    {new Date(post.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                  </p>
+                  <h2 className="font-display text-lg leading-snug text-content transition-colors group-hover:text-accent">
+                    {post.title}
+                  </h2>
+                  <p className="line-clamp-3 font-body text-sm leading-relaxed text-muted">{post.excerpt}</p>
                 </div>
-              )}
-              <p className="font-body text-xs text-muted">
-                {new Date(post.createdAt).toLocaleDateString()}
-              </p>
-            </div>
-          </article>
-        ))}
+              </Link>
+            </article>
+          ))}
         </div>
       </Reveal>
     </div>

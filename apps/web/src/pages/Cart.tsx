@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useCart } from '../features/cart/CartContext';
 import { Price } from '../components/Price';
+import { cld } from '../lib/cloudinary';
 
 export default function Cart() {
   const { priced, updateQty, removeItem } = useCart();
@@ -32,7 +33,7 @@ export default function Cart() {
               >
                 {line.image ? (
                   <img
-                    src={line.image}
+                    src={cld(line.image, { w: 192 })}
                     alt={line.name}
                     className="h-24 w-24 flex-shrink-0 rounded-md object-cover"
                   />

@@ -11,15 +11,18 @@ export type HeroContent = z.infer<typeof heroSchema>;
 
 export const homeSectionsSchema = z.object({
   hero: z.boolean(),
-  values: z.boolean(),
+  essence: z.boolean(),
   featured: z.boolean(),
-  promo: z.boolean(),
+  gifting: z.boolean(),
+  craft: z.boolean(),
+  values: z.boolean(),
   quiz: z.boolean(),
+  faq: z.boolean(),
 });
 export type HomeSections = z.infer<typeof homeSectionsSchema>;
 
-// Order of the re-orderable (contained) home sections. Hero + bars are fixed.
-export const REORDERABLE_SECTIONS = ['values', 'featured', 'promo', 'quiz'] as const;
+// Order of the re-orderable (contained) home sections. Hero is fixed first.
+export const REORDERABLE_SECTIONS = ['essence', 'featured', 'gifting', 'craft', 'values', 'quiz', 'faq'] as const;
 export type ReorderableSection = (typeof REORDERABLE_SECTIONS)[number];
 export const DEFAULT_SECTION_ORDER: ReorderableSection[] = [...REORDERABLE_SECTIONS];
 export const sectionOrderSchema = z.array(z.enum(REORDERABLE_SECTIONS));
@@ -67,8 +70,11 @@ export type SettingDTO = {
 
 export const DEFAULT_HOME_SECTIONS: HomeSections = {
   hero: true,
-  values: true,
+  essence: true,
   featured: true,
-  promo: true,
+  gifting: true,
+  craft: true,
+  values: true,
   quiz: true,
+  faq: true,
 };

@@ -27,10 +27,13 @@ export function toSettingDTO(doc: AnyDoc): SettingDTO {
     hero: doc.hero,
     homeSections: {
       hero: hs.hero ?? DEFAULT_HOME_SECTIONS.hero,
-      values: hs.values ?? DEFAULT_HOME_SECTIONS.values,
+      essence: hs.essence ?? DEFAULT_HOME_SECTIONS.essence,
       featured: hs.featured ?? DEFAULT_HOME_SECTIONS.featured,
-      promo: hs.promo ?? DEFAULT_HOME_SECTIONS.promo,
+      gifting: hs.gifting ?? DEFAULT_HOME_SECTIONS.gifting,
+      craft: hs.craft ?? DEFAULT_HOME_SECTIONS.craft,
+      values: hs.values ?? DEFAULT_HOME_SECTIONS.values,
       quiz: hs.quiz ?? DEFAULT_HOME_SECTIONS.quiz,
+      faq: hs.faq ?? DEFAULT_HOME_SECTIONS.faq,
     },
     sectionOrder: normalizeSectionOrder(doc.sectionOrder),
     instapay: {

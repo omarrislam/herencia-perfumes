@@ -271,7 +271,8 @@ function OrdersSection() {
 
   // Flag orders whose status changed since the last visit (client-side notification).
   useEffect(() => {
-    if (orders.length === 0) return;
+    const list = ordersQ.data?.items ?? [];
+    if (list.length === 0) return;
     let prev: Record<string, string> = {};
     try {
       prev = JSON.parse(localStorage.getItem(ORDER_STATUS_LS) || '{}') as Record<string, string>;
@@ -280,13 +281,13 @@ function OrdersSection() {
     }
     const nowChanged = new Set<string>();
     const current: Record<string, string> = {};
-    for (const o of orders) {
+    for (const o of list) {
       current[o.id] = o.status;
       if (prev[o.id] && prev[o.id] !== o.status) nowChanged.add(o.id);
     }
     setChanged(nowChanged);
     localStorage.setItem(ORDER_STATUS_LS, JSON.stringify(current));
-  }, [orders]);
+  }, [ordersQ.data]);
 
   return (
     <section className="card-lux space-y-4 rounded-2xl p-6 md:p-8">

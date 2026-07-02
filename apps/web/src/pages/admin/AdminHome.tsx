@@ -10,10 +10,13 @@ import { ApiError } from '../../lib/api';
 type HeroForm = { title: string; subtitle: string; ctaText: string; ctaLink: string; image: string };
 const LABELS: Record<keyof HomeSections, { label: string; hint: string }> = {
   hero: { label: 'Hero', hint: 'Main banner at the top (always first)' },
+  essence: { label: 'Essence', hint: '“Essence of Heritage” editorial split' },
+  featured: { label: 'Featured scents', hint: 'Featured products (drawer on mobile)' },
+  gifting: { label: 'Gifting band', hint: 'Gift-box banner → bundles' },
+  craft: { label: 'Atelier / craft', hint: '“Perfumery as inheritance” editorial' },
   values: { label: 'Values strip', hint: 'Small-batch / COD / free shipping' },
-  featured: { label: 'Featured scents', hint: 'Grid of featured products' },
-  promo: { label: 'Promo banner', hint: 'The cinematic home-hero banner' },
   quiz: { label: 'Quiz CTA', hint: '“Find your signature scent” band' },
+  faq: { label: 'FAQ', hint: 'Questions & answers accordion' },
 };
 
 export default function AdminHome() {
@@ -21,7 +24,7 @@ export default function AdminHome() {
   const settings = useQuery({ queryKey: ['settings'], queryFn: fetchSettings });
 
   const [hero, setHero] = useState<HeroForm>({ title: '', subtitle: '', ctaText: '', ctaLink: '', image: '' });
-  const [sections, setSections] = useState<HomeSections>({ hero: true, values: true, featured: true, promo: true, quiz: true });
+  const [sections, setSections] = useState<HomeSections>({ hero: true, essence: true, featured: true, gifting: true, craft: true, values: true, quiz: true, faq: true });
   const [order, setOrder] = useState<ReorderableSection[]>(DEFAULT_SECTION_ORDER);
   const [instapay, setInstapay] = useState<{ enabled: boolean; handle: string; qrImage: string }>({ enabled: false, handle: '', qrImage: '' });
   const [uploading, setUploading] = useState<'hero' | 'qr' | null>(null);

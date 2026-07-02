@@ -15,10 +15,13 @@ const settingSchema = new Schema(
     },
     homeSections: {
       hero: { type: Boolean, default: true },
-      values: { type: Boolean, default: true },
+      essence: { type: Boolean, default: true },
       featured: { type: Boolean, default: true },
-      promo: { type: Boolean, default: true },
+      gifting: { type: Boolean, default: true },
+      craft: { type: Boolean, default: true },
+      values: { type: Boolean, default: true },
       quiz: { type: Boolean, default: true },
+      faq: { type: Boolean, default: true },
     },
     sectionOrder: { type: [String] },
     instapay: {

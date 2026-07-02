@@ -23,7 +23,7 @@ export function ProductCard({ product }: { product: ProductDTO }) {
   };
 
   return (
-    <div className="group card-lux relative flex flex-col overflow-hidden rounded-xl">
+    <div className="group card-lux relative flex h-full flex-col overflow-hidden rounded-xl">
       <Link to={href} className="block focus-visible:outline-none">
         <div className="relative aspect-square overflow-hidden bg-surface2">
           <ProductImage
@@ -51,7 +51,7 @@ export function ProductCard({ product }: { product: ProductDTO }) {
           onClick={addToCart}
           disabled={!inStock}
           aria-label={`Add ${product.name} to cart`}
-          className="rounded-md bg-espresso px-3 py-1.5 font-body text-xs font-medium tracking-wide text-cream transition-colors hover:bg-accent-strong disabled:opacity-50"
+          className="shrink-0 whitespace-nowrap rounded-md bg-espresso px-3 py-1.5 font-body text-xs font-medium tracking-wide text-cream transition-colors hover:bg-accent-strong disabled:opacity-50"
         >
           {inStock ? 'Add to cart' : 'Sold out'}
         </button>

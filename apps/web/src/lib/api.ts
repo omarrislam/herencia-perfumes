@@ -63,6 +63,12 @@ export function fetchProducts(filters: ProductFilters): Promise<ProductListDTO> 
   return apiGet<ProductListDTO>(`/api/products${qs ? `?${qs}` : ''}`);
 }
 
+export type ReviewHighlight = {
+  id: string; rating: number; title?: string; body: string;
+  userName: string; productName: string; productSlug: string; createdAt: string;
+};
+export const fetchReviewHighlights = () => apiGet<{ items: ReviewHighlight[] }>('/api/reviews/highlights');
+
 export const fetchProduct = (slug: string) => apiGet<ProductDTO>(`/api/products/${slug}`);
 export const fetchRelated = (slug: string) => apiGet<ProductDTO[]>(`/api/products/${slug}/related`);
 export const fetchScentFamilies = () => apiGet<ScentFamilyDTO[]>('/api/scent-families');

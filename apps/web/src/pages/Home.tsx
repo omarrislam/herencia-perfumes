@@ -9,12 +9,20 @@ import { ProductCard } from '../components/ProductCard';
 import { ProductImage } from '../components/ProductImage';
 import { Skeleton } from '../components/Skeleton';
 import { Reveal } from '../components/Reveal';
+import { TestimonialCarousel } from '../components/TestimonialCarousel';
 
-const TESTIMONIALS: { quote: string; name: string; city: string }[] = [
-  { quote: 'Royal Oud is the first scent strangers stop me to ask about.', name: 'Yara H.', city: 'Cairo' },
-  { quote: 'The gift box alone felt like a luxury — my father hasn’t taken it off since.', name: 'Karim S.', city: 'Alexandria' },
-  { quote: 'Finally a house that lasts all day without shouting. Amber Noir is a masterpiece.', name: 'Nour A.', city: 'Giza' },
-];
+// Simple inline icons for the values strip (single stroke weight).
+const VALUE_ICONS: Record<string, JSX.Element> = {
+  batch: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6"><path d="M9 3h6M10 3v6.5L5.5 17a2 2 0 0 0 1.8 3h9.4a2 2 0 0 0 1.8-3L14 9.5V3" /><path d="M8 14h8" /></svg>
+  ),
+  cod: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6"><rect x="2.5" y="6.5" width="19" height="11" rx="2" /><circle cx="12" cy="12" r="2.3" /><path d="M6 12h.01M18 12h.01" /></svg>
+  ),
+  ship: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6"><path d="M3 6.5h10v9H3zM13 9.5h4l4 3.5v2.5h-8" /><circle cx="7" cy="17.5" r="1.6" /><circle cx="17" cy="17.5" r="1.6" /></svg>
+  ),
+};
 
 const FAQ: { q: string; a: string }[] = [
   { q: 'Not sure which scent suits you?', a: 'Take the Find Your Scent quiz — a few questions reveal the family that fits you and the bottle to match.' },
@@ -37,7 +45,7 @@ export default function Home() {
   useSeo({ title: 'HERENCIA — Luxury in every drop', description: 'Heritage luxury perfumery.' });
   const settings = useQuery({ queryKey: ['settings'], queryFn: fetchSettings });
   const featured = useQuery({ queryKey: ['products', 'featured'], queryFn: () => fetchProducts({ sort: 'rating', page: 1 }) });
-  const featuredItems = (featured.data?.items ?? []).filter((p) => p.isFeatured).slice(0, 4);
+  const featuredItems = (featured.data?.items ?? []).filter((p) => p.isFeatured).slice(0, 3);
   const hero = settings.data?.hero;
   // Prefer an admin-uploaded Cloudinary hero; otherwise use the brand swirl.
   const heroPublicId = hero?.image;
@@ -84,9 +92,9 @@ export default function Home() {
             <h2 className="display mt-2 text-3xl text-content md:text-4xl">Featured scents</h2>
             <div className="rule-gold mx-auto mt-4 w-24" />
           </div>
-          <div className="-mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-3 sm:mx-0 sm:gap-5 sm:px-0 md:grid md:grid-cols-4 md:overflow-visible md:pb-0">
+          <div className="-mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-3 sm:mx-0 sm:gap-5 sm:px-0 md:mx-auto md:grid md:max-w-4xl md:grid-cols-3 md:gap-6 md:overflow-visible md:pb-0">
             {featured.isLoading
-              ? Array.from({ length: 4 }).map((_, i) => (
+              ? Array.from({ length: 3 }).map((_, i) => (
                   <div key={i} className="w-[46%] shrink-0 snap-start sm:w-[31%] md:w-full"><Skeleton className="aspect-square rounded-xl" /></div>
                 ))
               : featuredItems.map((p) => (
@@ -159,41 +167,30 @@ export default function Home() {
     testimonials: (
       <Reveal>
         <section>
-          <div className="mb-10 flex flex-col items-center gap-2 text-center">
+          <div className="mb-10 text-center">
             <p className="eyebrow">In their words</p>
-            <div className="flex items-center gap-2">
-              <span className="font-body text-lg tracking-wide text-accent">★★★★★</span>
-              <span className="font-display text-2xl text-content">4.9</span>
-            </div>
-            <p className="font-body text-sm text-muted">Rated by 500+ patrons across Egypt</p>
+            <h2 className="display mt-2 text-3xl text-content md:text-4xl">Loved by our patrons</h2>
+            <div className="rule-gold mx-auto mt-4 w-24" />
           </div>
-          {/* Horizontal drawer (swipe) — like parfinity */}
-          <div className="-mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-3 sm:mx-0 sm:px-0 md:grid md:grid-cols-3 md:overflow-visible md:pb-0">
-            {TESTIMONIALS.map((t) => (
-              <figure key={t.name} className="w-[82%] shrink-0 snap-start rounded-xl border border-hairline bg-surface p-6 sm:w-[60%] md:w-full">
-                <blockquote className="font-body leading-relaxed text-content">“{t.quote}”</blockquote>
-                <figcaption className="mt-5 flex items-center gap-3">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/15 font-display text-sm text-accent">
-                    {t.name.charAt(0)}
-                  </span>
-                  <span className="font-body text-sm text-muted">{t.name} · {t.city}</span>
-                </figcaption>
-              </figure>
-            ))}
-          </div>
+          <TestimonialCarousel />
         </section>
       </Reveal>
     ),
     values: (
-      <div className="grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-hairline bg-hairline sm:grid-cols-3">
-        {[
-          ['Small-batch', 'Composed in limited runs'],
-          ['Cash on delivery', 'Pay when it arrives'],
-          ['Free shipping', 'On orders over 2,000 EGP'],
-        ].map(([title, sub]) => (
-          <div key={title} className="bg-surface px-6 py-7 text-center">
-            <p className="font-display text-lg text-content">{title}</p>
-            <p className="mt-1 font-body text-sm text-muted">{sub}</p>
+      <div className="grid grid-cols-1 gap-8 border-y border-hairline py-10 sm:grid-cols-3 sm:gap-6">
+        {([
+          ['batch', 'Small-batch', 'Composed in limited runs'],
+          ['cod', 'Cash on delivery', 'Pay when it arrives'],
+          ['ship', 'Free shipping', 'On orders over 2,000 EGP'],
+        ] as const).map(([icon, title, sub]) => (
+          <div key={title} className="flex flex-col items-center gap-3 text-center sm:flex-row sm:text-left">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent/12 text-accent">
+              {VALUE_ICONS[icon]}
+            </span>
+            <div>
+              <p className="font-display text-base text-content">{title}</p>
+              <p className="mt-0.5 font-body text-sm text-muted">{sub}</p>
+            </div>
           </div>
         ))}
       </div>

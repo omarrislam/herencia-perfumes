@@ -10,6 +10,38 @@ import { reviewLimiter } from '../middleware/rateLimit';
 export function reviewRouter(): Router {
   const router = Router();
 
+  // Recent approved, high-rated reviews across all products — powers the homepage testimonials carousel.
+  router.get('/reviews/highlights', async (req, res, next) => {
+    try {
+      const limit = Math.min(12, Math.max(1, Number(req.query['limit'] ?? 8) || 8));
+      const docs = await Review.find({ isApproved: true, rating: { $gte: 4 } })
+        .sort({ createdAt: -1 })
+        .limit(limit)
+        .populate('user', 'name')
+        .populate('product', 'name slug')
+        .lean();
+      const items = docs
+        .filter((d) => d.product && typeof d.product === 'object')
+        .map((d) => {
+          const u = d.user as unknown as { name?: string } | null;
+          const p = d.product as unknown as { name: string; slug: string };
+          return {
+            id: String(d._id),
+            rating: d.rating,
+            title: d.title ?? undefined,
+            body: d.body,
+            userName: u?.name ?? 'Customer',
+            productName: p.name,
+            productSlug: p.slug,
+            createdAt: (d.createdAt instanceof Date ? d.createdAt : new Date(d.createdAt)).toISOString(),
+          };
+        });
+      res.json({ items });
+    } catch (err) {
+      next(err);
+    }
+  });
+
   router.get('/products/:slug/reviews', async (req, res, next) => {
     try {
       const product = await Product.findOne({ slug: req.params['slug'], isActive: true }).select('_id').lean();

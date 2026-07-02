@@ -12,3 +12,6 @@ export type ProductType = (typeof PRODUCT_TYPE)[number];
 
 export const BANNER_PLACEMENT = ['home_hero', 'home_strip', 'global_top'] as const;
 export type BannerPlacement = (typeof BANNER_PLACEMENT)[number];
+
+export const PAYMENT_METHOD = ['cod', 'instapay'] as const;
+export type PaymentMethod = (typeof PAYMENT_METHOD)[number];

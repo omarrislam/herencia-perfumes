@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { ORDER_STATUS, type OrderStatus } from '../enums';
+import { ORDER_STATUS, PAYMENT_METHOD, type OrderStatus, type PaymentMethod } from '../enums';
 
 export { ORDER_STATUS, type OrderStatus } from '../enums';
 
@@ -28,6 +28,7 @@ export const createOrderSchema = z.object({
     phone: z.string().min(6),
   }),
   notes: z.string().max(500).optional(),
+  paymentMethod: z.enum(PAYMENT_METHOD).optional(),
 });
 
 export type CreateOrderInput = z.infer<typeof createOrderSchema>;
@@ -61,7 +62,7 @@ export type OrderDTO = {
   shipping: number;
   total: number;
   status: OrderStatus;
-  paymentMethod: 'cod';
+  paymentMethod: PaymentMethod;
   notes?: string;
   createdAt: string;
 };

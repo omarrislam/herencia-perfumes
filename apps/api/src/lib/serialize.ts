@@ -179,7 +179,7 @@ export function toOrderDTO(doc: AnyDoc): OrderDTO {
     shipping: doc.shipping,
     total: doc.total,
     status: doc.status,
-    paymentMethod: 'cod',
+    paymentMethod: doc.paymentMethod ?? 'cod',
     notes: doc.notes ?? undefined,
     createdAt: (doc.createdAt instanceof Date
       ? doc.createdAt

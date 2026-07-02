@@ -1,11 +1,15 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createOrderSchema, type CreateOrderInput, type CreateOrderResultDTO } from '@herencia/shared';
+import { useQuery } from '@tanstack/react-query';
+import { createOrderSchema, type CreateOrderInput, type CreateOrderResultDTO, type PaymentMethod } from '@herencia/shared';
 import { useCart } from '../features/cart/CartContext';
 import { useAuth } from '../features/auth/AuthContext';
 import { Price } from '../components/Price';
 import { Button } from '../components/Button';
+import { cld } from '../lib/cloudinary';
 import * as api from '../lib/api';
+
+const QR_FALLBACK = '/instapay-qr.jpg';
 
 type FormState = {
   name: string;
@@ -35,6 +39,10 @@ export default function Checkout() {
   }));
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const settings = useQuery({ queryKey: ['settings'], queryFn: api.fetchSettings });
+  const instapay = settings.data?.instapay;
+  const instapayOn = !!instapay?.enabled;
+  const [payment, setPayment] = useState<PaymentMethod>('cod');
 
   const update =
     (field: keyof FormState) =>
@@ -70,6 +78,7 @@ export default function Checkout() {
         phone: form.phone,
       },
       ...(form.notes ? { notes: form.notes } : {}),
+      paymentMethod: instapayOn ? payment : 'cod',
     };
 
     const parsed = createOrderSchema.safeParse(input);
@@ -186,10 +195,52 @@ export default function Checkout() {
           </div>
         </section>
 
+        {instapayOn && (
+          <section className="space-y-3">
+            <h2 className="font-display text-lg text-content">Payment</h2>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <button
+                type="button"
+                onClick={() => setPayment('cod')}
+                className={`rounded-xl border p-4 text-left transition-colors ${payment === 'cod' ? 'border-accent bg-accent/5' : 'border-line hover:border-accent'}`}
+              >
+                <span className="block font-body text-sm font-medium text-content">Cash on delivery</span>
+                <span className="mt-0.5 block font-body text-xs text-muted">Pay when your order arrives.</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setPayment('instapay')}
+                className={`rounded-xl border p-4 text-left transition-colors ${payment === 'instapay' ? 'border-accent bg-accent/5' : 'border-line hover:border-accent'}`}
+              >
+                <span className="block font-body text-sm font-medium text-content">InstaPay</span>
+                <span className="mt-0.5 block font-body text-xs text-muted">Transfer now, confirm on WhatsApp.</span>
+              </button>
+            </div>
+
+            {payment === 'instapay' && (
+              <div className="card-lux flex flex-col items-center gap-3 rounded-xl p-5 text-center sm:flex-row sm:text-left">
+                <img
+                  src={instapay?.qrImage ? cld(instapay.qrImage, { w: 320 }) : QR_FALLBACK}
+                  alt="InstaPay QR code"
+                  className="h-40 w-40 flex-shrink-0 rounded-lg border border-hairline bg-surface object-contain p-2"
+                />
+                <div className="space-y-1.5 font-body text-sm">
+                  <p className="text-content">Transfer the total to:</p>
+                  <p className="font-medium text-accent">{instapay?.handle ?? 'omarislamelsady@instapay'}</p>
+                  <p className="text-muted">
+                    Scan the QR or use the handle above, then place your order and send the
+                    transfer screenshot to us on WhatsApp to confirm.
+                  </p>
+                </div>
+              </div>
+            )}
+          </section>
+        )}
+
         {formError && <p className="font-body text-sm text-danger">{formError}</p>}
 
         <Button type="submit" disabled={disabled} className="w-full py-3">
-          Place Order
+          {instapayOn && payment === 'instapay' ? 'Place order & pay via InstaPay' : 'Place order'}
         </Button>
       </form>
     </div>

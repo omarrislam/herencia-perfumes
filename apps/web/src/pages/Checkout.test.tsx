@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Checkout from './Checkout';
 import { AuthProvider } from '../features/auth/AuthContext';
 import { CartProvider } from '../features/cart/CartContext';
@@ -8,20 +9,29 @@ import * as api from '../lib/api';
 
 function setup() {
   vi.spyOn(api, 'fetchMe').mockRejectedValue(new api.ApiError(401, 'no'));
+  vi.spyOn(api, 'fetchSettings').mockResolvedValue({
+    whatsappNumber: '+20', shippingFee: 50, socialLinks: {},
+    hero: { title: 'h', subtitle: 's', ctaText: 'c', ctaLink: '/', image: 'x' },
+    homeSections: { hero: true, values: true, featured: true, promo: true, quiz: true },
+    instapay: { enabled: false },
+  });
+  const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   vi.spyOn(api, 'priceCart').mockResolvedValue({
     items: [{ productId: 'a'.repeat(24), slug: 'royal-oud', name: 'Royal Oud', image: 'x', sizeLabel: '50ml', unitPrice: 800, qty: 1, lineTotal: 800, available: true, maxQty: 5 }],
     subtotal: 800, shipping: 50, total: 850, hasUnavailable: false,
   });
   localStorage.setItem('herencia.cart', JSON.stringify([{ productId: 'a'.repeat(24), sizeLabel: '50ml', qty: 1 }]));
   return render(
-    <MemoryRouter initialEntries={['/checkout']}>
-      <AuthProvider><CartProvider>
-        <Routes>
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/order-confirmation" element={<div>Thank you</div>} />
-        </Routes>
-      </CartProvider></AuthProvider>
-    </MemoryRouter>,
+    <QueryClientProvider client={qc}>
+      <MemoryRouter initialEntries={['/checkout']}>
+        <AuthProvider><CartProvider>
+          <Routes>
+            <Route path="/checkout" element={<Checkout />} />
+            <Route path="/order-confirmation" element={<div>Thank you</div>} />
+          </Routes>
+        </CartProvider></AuthProvider>
+      </MemoryRouter>
+    </QueryClientProvider>,
   );
 }
 

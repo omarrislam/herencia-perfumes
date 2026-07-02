@@ -1,5 +1,5 @@
 import mongoose, { Schema, type InferSchemaType } from 'mongoose';
-import { ORDER_STATUS } from '@herencia/shared';
+import { ORDER_STATUS, PAYMENT_METHOD } from '@herencia/shared';
 
 const orderItemSchema = new Schema(
   {
@@ -33,7 +33,7 @@ const orderSchema = new Schema(
     shipping: { type: Number, required: true },
     total: { type: Number, required: true },
     status: { type: String, enum: [...ORDER_STATUS], default: 'pending', index: true },
-    paymentMethod: { type: String, enum: ['cod'], default: 'cod' },
+    paymentMethod: { type: String, enum: [...PAYMENT_METHOD], default: 'cod' },
     notes: { type: String },
     user: { type: Schema.Types.ObjectId, ref: 'User', index: true },
   },

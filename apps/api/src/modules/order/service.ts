@@ -63,7 +63,7 @@ export async function createOrder(
       shipping: priced.shipping,
       total: priced.total,
       status: 'pending',
-      paymentMethod: 'cod',
+      paymentMethod: input.paymentMethod ?? 'cod',
       notes: input.notes,
       user: userId,
     });

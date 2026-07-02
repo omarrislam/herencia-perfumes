@@ -18,8 +18,13 @@ async function parseError(res: Response): Promise<never> {
   throw new ApiError(res.status, message);
 }
 
+// When the API is deployed on a separate origin (e.g. its own Vercel project),
+// set VITE_API_URL to that origin. Left empty in dev so the Vite proxy handles /api.
+const API_BASE = (import.meta.env.VITE_API_URL ?? '').replace(/\/$/, '');
+const url = (path: string) => `${API_BASE}${path}`;
+
 export async function apiGet<T>(path: string): Promise<T> {
-  const res = await fetch(path, { credentials: 'include' });
+  const res = await fetch(url(path), { credentials: 'include' });
   if (!res.ok) return parseError(res);
   return res.json() as Promise<T>;
 }
@@ -30,7 +35,7 @@ export async function apiSend<T>(
   body?: unknown,
   headers: Record<string, string> = {},
 ): Promise<T> {
-  const res = await fetch(path, {
+  const res = await fetch(url(path), {
     method,
     credentials: 'include',
     headers: { 'Content-Type': 'application/json', ...headers },

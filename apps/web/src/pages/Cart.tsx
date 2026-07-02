@@ -7,11 +7,15 @@ export default function Cart() {
   const { priced, updateQty, removeItem } = useCart();
 
   return (
-    <div className="mx-auto max-w-2xl space-y-8 py-8">
-      <h1 className="font-display text-3xl text-content">Your Cart</h1>
+    <div className="mx-auto max-w-2xl space-y-8">
+      <div>
+        <p className="eyebrow">Your selection</p>
+        <h1 className="display mt-2 text-3xl text-content">Your Cart</h1>
+        <div className="rule-gold-left mt-4" />
+      </div>
 
       {priced && priced.hasUnavailable && (
-        <p className="rounded-md border border-line bg-maroon/10 px-4 py-2 font-body text-sm text-maroon">
+        <p className="rounded-md border border-hairline bg-danger-soft px-4 py-2 font-body text-sm text-danger">
           Some items are unavailable or out of stock.
         </p>
       )}
@@ -46,7 +50,7 @@ export default function Cart() {
                       <p className="font-body font-medium text-content">{line.name}</p>
                       <p className="font-body text-sm text-muted">{line.sizeLabel}</p>
                       {!line.available && (
-                        <p className="font-body text-xs text-maroon">Unavailable</p>
+                        <p className="font-body text-xs text-danger">Unavailable</p>
                       )}
                     </div>
                     <button
@@ -64,7 +68,7 @@ export default function Cart() {
                         type="button"
                         aria-label="Decrease quantity"
                         onClick={() => updateQty(line.productId, line.sizeLabel, line.qty - 1)}
-                        className="flex h-8 w-8 items-center justify-center rounded border border-line font-body text-sm text-content hover:bg-gold/10"
+                        className="flex h-8 w-8 items-center justify-center rounded border border-line font-body text-sm text-content hover:bg-accent/10"
                       >
                         −
                       </button>
@@ -74,7 +78,7 @@ export default function Cart() {
                         aria-label="Increase quantity"
                         onClick={() => updateQty(line.productId, line.sizeLabel, line.qty + 1)}
                         disabled={line.qty >= line.maxQty}
-                        className="flex h-8 w-8 items-center justify-center rounded border border-line font-body text-sm text-content hover:bg-gold/10 disabled:opacity-50"
+                        className="flex h-8 w-8 items-center justify-center rounded border border-line font-body text-sm text-content hover:bg-accent/10 disabled:opacity-50"
                       >
                         +
                       </button>
@@ -86,7 +90,7 @@ export default function Cart() {
             ))}
           </ul>
 
-          <div className="space-y-2 rounded-md border border-line px-6 py-4">
+          <div className="card-lux space-y-3 rounded-xl px-6 py-5">
             <div className="flex justify-between font-body text-sm text-muted">
               <span>Subtotal</span>
               <Price value={priced.subtotal} />
@@ -99,15 +103,13 @@ export default function Cart() {
                 <Price value={priced.shipping} />
               )}
             </div>
-            <div className="flex justify-between font-body text-base font-medium text-content">
+            <div className="rule-gold" />
+            <div className="flex justify-between font-body text-lg font-medium text-content">
               <span>Total</span>
               <Price value={priced.total} />
             </div>
-            <Link
-              to="/checkout"
-              className="mt-4 block w-full rounded-md bg-maroon px-4 py-3 text-center font-body text-sm text-cream transition-colors hover:bg-maroon/90"
-            >
-              Checkout
+            <Link to="/checkout" className="btn-lux mt-2 w-full">
+              Proceed to checkout
             </Link>
           </div>
         </>

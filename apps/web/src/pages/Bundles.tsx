@@ -11,16 +11,20 @@ export default function Bundles() {
 
   return (
     <div>
-      <h1 className="mb-6 font-display text-3xl text-content">Bundles</h1>
+      <div className="mb-8">
+        <p className="eyebrow">Curated Sets</p>
+        <h1 className="display mt-2 text-3xl text-content md:text-4xl">Bundles</h1>
+        <div className="rule-gold-left mt-4" />
+      </div>
       {bundles.isLoading ? (
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="aspect-square" />)}
+        <div className="grid grid-cols-2 gap-5 md:grid-cols-4 md:gap-6">
+          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="aspect-[4/5] rounded-xl" />)}
         </div>
       ) : bundles.data && bundles.data.items.length === 0 ? (
-        <p className="font-body text-muted">No bundles available yet.</p>
+        <p className="py-16 text-center font-body text-muted">No bundles available yet.</p>
       ) : (
         <Reveal>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-5 md:grid-cols-4 md:gap-6">
             {bundles.data?.items.map((p) => <ProductCard key={p.id} product={p} />)}
           </div>
         </Reveal>

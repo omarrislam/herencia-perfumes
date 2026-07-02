@@ -17,6 +17,8 @@ export default function Home() {
   const featuredItems = (featured.data?.items ?? []).filter((p) => p.isFeatured).slice(0, 4);
   const hero = settings.data?.hero;
   const heroPublicId = hero?.image;
+  const sec = settings.data?.homeSections;
+  const show = (k: 'hero' | 'values' | 'featured' | 'promo' | 'quiz') => (sec ? sec[k] : true);
 
   useEffect(() => {
     if (!heroPublicId) return;
@@ -31,6 +33,7 @@ export default function Home() {
   return (
     <div>
       {/* Full-bleed hero */}
+      {show('hero') && (
       <section className="relative overflow-hidden">
         {hero ? (
           <ProductImage
@@ -67,6 +70,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Full-width promo bar */}
       <BannerStrip placement="home_strip" />
@@ -74,6 +78,7 @@ export default function Home() {
       {/* Contained content */}
       <div className="mx-auto max-w-6xl space-y-20 px-5 py-16 sm:px-6 md:space-y-28 md:py-24">
         {/* Values strip */}
+        {show('values') && (
         <div className="grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-hairline bg-hairline sm:grid-cols-3">
           {[
             ['Small-batch', 'Composed in limited runs'],
@@ -86,8 +91,10 @@ export default function Home() {
             </div>
           ))}
         </div>
+        )}
 
         {/* Featured */}
+        {show('featured') && (
         <Reveal>
           <section>
             <div className="mb-10 text-center">
@@ -108,11 +115,13 @@ export default function Home() {
             </div>
           </section>
         </Reveal>
+        )}
 
         {/* Promo banner (cinematic card) */}
-        <BannerStrip placement="home_hero" />
+        {show('promo') && <BannerStrip placement="home_hero" />}
 
         {/* Quiz CTA band */}
+        {show('quiz') && (
         <Reveal>
           <section className="relative overflow-hidden rounded-2xl bg-ink px-6 py-16 text-center shadow-lux md:py-20">
             <p className="eyebrow text-gold-hi">Not sure where to start?</p>
@@ -127,6 +136,7 @@ export default function Home() {
             </Link>
           </section>
         </Reveal>
+        )}
       </div>
     </div>
   );

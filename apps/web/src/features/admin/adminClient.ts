@@ -63,4 +63,8 @@ export const adminCreateBlogPost = (input: BlogPostInput) => apiSend<BlogPostDTO
 export const adminUpdateBlogPost = (id: string, input: BlogPostInput) => apiSend<BlogPostDTO>('PUT', `/api/admin/blog/${id}`, input);
 export const adminDeleteBlogPost = (id: string) => apiSend<void>('DELETE', `/api/admin/blog/${id}`);
 
+import type { UpdateSettingsInput, SettingDTO } from '@herencia/shared';
+export const adminUpdateSettings = (input: UpdateSettingsInput) =>
+  apiSend<SettingDTO>('PUT', '/api/admin/settings', input);
+
 export { apiGet };

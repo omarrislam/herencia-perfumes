@@ -67,14 +67,7 @@ export const fetchProduct = (slug: string) => apiGet<ProductDTO>(`/api/products/
 export const fetchRelated = (slug: string) => apiGet<ProductDTO[]>(`/api/products/${slug}/related`);
 export const fetchScentFamilies = () => apiGet<ScentFamilyDTO[]>('/api/scent-families');
 
-export type PublicSettings = {
-  whatsappNumber: string;
-  shippingFee: number;
-  freeShippingThreshold?: number;
-  socialLinks: { instagram?: string; facebook?: string; tiktok?: string };
-  hero: { title: string; subtitle: string; ctaText: string; ctaLink: string; image: string };
-  contactEmail?: string;
-};
+export type PublicSettings = import('@herencia/shared').SettingDTO;
 export const fetchSettings = () => apiGet<PublicSettings>('/api/settings');
 
 export const login = (input: LoginInput) => apiSend<UserDTO>('POST', '/api/auth/login', input);

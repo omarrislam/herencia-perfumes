@@ -55,9 +55,13 @@ export function ReviewsSection({ slug }: ReviewsSectionProps) {
 
   return (
     <section aria-labelledby="reviews-heading" className="space-y-6">
-      <h2 id="reviews-heading" className="font-display text-2xl text-content">
-        Reviews
-      </h2>
+      <div>
+        <p className="eyebrow">What they say</p>
+        <h2 id="reviews-heading" className="display mt-2 text-2xl text-content md:text-3xl">
+          Reviews
+        </h2>
+        <div className="rule-gold-left mt-4" />
+      </div>
 
       {isLoading && <p className="font-body text-sm text-muted">Loading reviews…</p>}
       {isError && <p className="font-body text-sm text-danger">Could not load reviews.</p>}
@@ -69,7 +73,7 @@ export function ReviewsSection({ slug }: ReviewsSectionProps) {
       {data && data.items.length > 0 && (
         <ul className="space-y-4">
           {data.items.map((review) => (
-            <li key={review.id} className="rounded-md border border-line bg-surface p-4 space-y-1">
+            <li key={review.id} className="card-lux space-y-1 rounded-xl p-5">
               <div className="flex items-center gap-2">
                 <span className="font-body text-sm text-accent" aria-label={`Rated ${review.rating} of 5`}>
                   {'★'.repeat(Math.round(review.rating))}{'☆'.repeat(5 - Math.round(review.rating))}
@@ -88,19 +92,19 @@ export function ReviewsSection({ slug }: ReviewsSectionProps) {
         </ul>
       )}
 
-      <div className="border-t border-line pt-6">
+      <div className="border-t border-hairline pt-6">
         {user === null ? (
           <p className="font-body text-sm text-muted">
-            <Link to="/login" className="text-accent underline">
+            <Link to="/login" className="link-underline text-accent">
               Sign in to write a review
             </Link>
           </p>
         ) : submitted ? (
-          <p className="font-body text-sm text-accent">
-            Thank you! Your review is pending moderation.
+          <p className="font-body text-sm text-success">
+            Thank you — your review is pending moderation.
           </p>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="card-lux space-y-4 rounded-xl p-6">
             <h3 className="font-display text-lg text-content">Write a review</h3>
 
             <div className="space-y-1">
@@ -111,7 +115,7 @@ export function ReviewsSection({ slug }: ReviewsSectionProps) {
                 id="review-rating"
                 value={rating}
                 onChange={(e) => setRating(Number(e.target.value))}
-                className="block rounded border border-line bg-bg px-3 py-2 font-body text-sm text-content focus:outline-none focus:ring-1 focus:ring-accent"
+                className="field-lux w-auto text-sm"
               >
                 {[5, 4, 3, 2, 1].map((n) => (
                   <option key={n} value={n}>
@@ -132,7 +136,7 @@ export function ReviewsSection({ slug }: ReviewsSectionProps) {
                 onChange={(e) => setTitle(e.target.value)}
                 maxLength={100}
                 placeholder="Summary of your review"
-                className="block w-full rounded border border-line bg-bg px-3 py-2 font-body text-sm text-content placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent"
+                className="field-lux text-sm placeholder:text-muted"
               />
             </div>
 
@@ -148,7 +152,7 @@ export function ReviewsSection({ slug }: ReviewsSectionProps) {
                 rows={4}
                 maxLength={2000}
                 placeholder="Share your experience…"
-                className="block w-full rounded border border-line bg-bg px-3 py-2 font-body text-sm text-content placeholder:text-muted focus:outline-none focus:ring-1 focus:ring-accent"
+                className="field-lux text-sm placeholder:text-muted"
               />
             </div>
 
@@ -157,7 +161,7 @@ export function ReviewsSection({ slug }: ReviewsSectionProps) {
             <button
               type="submit"
               disabled={mutation.isPending || !body.trim()}
-              className="rounded-md bg-maroon px-5 py-2 font-body text-sm text-cream transition-colors hover:bg-maroon/90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="btn-lux disabled:cursor-not-allowed disabled:opacity-50"
             >
               {mutation.isPending ? 'Submitting…' : 'Submit review'}
             </button>

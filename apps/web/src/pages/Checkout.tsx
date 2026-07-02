@@ -91,12 +91,16 @@ export default function Checkout() {
   };
 
   return (
-    <div className="mx-auto max-w-2xl space-y-8 py-8">
-      <h1 className="font-display text-3xl text-content">Checkout</h1>
+    <div className="mx-auto max-w-2xl space-y-8">
+      <div>
+        <p className="eyebrow">Almost there</p>
+        <h1 className="display mt-2 text-3xl text-content">Checkout</h1>
+        <div className="rule-gold-left mt-4" />
+      </div>
 
       {priced && (
-        <section className="rounded-md border border-line p-4 space-y-3">
-          <h2 className="font-display text-lg text-content">Order Summary</h2>
+        <section className="card-lux space-y-3 rounded-xl p-5">
+          <p className="eyebrow">Order summary</p>
           <ul className="space-y-2">
             {priced.items.map((item) => (
               <li
@@ -110,7 +114,7 @@ export default function Checkout() {
               </li>
             ))}
           </ul>
-          <div className="border-t border-line pt-2 space-y-1 font-body text-sm">
+          <div className="space-y-1.5 border-t border-hairline pt-3 font-body text-sm">
             <div className="flex justify-between text-muted">
               <span>Subtotal</span>
               <Price value={priced.subtotal} />
@@ -119,7 +123,7 @@ export default function Checkout() {
               <span>Shipping</span>
               <Price value={priced.shipping} />
             </div>
-            <div className="flex justify-between font-semibold text-content">
+            <div className="flex justify-between pt-1 text-base font-medium text-content">
               <span>Total</span>
               <Price value={priced.total} />
             </div>
@@ -169,7 +173,7 @@ export default function Checkout() {
         <section className="space-y-4">
           <h2 className="font-display text-lg text-content">Additional</h2>
           <div className="space-y-1">
-            <label htmlFor="checkout-notes" className="font-body text-sm text-content">
+            <label htmlFor="checkout-notes" className="mb-1.5 block font-body text-sm text-muted">
               Notes (optional)
             </label>
             <textarea
@@ -177,7 +181,7 @@ export default function Checkout() {
               value={form.notes}
               onChange={update('notes')}
               rows={3}
-              className="w-full rounded-md border border-line bg-bg px-3 py-2 font-body text-sm text-content focus:outline-none focus:ring-2 focus:ring-gold"
+              className="field-lux text-sm"
             />
           </div>
         </section>
@@ -209,7 +213,7 @@ function InputField({
 }) {
   return (
     <div className="space-y-1">
-      <label htmlFor={id} className="font-body text-sm text-content">
+      <label htmlFor={id} className="mb-1.5 block font-body text-sm text-muted">
         {label}
       </label>
       <input
@@ -218,7 +222,7 @@ function InputField({
         value={value}
         onChange={onChange}
         required={required}
-        className="w-full rounded-md border border-line bg-bg px-3 py-2 font-body text-sm text-content focus:outline-none focus:ring-2 focus:ring-gold"
+        className="field-lux text-sm"
       />
     </div>
   );

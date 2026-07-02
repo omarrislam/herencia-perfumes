@@ -34,9 +34,9 @@ export function StorefrontLayout() {
         <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-5 sm:py-4">
           <Link to="/" className="flex items-center gap-2.5">
             <img
-              src="/logo.jpeg"
+              src="/logo.png"
               alt="HERENCIA crest"
-              className="h-9 w-9 rounded-full object-cover ring-1 ring-hairline"
+              className="h-10 w-10 object-contain"
             />
             <span className="logo-shimmer font-display text-xl tracking-[0.2em] text-content sm:text-2xl">
               HERENCIA
@@ -139,7 +139,7 @@ export function StorefrontLayout() {
           <div className="grid gap-10 md:grid-cols-[1.5fr_1fr_1fr]">
             <div>
               <div className="flex items-center gap-2.5">
-                <img src="/logo.jpeg" alt="" className="h-8 w-8 rounded-full object-cover ring-1 ring-hairline" />
+                <img src="/logo.png" alt="" className="h-9 w-9 object-contain" />
                 <p className="font-display text-xl tracking-[0.2em] text-content">HERENCIA</p>
               </div>
               <div className="rule-gold-left my-4" />

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import type { AdminProductInput, ProductDTO, ScentFamilyDTO } from '@herencia/shared';
 import { GENDER, CONCENTRATION, PRODUCT_TYPE } from '@herencia/shared';
 import { uploadImage } from './adminClient';
+import { cld } from '../../lib/cloudinary';
 
 function toFormDefaults(p?: ProductDTO): AdminProductInput {
   if (!p) {
@@ -81,6 +82,15 @@ export function ProductForm({
       setUploading(false);
     }
   }
+
+  const removeImage = (i: number) =>
+    setValue('images', (images ?? []).filter((_, idx) => idx !== i));
+  const makePrimary = (i: number) => {
+    const arr = [...(images ?? [])];
+    const [x] = arr.splice(i, 1);
+    if (x) arr.unshift(x);
+    setValue('images', arr);
+  };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -218,12 +228,29 @@ export function ProductForm({
       </div>
 
       <div>
-        <p className="mb-2 font-display text-content">Images</p>
-        <div className="mb-2 flex flex-wrap gap-2 font-body text-xs text-muted">
-          {(images ?? []).map((id) => (
-            <span key={id} className="rounded bg-line/30 px-2 py-1">
-              {id}
-            </span>
+        <p className="mb-2 font-display text-content">
+          Images <span className="font-body text-xs text-muted">(the first image is the main one shown on cards)</span>
+        </p>
+        <div className="mb-3 flex flex-wrap gap-3">
+          {(images ?? []).map((id, i) => (
+            <div key={id} className="relative">
+              <img
+                src={cld(id, { w: 160 })}
+                alt=""
+                className={`h-20 w-20 rounded-md object-cover ${i === 0 ? 'ring-2 ring-accent' : 'border border-hairline'}`}
+              />
+              {i === 0 && (
+                <span className="absolute left-1 top-1 rounded bg-espresso/85 px-1 py-0.5 text-[9px] font-medium text-cream">Main</span>
+              )}
+              <div className="absolute -right-1.5 -top-1.5 flex gap-1">
+                {i !== 0 && (
+                  <button type="button" onClick={() => makePrimary(i)} title="Make main image"
+                    className="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[10px] text-surface">★</button>
+                )}
+                <button type="button" onClick={() => removeImage(i)} title="Remove"
+                  className="flex h-5 w-5 items-center justify-center rounded-full bg-danger text-[10px] text-white">✕</button>
+              </div>
+            </div>
           ))}
         </div>
         <label>

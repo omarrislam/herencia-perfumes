@@ -6,23 +6,23 @@
 /* Brand tokens — heritage luxury (cream · maroon · gold)              */
 /* ------------------------------------------------------------------ */
 :root[data-theme='light'] {
-  --bg: #f4ead0;
-  --bg-deep: #ede0bf;
-  --surface: #fffdf7;
-  --surface-2: #fbf3df;
-  --text: #3a1414;
+  --bg: #e8dab4;
+  --bg-deep: #ddca9f;
+  --surface: #fffef9;
+  --surface-2: #f5ead1;
+  --text: #331111;
   --ink: #2a0f0f;
-  --muted: #7a6650;
-  --accent: #b8894a;
-  --accent-strong: #9c6f34;
-  --gold-hi: #d8b877;
-  --border: rgba(58, 20, 20, 0.14);
-  --hairline: rgba(58, 20, 20, 0.1);
-  --shadow-color: 30 18 10;
-  --shadow-sm: 0 1px 2px rgb(var(--shadow-color) / 0.06), 0 2px 6px rgb(var(--shadow-color) / 0.05);
-  --shadow-md: 0 6px 18px rgb(var(--shadow-color) / 0.1), 0 2px 6px rgb(var(--shadow-color) / 0.06);
-  --shadow-lg: 0 24px 60px rgb(var(--shadow-color) / 0.16), 0 8px 20px rgb(var(--shadow-color) / 0.1);
-  --grain-opacity: 0.05;
+  --muted: #77634d;
+  --accent: #a9793b;
+  --accent-strong: #8f6329;
+  --gold-hi: #cfa862;
+  --border: rgba(52, 18, 18, 0.2);
+  --hairline: rgba(52, 18, 18, 0.13);
+  --shadow-color: 40 22 10;
+  --shadow-sm: 0 1px 2px rgb(var(--shadow-color) / 0.08), 0 2px 6px rgb(var(--shadow-color) / 0.06);
+  --shadow-md: 0 8px 22px rgb(var(--shadow-color) / 0.14), 0 2px 8px rgb(var(--shadow-color) / 0.08);
+  --shadow-lg: 0 28px 64px rgb(var(--shadow-color) / 0.2), 0 10px 24px rgb(var(--shadow-color) / 0.12);
+  --grain-opacity: 0.045;
   --success: #15803d;
   --success-soft: rgba(21, 128, 61, 0.12);
   --warning: #b45309;
@@ -33,18 +33,18 @@
   --info-soft: rgba(29, 78, 216, 0.12);
 }
 :root[data-theme='dark'] {
-  --bg: #170b0b;
-  --bg-deep: #100707;
-  --surface: #22110f;
-  --surface-2: #2c1714;
+  --bg: #150a0a;
+  --bg-deep: #0d0505;
+  --surface: #2c1a16;
+  --surface-2: #3a2620;
   --text: #f4ead0;
   --ink: #fbf3df;
-  --muted: #c3ad8c;
-  --accent: #c9a05f;
-  --accent-strong: #d8b877;
-  --gold-hi: #e6cd95;
-  --border: rgba(201, 160, 95, 0.2);
-  --hairline: rgba(201, 160, 95, 0.14);
+  --muted: #cbb794;
+  --accent: #d0a866;
+  --accent-strong: #e0bd82;
+  --gold-hi: #ecd6a0;
+  --border: rgba(208, 168, 102, 0.28);
+  --hairline: rgba(208, 168, 102, 0.18);
   --shadow-color: 0 0 0;
   --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
   --shadow-md: 0 8px 24px rgb(0 0 0 / 0.45);

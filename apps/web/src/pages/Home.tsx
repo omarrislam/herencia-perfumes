@@ -48,6 +48,8 @@ export default function Home() {
           <Skeleton className="h-[72vh] max-h-[760px] min-h-[440px] w-full" />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-espresso/90 via-espresso/45 to-espresso/15" />
+        {/* top scrim so the transparent nav stays legible over bright imagery */}
+        <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-espresso/55 to-transparent" />
         <div className="absolute inset-0 flex items-center">
           <div className="mx-auto w-full max-w-6xl px-5 sm:px-6">
             <div className="max-w-2xl space-y-6">

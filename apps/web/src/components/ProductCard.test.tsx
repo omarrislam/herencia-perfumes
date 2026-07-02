@@ -4,6 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ProductCard } from './ProductCard';
 import { AuthProvider } from '../features/auth/AuthContext';
+import { CartProvider } from '../features/cart/CartContext';
 import type { ProductDTO } from '@herencia/shared';
 import * as api from '../lib/api';
 
@@ -27,7 +28,9 @@ function wrap(ui: React.ReactElement) {
     <QueryClientProvider client={qc}>
       <MemoryRouter>
         <AuthProvider>
-          {ui}
+          <CartProvider>
+            {ui}
+          </CartProvider>
         </AuthProvider>
       </MemoryRouter>
     </QueryClientProvider>,

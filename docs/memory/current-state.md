@@ -2,6 +2,14 @@
 
 _Last updated: 2026-07-02_
 
+## Post-M4 round 7 (dashboard, inventory, promo bar editable, full-width time, on master, 2026-07-02)
+- ✅ **Admin Dashboard** (`AdminDashboard.tsx`, index route) — stat cards (orders, pending, revenue from recent orders, products, low/out-of-stock) + recent-orders list. **Admin Inventory** (`AdminInventory.tsx`) — SKU × size stock table sorted low-first with Low/Out badges + summary. Both in sidebar nav + routes.
+- ✅ **Promo bar is now settings-driven** (`settings.promoBar {enabled,text,ctaText,ctaLink}`) and **editable in Admin → Home** (was a global_top Banner). Renders as a **black bar above the navbar**. StorefrontLayout no longer uses BannerStrip for it.
+- ✅ **Time section full-bleed** with the hourglass brand photo `public/time.png`; text overlaid left.
+- ✅ **Testimonials** restyled parfinity-style: rating trust line (4.9 ★) + avatar-initial cards.
+- ✅ **Cards** more compact; Home featured drawer min-w 52%; Products/Bundles 4-up on lg.
+- Note: Dashboard revenue sums the fetched recent-orders page; Inventory is a read-only overview (edit stock via Products).
+
 ## Phase
 **Milestone 4 (Polish — code) COMPLETE & MERGED to `master` (merge commit `cbe8ba7`, feature branch deleted).** All 18 plan tasks (+ Task 2b theming sweep) done, each task spec+quality reviewed; final whole-branch review (opus) = Ready-to-merge-with-fixes → the one blocking fix (prerender serving / hydration) applied. **Next = Milestone 5 (Ops/Deploy).**
 Full suite re-verified GREEN on merged `master`: `npm run lint` (0), `npm run typecheck` (0), tests — **shared 10 files/41, api 27 files/120, web 22 files/37** (`npm run build` clean incl. prerender of 5 shell routes + api build).

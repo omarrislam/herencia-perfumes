@@ -7,9 +7,23 @@ import { loadEnv } from './config/env';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
+async function connectWithRetry(uri: string, attempts = 6): Promise<void> {
+  for (let i = 1; i <= attempts; i++) {
+    try {
+      await mongoose.connect(uri, { serverSelectionTimeoutMS: 8000 });
+      return;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error(`[api] Mongo connect attempt ${i}/${attempts} failed: ${msg}`);
+      if (i === attempts) throw err;
+      await new Promise((r) => setTimeout(r, 3000));
+    }
+  }
+}
+
 async function main() {
   const env = loadEnv(process.env);
-  await mongoose.connect(env.MONGODB_URI);
+  await connectWithRetry(env.MONGODB_URI);
   const webDistCandidate = path.resolve(__dirname, '../../web/dist');
   const webDist = existsSync(path.join(webDistCandidate, 'index.html')) ? webDistCandidate : undefined;
   const app = createApp({

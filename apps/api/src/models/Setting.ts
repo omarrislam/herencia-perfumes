@@ -20,6 +20,7 @@ const settingSchema = new Schema(
       promo: { type: Boolean, default: true },
       quiz: { type: Boolean, default: true },
     },
+    sectionOrder: { type: [String] },
     instapay: {
       enabled: { type: Boolean, default: false },
       handle: { type: String },

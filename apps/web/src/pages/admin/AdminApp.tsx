@@ -1,7 +1,9 @@
 // apps/web/src/pages/admin/AdminApp.tsx
 import { Routes, Route, Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { RequireAdmin } from '../../features/auth/RequireAdmin';
 import { useAuth } from '../../features/auth/AuthContext';
+import { adminFetchOrders } from '../../features/admin/adminClient';
 import AdminHome from './AdminHome';
 import AdminProducts from './AdminProducts';
 import AdminScentFamilies from './AdminScentFamilies';
@@ -13,6 +15,13 @@ import AdminBlog from './AdminBlog';
 
 export default function AdminApp() {
   const { logout } = useAuth();
+  // Poll pending (new) orders for the admin notification badge.
+  const pending = useQuery({
+    queryKey: ['admin-orders', 'pending'],
+    queryFn: () => adminFetchOrders('pending'),
+    refetchInterval: 60_000,
+  });
+  const pendingCount = pending.data?.total ?? 0;
   return (
     <RequireAdmin>
       <div className="min-h-screen">
@@ -30,8 +39,13 @@ export default function AdminApp() {
             <Link to="/admin/scent-families" className="text-content hover:text-accent">
               Scent families
             </Link>
-            <Link to="/admin/orders" className="text-content hover:text-accent">
+            <Link to="/admin/orders" className="relative text-content hover:text-accent">
               Orders
+              {pendingCount > 0 && (
+                <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-danger px-1.5 text-xs font-medium text-white" title={`${pendingCount} new order${pendingCount === 1 ? '' : 's'}`}>
+                  {pendingCount}
+                </span>
+              )}
             </Link>
             <Link to="/admin/reviews" className="text-content hover:text-accent">
               Reviews

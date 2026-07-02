@@ -1,4 +1,5 @@
-import { useEffect } from 'react';
+import { useEffect, type ReactNode } from 'react';
+import type { ReorderableSection } from '@herencia/shared';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { fetchProducts, fetchSettings } from '../lib/api';
@@ -19,6 +20,69 @@ export default function Home() {
   const heroPublicId = hero?.image;
   const sec = settings.data?.homeSections;
   const show = (k: 'hero' | 'values' | 'featured' | 'promo' | 'quiz') => (sec ? sec[k] : true);
+  const order: ReorderableSection[] = settings.data?.sectionOrder ?? ['values', 'featured', 'promo', 'quiz'];
+
+  const sectionMap: Record<ReorderableSection, ReactNode> = {
+    values: (
+      <div className="grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-hairline bg-hairline sm:grid-cols-3">
+        {[
+          ['Small-batch', 'Composed in limited runs'],
+          ['Cash on delivery', 'Pay when it arrives'],
+          ['Free shipping', 'On orders over 2,000 EGP'],
+        ].map(([title, sub]) => (
+          <div key={title} className="bg-surface px-6 py-7 text-center">
+            <p className="font-display text-lg text-content">{title}</p>
+            <p className="mt-1 font-body text-sm text-muted">{sub}</p>
+          </div>
+        ))}
+      </div>
+    ),
+    featured: (
+      <Reveal>
+        <section>
+          <div className="mb-10 text-center">
+            <p className="eyebrow">The Collection</p>
+            <h2 className="display mt-2 text-3xl text-content md:text-4xl">Featured scents</h2>
+            <div className="rule-gold mx-auto mt-4 w-24" />
+          </div>
+          <div className="-mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-3 sm:mx-0 sm:px-0 md:grid md:grid-cols-4 md:gap-6 md:overflow-visible md:pb-0">
+            {featured.isLoading
+              ? Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="min-w-[68%] shrink-0 snap-start sm:min-w-[45%] md:min-w-0">
+                    <Skeleton className="aspect-[4/5] rounded-xl" />
+                  </div>
+                ))
+              : featuredItems.map((p) => (
+                  <div key={p.id} className="min-w-[68%] shrink-0 snap-start sm:min-w-[45%] md:min-w-0">
+                    <ProductCard product={p} />
+                  </div>
+                ))}
+          </div>
+          {!featured.isLoading && featuredItems.length === 0 && (
+            <p className="text-center font-body text-muted">No featured products yet.</p>
+          )}
+          <div className="mt-10 text-center">
+            <Link to="/products" className="btn-outline">View all perfumes</Link>
+          </div>
+        </section>
+      </Reveal>
+    ),
+    promo: <BannerStrip placement="home_hero" />,
+    quiz: (
+      <Reveal>
+        <section className="relative overflow-hidden rounded-2xl bg-espresso px-6 py-16 text-center shadow-lux md:py-20">
+          <p className="eyebrow text-gold-hi">Not sure where to start?</p>
+          <h2 className="display mx-auto mt-3 max-w-2xl text-3xl text-cream md:text-4xl">Find your signature scent</h2>
+          <p className="mx-auto mt-4 max-w-md font-body text-cream/70">
+            A few questions reveal the family that suits you — and the bottle to match.
+          </p>
+          <Link to="/find-your-scent" className="btn-outline mt-8 border-cream/40 text-cream hover:bg-cream hover:text-espresso">
+            Take the quiz
+          </Link>
+        </section>
+      </Reveal>
+    ),
+  };
 
   useEffect(() => {
     if (!heroPublicId) return;
@@ -78,77 +142,11 @@ export default function Home() {
       <BannerStrip placement="global_top" />
       <BannerStrip placement="home_strip" />
 
-      {/* Contained content */}
+      {/* Contained content — rendered in the admin-configured order */}
       <div className="mx-auto max-w-6xl space-y-20 px-5 py-16 sm:px-6 md:space-y-28 md:py-24">
-        {/* Values strip */}
-        {show('values') && (
-        <div className="grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-hairline bg-hairline sm:grid-cols-3">
-          {[
-            ['Small-batch', 'Composed in limited runs'],
-            ['Cash on delivery', 'Pay when it arrives'],
-            ['Free shipping', 'On orders over 2,000 EGP'],
-          ].map(([title, sub]) => (
-            <div key={title} className="bg-surface px-6 py-7 text-center">
-              <p className="font-display text-lg text-content">{title}</p>
-              <p className="mt-1 font-body text-sm text-muted">{sub}</p>
-            </div>
-          ))}
-        </div>
-        )}
-
-        {/* Featured */}
-        {show('featured') && (
-        <Reveal>
-          <section>
-            <div className="mb-10 text-center">
-              <p className="eyebrow">The Collection</p>
-              <h2 className="display mt-2 text-3xl text-content md:text-4xl">Featured scents</h2>
-              <div className="rule-gold mx-auto mt-4 w-24" />
-            </div>
-            {/* Mobile: horizontal swipe drawer · Desktop: grid */}
-            <div className="-mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-3 sm:mx-0 sm:px-0 md:grid md:grid-cols-4 md:gap-6 md:overflow-visible md:pb-0">
-              {featured.isLoading
-                ? Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="min-w-[68%] shrink-0 snap-start sm:min-w-[45%] md:min-w-0">
-                      <Skeleton className="aspect-[4/5] rounded-xl" />
-                    </div>
-                  ))
-                : featuredItems.map((p) => (
-                    <div key={p.id} className="min-w-[68%] shrink-0 snap-start sm:min-w-[45%] md:min-w-0">
-                      <ProductCard product={p} />
-                    </div>
-                  ))}
-            </div>
-            {!featured.isLoading && featuredItems.length === 0 && (
-              <p className="text-center font-body text-muted">No featured products yet.</p>
-            )}
-            <div className="mt-10 text-center">
-              <Link to="/products" className="btn-outline">View all perfumes</Link>
-            </div>
-          </section>
-        </Reveal>
-        )}
-
-        {/* Promo banner (cinematic card) */}
-        {show('promo') && <BannerStrip placement="home_hero" />}
-
-        {/* Quiz CTA band */}
-        {show('quiz') && (
-        <Reveal>
-          <section className="relative overflow-hidden rounded-2xl bg-espresso px-6 py-16 text-center shadow-lux md:py-20">
-            <p className="eyebrow text-gold-hi">Not sure where to start?</p>
-            <h2 className="display mx-auto mt-3 max-w-2xl text-3xl text-cream md:text-4xl">
-              Find your signature scent
-            </h2>
-            <p className="mx-auto mt-4 max-w-md font-body text-cream/70">
-              A few questions reveal the family that suits you — and the bottle to match.
-            </p>
-            <Link to="/find-your-scent" className="btn-outline mt-8 border-cream/40 text-cream hover:bg-cream hover:text-espresso">
-              Take the quiz
-            </Link>
-          </section>
-        </Reveal>
-        )}
+        {order.filter((k) => show(k)).map((k) => (
+          <div key={k}>{sectionMap[k]}</div>
+        ))}
       </div>
     </div>
   );

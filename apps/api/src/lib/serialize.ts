@@ -1,5 +1,21 @@
-import type { ProductDTO, ScentFamilyDTO, UserDTO, OrderDTO, AddressDTO, ReviewDTO, QuizQuestionPublicDTO, QuizQuestionAdminDTO, BannerDTO, BlogPostDTO, BlogPostListItemDTO, SettingDTO } from '@herencia/shared';
-import { DEFAULT_HOME_SECTIONS } from '@herencia/shared';
+import type { ProductDTO, ScentFamilyDTO, UserDTO, OrderDTO, AddressDTO, ReviewDTO, QuizQuestionPublicDTO, QuizQuestionAdminDTO, BannerDTO, BlogPostDTO, BlogPostListItemDTO, SettingDTO, ReorderableSection } from '@herencia/shared';
+import { DEFAULT_HOME_SECTIONS, DEFAULT_SECTION_ORDER, REORDERABLE_SECTIONS } from '@herencia/shared';
+
+function normalizeSectionOrder(raw: unknown): ReorderableSection[] {
+  const valid = new Set<string>(REORDERABLE_SECTIONS);
+  const seen = new Set<string>();
+  const out: ReorderableSection[] = [];
+  if (Array.isArray(raw)) {
+    for (const k of raw) {
+      if (typeof k === 'string' && valid.has(k) && !seen.has(k)) {
+        seen.add(k);
+        out.push(k as ReorderableSection);
+      }
+    }
+  }
+  for (const k of DEFAULT_SECTION_ORDER) if (!seen.has(k)) out.push(k);
+  return out;
+}
 
 export function toSettingDTO(doc: AnyDoc): SettingDTO {
   const hs = doc.homeSections ?? {};
@@ -16,6 +32,7 @@ export function toSettingDTO(doc: AnyDoc): SettingDTO {
       promo: hs.promo ?? DEFAULT_HOME_SECTIONS.promo,
       quiz: hs.quiz ?? DEFAULT_HOME_SECTIONS.quiz,
     },
+    sectionOrder: normalizeSectionOrder(doc.sectionOrder),
     instapay: {
       enabled: doc.instapay?.enabled ?? false,
       handle: doc.instapay?.handle ?? undefined,

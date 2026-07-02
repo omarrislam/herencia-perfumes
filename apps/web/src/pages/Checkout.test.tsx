@@ -13,6 +13,7 @@ function setup() {
     whatsappNumber: '+20', shippingFee: 50, socialLinks: {},
     hero: { title: 'h', subtitle: 's', ctaText: 'c', ctaLink: '/', image: 'x' },
     homeSections: { hero: true, values: true, featured: true, promo: true, quiz: true },
+    sectionOrder: ['values', 'featured', 'promo', 'quiz'],
     instapay: { enabled: false },
   });
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });

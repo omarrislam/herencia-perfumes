@@ -18,6 +18,12 @@ export const homeSectionsSchema = z.object({
 });
 export type HomeSections = z.infer<typeof homeSectionsSchema>;
 
+// Order of the re-orderable (contained) home sections. Hero + bars are fixed.
+export const REORDERABLE_SECTIONS = ['values', 'featured', 'promo', 'quiz'] as const;
+export type ReorderableSection = (typeof REORDERABLE_SECTIONS)[number];
+export const DEFAULT_SECTION_ORDER: ReorderableSection[] = [...REORDERABLE_SECTIONS];
+export const sectionOrderSchema = z.array(z.enum(REORDERABLE_SECTIONS));
+
 export const instapaySchema = z.object({
   enabled: z.boolean(),
   handle: z.string().max(120).optional(),
@@ -42,6 +48,7 @@ export const updateSettingsSchema = z.object({
   socialLinks: socialLinksSchema.optional(),
   hero: heroSchema.partial().optional(),
   homeSections: homeSectionsSchema.partial().optional(),
+  sectionOrder: sectionOrderSchema.optional(),
   instapay: instapaySchema.partial().optional(),
 });
 export type UpdateSettingsInput = z.infer<typeof updateSettingsSchema>;
@@ -53,6 +60,7 @@ export type SettingDTO = {
   socialLinks: z.infer<typeof socialLinksSchema>;
   hero: HeroContent;
   homeSections: HomeSections;
+  sectionOrder: ReorderableSection[];
   instapay: InstaPaySettings;
   contactEmail?: string;
 };

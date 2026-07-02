@@ -262,9 +262,31 @@ const STATUS_COLORS: Record<string, string> = {
   cancelled: 'bg-danger-soft text-danger',
 };
 
+const ORDER_STATUS_LS = 'herencia.orderStatuses';
+
 function OrdersSection() {
   const ordersQ = useQuery({ queryKey: ['account', 'orders'], queryFn: fetchMyOrders });
   const orders = ordersQ.data?.items ?? [];
+  const [changed, setChanged] = useState<Set<string>>(new Set());
+
+  // Flag orders whose status changed since the last visit (client-side notification).
+  useEffect(() => {
+    if (orders.length === 0) return;
+    let prev: Record<string, string> = {};
+    try {
+      prev = JSON.parse(localStorage.getItem(ORDER_STATUS_LS) || '{}') as Record<string, string>;
+    } catch {
+      prev = {};
+    }
+    const nowChanged = new Set<string>();
+    const current: Record<string, string> = {};
+    for (const o of orders) {
+      current[o.id] = o.status;
+      if (prev[o.id] && prev[o.id] !== o.status) nowChanged.add(o.id);
+    }
+    setChanged(nowChanged);
+    localStorage.setItem(ORDER_STATUS_LS, JSON.stringify(current));
+  }, [orders]);
 
   return (
     <section className="card-lux space-y-4 rounded-2xl p-6 md:p-8">
@@ -286,6 +308,11 @@ function OrdersSection() {
                 })}
               </p>
             </div>
+            {changed.has(order.id) && (
+              <span className="rounded-full bg-accent px-2 py-0.5 font-body text-[10px] font-medium uppercase tracking-wide text-surface" title="Status updated since your last visit">
+                Updated
+              </span>
+            )}
             <span
               className={`rounded px-2 py-0.5 font-body text-xs capitalize ${STATUS_COLORS[order.status] ?? 'bg-surface text-muted'}`}
             >

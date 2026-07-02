@@ -23,6 +23,15 @@ Full suite re-verified GREEN on merged `master`: `npm run lint` (0), `npm run ty
 ## In progress
 - Nothing — M4 code-polish complete and merged. Ready to start Milestone 5 (Ops/Deploy).
 
+## Post-M4 round 3 (bug-fixes + InstaPay + visual QA, on master, 2026-07-02)
+- ✅ **"Save does nothing" fixed** — queryClient had `staleTime 60s` + `refetchOnWindowFocus:false`; switched to `refetchOnWindowFocus:true` + 15s so admin edits appear on the storefront tab.
+- ✅ **Dark-mode invisible sections fixed** — root cause: `--ink` token FLIPS to cream in dark mode, but was used as an always-dark surface (quiz band, `.btn-lux`, hero/banner overlays, cart badge) → cream-on-cream. Added a FIXED `espresso` (#241111) token for those. Verified via Playwright screenshots (light+dark, desktop+mobile).
+- ✅ **InstaPay at checkout (feature #2) DONE** — `paymentMethod` (cod|instapay) end-to-end; checkout shows COD/InstaPay choice (QR from `settings.instapay.qrImage` or `/instapay-qr.jpg` fallback + handle) when enabled in admin Home; confirmation shows transfer+WhatsApp-screenshot. **NOTE: must enable InstaPay in Admin → Home to see it at checkout.**
+- ✅ **Transparent hero nav** (hero starts under the navbar; nav turns solid on scroll); **mobile products drawer** (featured = horizontal swipe on mobile); **transparent logo** (`identity/transparent-logo.png` → `public/logo.png`); announcement bar moved below the hero on home.
+- ✅ **Disabled build-time prerender** — it caused React #419 hydration errors + theme flicker; SEO meta still server-injected. (Revises decision #34.)
+- ✅ **Playwright** chromium installed to `E:\ms-playwright`; used for screenshot QA (`shots.mjs` was a temp script, removed).
+- ⏭ **STILL TODO:** (a) **reorder home sections up/down** in Admin Home (currently toggle-only); (b) **in-app notifications #3** (admin new-order indicator + customer status-change on account); (c) elevate home further (ongoing); (d) visual QA of product/cart/checkout pages in dark mode (home verified; espresso fix should carry).
+
 ## Post-M4 round 2 (UI/UX + Home CMS, on master, 2026-07-02)
 - ✅ **Mobile nav** — added a real hamburger menu (nav links were `hidden md:flex` with NO mobile menu before). **Logo** (`identity/logo.jpeg` → `apps/web/public/logo.jpeg`) in navbar + footer (white-bg JPEG → shows as a light badge in dark mode; a transparent PNG would be cleaner). **Free-shipping bar** → full-width centered announcement bar (was a left pill). **Home full-bleed** (edge-to-edge hero + full-width bars; content in a container).
 - ✅ **Home CMS (feature #1 of 3) — DONE end-to-end.** New editable Settings: `homeSections` toggles + `instapay` on the model; shared `updateSettingsSchema`/`SettingDTO`; partial-safe `PUT /admin/settings` (requireAdmin); `GET /settings` exposes them. Admin **Home** page (`/admin/home`): edit hero (title/subtitle/CTA/**image upload**) + show/hide each section (hero/values/featured/promo/quiz) + InstaPay settings (enabled/handle/QR upload). Storefront Home respects the toggles. **Hero image now persists** via upload→save. api 28f/123 green.

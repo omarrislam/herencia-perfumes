@@ -23,6 +23,14 @@ Full suite re-verified GREEN on merged `master`: `npm run lint` (0), `npm run ty
 ## In progress
 - Nothing — M4 code-polish complete and merged. Ready to start Milestone 5 (Ops/Deploy).
 
+## Post-M4 round 6 (promo bar, new sections, cards, sidebar admin, on master, 2026-07-02)
+- ✅ **Promo banner moved ABOVE the navbar** (rendered inside the header, above nav; header is fixed on home / sticky elsewhere). Managed in **Admin → Banners** (placement `global_top`), NOT Admin Home.
+- ✅ **New home sections:** `time` ("Time as an Ingredient — Patience is our rarest material", uses the user's saying) + `testimonials` (3 curated quotes). Wired into the CMS (10 section keys now; toggle + reorder).
+- ✅ **Cards** — square image (shorter/wider), 3-up grids on desktop (Home featured shows 3), smaller mobile drawer (min-w 60%, square) — fixes "huge mobile cards".
+- ✅ **Admin restructured** into a left-sidebar dashboard (brand header, vertical nav w/ pending-orders badge, card-based content, View store / Sign out). Couldn't read the Stitch prototype (JS app) — built a clean dashboard; will match Stitch if screenshots are provided.
+- Verified home (desktop+mobile) + admin (logged-in) via Playwright.
+- Testimonials are currently static curated quotes (not admin-editable yet).
+
 ## Post-M4 round 5 (editorial homepage redesign + brand imagery, on master, 2026-07-02)
 - ✅ **Homepage redesigned** (user disliked the old one). New editorial sections using the `identity/` brand photography (copied to `apps/web/public/`: essence.png, giftbox.png, apothecary.png, hero-swirl.png): **essence** split, **gifting** band (maroon box → bundles), **atelier/craft** split, **FAQ** accordion — plus featured (add-to-cart cards) + values + quiz. Hero falls back to the gold-maroon swirl when no Cloudinary hero is set. Kept fonts (Cinzel/Jost) + footer + nav.
 - ✅ **Section CMS expanded** to the new keys (essence/featured/gifting/craft/values/quiz/faq) — still toggle + reorder in Admin → Home. (`promo`/home_hero banner no longer rendered on home.)

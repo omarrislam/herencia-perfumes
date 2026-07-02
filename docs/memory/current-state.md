@@ -23,6 +23,16 @@ Full suite re-verified GREEN on merged `master`: `npm run lint` (0), `npm run ty
 ## In progress
 - Nothing — M4 code-polish complete and merged. Ready to start Milestone 5 (Ops/Deploy).
 
+## Post-M4 round 4 (contrast, cards, reorder, notifications, on master, 2026-07-02)
+- ✅ **Contrast overhaul** — deeper light bg + lighter dark surfaces + stronger borders/shadows so cards/sections separate; verified light+dark via Playwright.
+- ✅ **Add-to-cart + concentration badge on product cards** (parfinity-inspired). **Nav legibility** hero top-scrim.
+- ✅ **Product image "doesn't take effect"** — ProductForm now has image thumbnails with ✕ remove + ★ make-main (was append-only, images[0] never changed).
+- ✅ **Reorderable home sections** — `sectionOrder` in settings (schema/model/DTO+normalize); Admin Home has ▲▼ to reorder values/featured/promo/quiz (hero fixed first); Home renders in order.
+- ✅ **In-app notifications** — admin: pending-orders badge on Orders nav (polls 60s). Customer: "Updated" badge on account orders whose status changed since last visit (localStorage).
+- ✅ **Resilient Mongo connect** — server.ts retries 6×/3s (transient Atlas SRV DNS `ECONNREFUSED` via Cisco Umbrella no longer crashes boot). Permanent option: non-SRV connection string in .env.
+- Playwright chromium at `E:\ms-playwright`; screenshot QA via temp scripts (removed).
+- ⏭ Possible next (from parfinity): sample/test path, curated-box discount, brand/press wall, homepage FAQ. Also: dark-mode QA of product-detail/cart/checkout pages.
+
 ## Post-M4 round 3 (bug-fixes + InstaPay + visual QA, on master, 2026-07-02)
 - ✅ **"Save does nothing" fixed** — queryClient had `staleTime 60s` + `refetchOnWindowFocus:false`; switched to `refetchOnWindowFocus:true` + 15s so admin edits appear on the storefront tab.
 - ✅ **Dark-mode invisible sections fixed** — root cause: `--ink` token FLIPS to cream in dark mode, but was used as an always-dark surface (quiz band, `.btn-lux`, hero/banner overlays, cart badge) → cream-on-cream. Added a FIXED `espresso` (#241111) token for those. Verified via Playwright screenshots (light+dark, desktop+mobile).

@@ -23,6 +23,14 @@ Full suite re-verified GREEN on merged `master`: `npm run lint` (0), `npm run ty
 ## In progress
 - Nothing — M4 code-polish complete and merged. Ready to start Milestone 5 (Ops/Deploy).
 
+## Post-M4 round 5 (editorial homepage redesign + brand imagery, on master, 2026-07-02)
+- ✅ **Homepage redesigned** (user disliked the old one). New editorial sections using the `identity/` brand photography (copied to `apps/web/public/`: essence.png, giftbox.png, apothecary.png, hero-swirl.png): **essence** split, **gifting** band (maroon box → bundles), **atelier/craft** split, **FAQ** accordion — plus featured (add-to-cart cards) + values + quiz. Hero falls back to the gold-maroon swirl when no Cloudinary hero is set. Kept fonts (Cinzel/Jost) + footer + nav.
+- ✅ **Section CMS expanded** to the new keys (essence/featured/gifting/craft/values/quiz/faq) — still toggle + reorder in Admin → Home. (`promo`/home_hero banner no longer rendered on home.)
+- ✅ Verified desktop + mobile, light + dark via Playwright (mobile now stacks cleanly — the "awful" layout is fixed).
+- **parfinity applied:** FAQ section + gifting/curated band. **NOT done (optional, need your go-ahead):** sample/"test before buy" path (real commerce feature — new sample SKUs), brand/press wall (N/A — single brand), customer-testimonial wall.
+- Stitch prototype couldn't be extracted (JS app); used identity screens + parfinity + judgment instead.
+- Nav legibility: transparent hero nav is legible now (dark hero + top scrim); if a bright hero is uploaded, add a text-shadow.
+
 ## Post-M4 round 4 (contrast, cards, reorder, notifications, on master, 2026-07-02)
 - ✅ **Contrast overhaul** — deeper light bg + lighter dark surfaces + stronger borders/shadows so cards/sections separate; verified light+dark via Playwright.
 - ✅ **Add-to-cart + concentration badge on product cards** (parfinity-inspired). **Nav legibility** hero top-scrim.

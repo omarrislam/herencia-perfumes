@@ -12,7 +12,6 @@ import AdminScentFamilies from './AdminScentFamilies';
 import AdminOrders from './AdminOrders';
 import AdminReviews from './AdminReviews';
 import AdminQuiz from './AdminQuiz';
-import AdminBanners from './AdminBanners';
 import AdminBlog from './AdminBlog';
 
 const NAV = [
@@ -24,7 +23,6 @@ const NAV = [
   { to: '/admin/orders', label: 'Orders', badgeKey: 'orders' as const },
   { to: '/admin/reviews', label: 'Reviews' },
   { to: '/admin/quiz', label: 'Quiz' },
-  { to: '/admin/banners', label: 'Banners' },
   { to: '/admin/blog', label: 'Blog' },
 ];
 
@@ -103,7 +101,6 @@ export default function AdminApp() {
               <Route path="/orders" element={<AdminOrders />} />
               <Route path="/reviews" element={<AdminReviews />} />
               <Route path="/quiz" element={<AdminQuiz />} />
-              <Route path="/banners" element={<AdminBanners />} />
               <Route path="/blog" element={<AdminBlog />} />
             </Routes>
           </main>

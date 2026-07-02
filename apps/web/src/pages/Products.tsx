@@ -27,7 +27,7 @@ export default function Products() {
       <FilterBar key={resetKey} families={families.data ?? []} filters={filters} onChange={setFilter} onReset={reset} />
 
       {products.isLoading ? (
-        <div className="grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4 md:gap-6">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 sm:gap-5">
           {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="aspect-square rounded-xl" />)}
         </div>
       ) : products.isError ? (
@@ -37,7 +37,7 @@ export default function Products() {
       ) : (
         <>
           <Reveal>
-            <div className="grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4 md:gap-6">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 sm:gap-5">
               {data?.items.map((p) => <ProductCard key={p.id} product={p} />)}
             </div>
           </Reveal>

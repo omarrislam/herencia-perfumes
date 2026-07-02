@@ -270,7 +270,22 @@
 .prose-herencia ul, .prose-herencia ol { margin: 0.9rem 0; padding-left: 1.5rem; list-style: revert; line-height: 1.8; }
 .prose-herencia blockquote { border-left: 2px solid var(--accent); padding-left: 1rem; margin: 1.25rem 0; font-style: italic; color: var(--muted); }
 
+/* Quiz band — twinkling gold dust (GPU-only: opacity + transform). */
+.sparkle {
+  position: absolute;
+  border-radius: 9999px;
+  background: var(--gold-hi);
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: sparkle-twinkle 5s ease-in-out infinite;
+}
+@keyframes sparkle-twinkle {
+  0%, 100% { opacity: 0; transform: translate3d(0, 0, 0) scale(0.5); }
+  50% { opacity: 0.85; transform: translate3d(0, -10px, 0) scale(1); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
   html { scroll-behavior: auto; }
+  .sparkle { display: none; }
 }

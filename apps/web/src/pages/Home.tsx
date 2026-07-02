@@ -23,11 +23,21 @@ const FAQ: { q: string; a: string }[] = [
   { q: 'How are the perfumes made?', a: 'Each scent is composed from rare raw materials and layered by hand in small batches — never mass-produced.' },
 ];
 
+// Twinkling gold-dust positions for the quiz band (top%, left%, size px, delay s).
+const SPARKLES: { top: string; left: string; size: number; delay: string }[] = [
+  { top: '18%', left: '8%', size: 3, delay: '0s' }, { top: '70%', left: '14%', size: 2, delay: '1.2s' },
+  { top: '32%', left: '22%', size: 2, delay: '2.4s' }, { top: '82%', left: '30%', size: 3, delay: '0.6s' },
+  { top: '12%', left: '40%', size: 2, delay: '3.1s' }, { top: '60%', left: '48%', size: 3, delay: '1.8s' },
+  { top: '26%', left: '58%', size: 2, delay: '0.9s' }, { top: '78%', left: '66%', size: 2, delay: '2.7s' },
+  { top: '20%', left: '74%', size: 3, delay: '1.5s' }, { top: '66%', left: '82%', size: 2, delay: '3.4s' },
+  { top: '38%', left: '90%', size: 3, delay: '0.3s' }, { top: '86%', left: '94%', size: 2, delay: '2.1s' },
+];
+
 export default function Home() {
   useSeo({ title: 'HERENCIA — Luxury in every drop', description: 'Heritage luxury perfumery.' });
   const settings = useQuery({ queryKey: ['settings'], queryFn: fetchSettings });
   const featured = useQuery({ queryKey: ['products', 'featured'], queryFn: () => fetchProducts({ sort: 'rating', page: 1 }) });
-  const featuredItems = (featured.data?.items ?? []).filter((p) => p.isFeatured).slice(0, 3);
+  const featuredItems = (featured.data?.items ?? []).filter((p) => p.isFeatured).slice(0, 4);
   const hero = settings.data?.hero;
   // Prefer an admin-uploaded Cloudinary hero; otherwise use the brand swirl.
   const heroPublicId = hero?.image;
@@ -74,13 +84,13 @@ export default function Home() {
             <h2 className="display mt-2 text-3xl text-content md:text-4xl">Featured scents</h2>
             <div className="rule-gold mx-auto mt-4 w-24" />
           </div>
-          <div className="-mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-3 sm:mx-0 sm:px-0 md:grid md:grid-cols-3 md:gap-6 md:overflow-visible md:pb-0">
+          <div className="-mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-3 sm:mx-0 sm:gap-5 sm:px-0 md:grid md:grid-cols-4 md:overflow-visible md:pb-0">
             {featured.isLoading
-              ? Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="min-w-[52%] shrink-0 snap-start sm:min-w-[40%] md:min-w-0"><Skeleton className="aspect-square rounded-xl" /></div>
+              ? Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="w-[46%] shrink-0 snap-start sm:w-[31%] md:w-full"><Skeleton className="aspect-square rounded-xl" /></div>
                 ))
               : featuredItems.map((p) => (
-                  <div key={p.id} className="min-w-[52%] shrink-0 snap-start sm:min-w-[40%] md:min-w-0"><ProductCard product={p} /></div>
+                  <div key={p.id} className="w-[46%] shrink-0 snap-start sm:w-[31%] md:w-full"><ProductCard product={p} /></div>
                 ))}
           </div>
           {!featured.isLoading && featuredItems.length === 0 && (
@@ -157,9 +167,10 @@ export default function Home() {
             </div>
             <p className="font-body text-sm text-muted">Rated by 500+ patrons across Egypt</p>
           </div>
-          <div className="grid gap-6 md:grid-cols-3">
+          {/* Horizontal drawer (swipe) — like parfinity */}
+          <div className="-mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-3 sm:mx-0 sm:px-0 md:grid md:grid-cols-3 md:overflow-visible md:pb-0">
             {TESTIMONIALS.map((t) => (
-              <figure key={t.name} className="rounded-xl border border-hairline bg-surface p-6">
+              <figure key={t.name} className="w-[82%] shrink-0 snap-start rounded-xl border border-hairline bg-surface p-6 sm:w-[60%] md:w-full">
                 <blockquote className="font-body leading-relaxed text-content">“{t.quote}”</blockquote>
                 <figcaption className="mt-5 flex items-center gap-3">
                   <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/15 font-display text-sm text-accent">
@@ -190,6 +201,12 @@ export default function Home() {
     quiz: (
       <Reveal>
         <section className="relative overflow-hidden rounded-2xl bg-espresso px-6 py-16 text-center shadow-lux md:py-20">
+          {/* Twinkling gold dust */}
+          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+            {SPARKLES.map((s, i) => (
+              <span key={i} className="sparkle" style={{ top: s.top, left: s.left, width: s.size, height: s.size, animationDelay: s.delay }} />
+            ))}
+          </div>
           <p className="eyebrow text-gold-hi">Not sure where to start?</p>
           <h2 className="display mx-auto mt-3 max-w-2xl text-3xl text-cream md:text-4xl">Find your signature scent</h2>
           <p className="mx-auto mt-4 max-w-md font-body text-cream/70">A few questions reveal the family that suits you — and the bottle to match.</p>

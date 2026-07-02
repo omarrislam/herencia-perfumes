@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { useCart } from './CartContext';
 import { Price } from '../../components/Price';
+import { cld } from '../../lib/cloudinary';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { DURATION, EASE_OUT } from '../../lib/motion';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
@@ -81,7 +82,7 @@ export function CartDrawer() {
                     <li key={`${line.productId}-${line.sizeLabel}`} className="flex gap-4">
                       {line.image ? (
                         <img
-                          src={line.image}
+                          src={cld(line.image, { w: 160 })}
                           alt={line.name}
                           className="h-20 w-20 flex-shrink-0 rounded-md object-cover"
                         />

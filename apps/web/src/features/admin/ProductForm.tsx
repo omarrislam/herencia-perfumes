@@ -85,7 +85,7 @@ export function ProductForm({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <label className="block">
-        <span className="sr-only">Product name</span>
+        <span className="mb-1 block font-body text-xs text-muted">Product name</span>
         <input
           {...register('name')}
           placeholder="Name"
@@ -95,7 +95,7 @@ export function ProductForm({
 
       <div className="grid grid-cols-2 gap-3">
         <label>
-          <span className="sr-only">Type</span>
+          <span className="mb-1 block font-body text-xs text-muted">Type</span>
           <select
             {...register('type')}
             className="w-full rounded-md border border-line bg-bg px-3 py-2 font-body text-content"
@@ -108,7 +108,7 @@ export function ProductForm({
           </select>
         </label>
         <label>
-          <span className="sr-only">Scent family</span>
+          <span className="mb-1 block font-body text-xs text-muted">Scent family</span>
           <select
             {...register('scentFamily')}
             className="w-full rounded-md border border-line bg-bg px-3 py-2 font-body text-content"
@@ -122,7 +122,7 @@ export function ProductForm({
           </select>
         </label>
         <label>
-          <span className="sr-only">Gender</span>
+          <span className="mb-1 block font-body text-xs text-muted">Gender</span>
           <select
             {...register('gender')}
             className="w-full rounded-md border border-line bg-bg px-3 py-2 font-body text-content"
@@ -135,7 +135,7 @@ export function ProductForm({
           </select>
         </label>
         <label>
-          <span className="sr-only">Concentration</span>
+          <span className="mb-1 block font-body text-xs text-muted">Concentration</span>
           <select
             {...register('concentration')}
             className="w-full rounded-md border border-line bg-bg px-3 py-2 font-body text-content"
@@ -150,7 +150,7 @@ export function ProductForm({
       </div>
 
       <label className="block">
-        <span className="sr-only">Short description</span>
+        <span className="mb-1 block font-body text-xs text-muted">Short description</span>
         <input
           {...register('shortDesc')}
           placeholder="Short description"
@@ -159,7 +159,7 @@ export function ProductForm({
       </label>
 
       <label className="block">
-        <span className="sr-only">Full description</span>
+        <span className="mb-1 block font-body text-xs text-muted">Full description</span>
         <textarea
           {...register('description')}
           placeholder="Full description"
@@ -173,7 +173,7 @@ export function ProductForm({
         {sizes.fields.map((field, i) => (
           <div key={field.id} className="mb-2 grid grid-cols-4 gap-2">
             <label>
-              <span className="sr-only">Size label</span>
+              <span className="mb-1 block font-body text-xs text-muted">Size label</span>
               <input
                 {...register(`sizes.${i}.label`)}
                 placeholder="50ml"
@@ -181,7 +181,7 @@ export function ProductForm({
               />
             </label>
             <label>
-              <span className="sr-only">Price</span>
+              <span className="mb-1 block font-body text-xs text-muted">Price</span>
               <input
                 type="number"
                 step="0.01"
@@ -191,7 +191,7 @@ export function ProductForm({
               />
             </label>
             <label>
-              <span className="sr-only">Stock</span>
+              <span className="mb-1 block font-body text-xs text-muted">Stock</span>
               <input
                 type="number"
                 {...register(`sizes.${i}.stock`, { valueAsNumber: true })}
@@ -227,7 +227,7 @@ export function ProductForm({
           ))}
         </div>
         <label>
-          <span className="sr-only">Upload image</span>
+          <span className="mb-1 block font-body text-xs text-muted">Upload image</span>
           <input
             type="file"
             accept="image/*"

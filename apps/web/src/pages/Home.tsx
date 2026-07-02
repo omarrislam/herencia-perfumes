@@ -8,8 +8,13 @@ import { useSeo } from '../lib/useSeo';
 import { ProductCard } from '../components/ProductCard';
 import { ProductImage } from '../components/ProductImage';
 import { Skeleton } from '../components/Skeleton';
-import { BannerStrip } from '../components/BannerStrip';
 import { Reveal } from '../components/Reveal';
+
+const TESTIMONIALS: { quote: string; name: string; city: string }[] = [
+  { quote: 'Royal Oud is the first scent strangers stop me to ask about.', name: 'Yara H.', city: 'Cairo' },
+  { quote: 'The gift box alone felt like a luxury — my father hasn’t taken it off since.', name: 'Karim S.', city: 'Alexandria' },
+  { quote: 'Finally a house that lasts all day without shouting. Amber Noir is a masterpiece.', name: 'Nour A.', city: 'Giza' },
+];
 
 const FAQ: { q: string; a: string }[] = [
   { q: 'Not sure which scent suits you?', a: 'Take the Find Your Scent quiz — a few questions reveal the family that fits you and the bottle to match.' },
@@ -22,7 +27,7 @@ export default function Home() {
   useSeo({ title: 'HERENCIA — Luxury in every drop', description: 'Heritage luxury perfumery.' });
   const settings = useQuery({ queryKey: ['settings'], queryFn: fetchSettings });
   const featured = useQuery({ queryKey: ['products', 'featured'], queryFn: () => fetchProducts({ sort: 'rating', page: 1 }) });
-  const featuredItems = (featured.data?.items ?? []).filter((p) => p.isFeatured).slice(0, 4);
+  const featuredItems = (featured.data?.items ?? []).filter((p) => p.isFeatured).slice(0, 3);
   const hero = settings.data?.hero;
   // Prefer an admin-uploaded Cloudinary hero; otherwise use the brand swirl.
   const heroPublicId = hero?.image;
@@ -40,7 +45,7 @@ export default function Home() {
 
   const sec = settings.data?.homeSections;
   const show = (k: keyof NonNullable<typeof sec>) => (sec ? sec[k] : true);
-  const order: ReorderableSection[] = settings.data?.sectionOrder ?? ['essence', 'featured', 'gifting', 'craft', 'values', 'quiz', 'faq'];
+  const order: ReorderableSection[] = settings.data?.sectionOrder ?? ['essence', 'featured', 'gifting', 'craft', 'time', 'testimonials', 'values', 'quiz', 'faq'];
 
   const sectionMap: Record<ReorderableSection, ReactNode> = {
     essence: (
@@ -69,13 +74,13 @@ export default function Home() {
             <h2 className="display mt-2 text-3xl text-content md:text-4xl">Featured scents</h2>
             <div className="rule-gold mx-auto mt-4 w-24" />
           </div>
-          <div className="-mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-3 sm:mx-0 sm:px-0 md:grid md:grid-cols-4 md:gap-6 md:overflow-visible md:pb-0">
+          <div className="-mx-5 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-3 sm:mx-0 sm:px-0 md:grid md:grid-cols-3 md:gap-6 md:overflow-visible md:pb-0">
             {featured.isLoading
-              ? Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="min-w-[68%] shrink-0 snap-start sm:min-w-[45%] md:min-w-0"><Skeleton className="aspect-[4/5] rounded-xl" /></div>
+              ? Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="min-w-[60%] shrink-0 snap-start sm:min-w-[42%] md:min-w-0"><Skeleton className="aspect-square rounded-xl" /></div>
                 ))
               : featuredItems.map((p) => (
-                  <div key={p.id} className="min-w-[68%] shrink-0 snap-start sm:min-w-[45%] md:min-w-0"><ProductCard product={p} /></div>
+                  <div key={p.id} className="min-w-[60%] shrink-0 snap-start sm:min-w-[42%] md:min-w-0"><ProductCard product={p} /></div>
                 ))}
           </div>
           {!featured.isLoading && featuredItems.length === 0 && (
@@ -117,6 +122,37 @@ export default function Home() {
           </div>
           <div className="order-1 overflow-hidden rounded-2xl shadow-lux md:order-2">
             <img src="/apothecary.png" alt="Herencia apothecary" loading="lazy" className="aspect-square w-full object-cover" />
+          </div>
+        </section>
+      </Reveal>
+    ),
+    time: (
+      <Reveal>
+        <section className="rounded-2xl border border-hairline bg-surface2 px-6 py-16 text-center md:py-20">
+          <p className="eyebrow">Time as an Ingredient</p>
+          <h2 className="display mx-auto mt-3 max-w-2xl text-3xl text-content md:text-4xl">Patience is our rarest material</h2>
+          <p className="mx-auto mt-4 max-w-xl font-body leading-relaxed text-muted">
+            Months of resting allow the composition to breathe, mature, and find its perfect harmony before bottling.
+          </p>
+        </section>
+      </Reveal>
+    ),
+    testimonials: (
+      <Reveal>
+        <section>
+          <div className="mb-10 text-center">
+            <p className="eyebrow">In their words</p>
+            <h2 className="display mt-2 text-3xl text-content md:text-4xl">Loved by our patrons</h2>
+            <div className="rule-gold mx-auto mt-4 w-24" />
+          </div>
+          <div className="grid gap-6 md:grid-cols-3">
+            {TESTIMONIALS.map((t) => (
+              <figure key={t.name} className="card-lux rounded-xl p-6">
+                <div className="font-body text-sm tracking-wide text-accent">★★★★★</div>
+                <blockquote className="mt-3 font-body leading-relaxed text-content">“{t.quote}”</blockquote>
+                <figcaption className="mt-4 font-body text-sm text-muted">— {t.name}, {t.city}</figcaption>
+              </figure>
+            ))}
           </div>
         </section>
       </Reveal>
@@ -200,10 +236,6 @@ export default function Home() {
           </div>
         </section>
       )}
-
-      {/* Full-width bars */}
-      <BannerStrip placement="global_top" />
-      <BannerStrip placement="home_strip" />
 
       {/* Contained content, in the admin-configured order */}
       <div className="mx-auto max-w-6xl space-y-20 px-5 py-16 sm:px-6 md:space-y-28 md:py-24">

@@ -31,6 +31,8 @@ export function toSettingDTO(doc: AnyDoc): SettingDTO {
       featured: hs.featured ?? DEFAULT_HOME_SECTIONS.featured,
       gifting: hs.gifting ?? DEFAULT_HOME_SECTIONS.gifting,
       craft: hs.craft ?? DEFAULT_HOME_SECTIONS.craft,
+      time: hs.time ?? DEFAULT_HOME_SECTIONS.time,
+      testimonials: hs.testimonials ?? DEFAULT_HOME_SECTIONS.testimonials,
       values: hs.values ?? DEFAULT_HOME_SECTIONS.values,
       quiz: hs.quiz ?? DEFAULT_HOME_SECTIONS.quiz,
       faq: hs.faq ?? DEFAULT_HOME_SECTIONS.faq,

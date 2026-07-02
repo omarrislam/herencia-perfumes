@@ -41,10 +41,12 @@ export function StorefrontLayout() {
   return (
     <div className="flex min-h-[100dvh] flex-col">
       <header
-        className={`fixed inset-x-0 top-0 z-40 transition-colors duration-300 ${
+        className={`${isHome ? 'fixed' : 'sticky'} inset-x-0 top-0 z-40 transition-colors duration-300 ${
           light ? 'bg-transparent' : 'border-b border-hairline bg-bg/90 backdrop-blur-md'
         }`}
       >
+        {/* Promo / announcement bar — above the navbar (managed in Admin → Banners, placement "global_top") */}
+        <BannerStrip placement="global_top" />
         <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-5 sm:py-4">
           <Link to="/" className="flex items-center gap-2.5">
             <img src="/logo.png" alt="HERENCIA crest" className="h-10 w-10 object-contain" />
@@ -120,11 +122,6 @@ export function StorefrontLayout() {
           </div>
         )}
       </header>
-
-      {/* Off-home pages get the announcement bar + a spacer for the fixed header.
-          On home the hero sits under the transparent header (bar shown after hero). */}
-      {!isHome && <div className="h-[60px] sm:h-[68px]" aria-hidden="true" />}
-      {!isHome && <BannerStrip placement="global_top" />}
 
       <main className={isHome ? 'w-full flex-1' : 'mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-5'}>
         <motion.div key={location.pathname} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}>

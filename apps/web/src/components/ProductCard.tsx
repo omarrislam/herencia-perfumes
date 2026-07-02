@@ -25,7 +25,7 @@ export function ProductCard({ product }: { product: ProductDTO }) {
   return (
     <div className="group card-lux relative flex flex-col overflow-hidden rounded-xl">
       <Link to={href} className="block focus-visible:outline-none">
-        <div className="relative aspect-[4/5] overflow-hidden bg-surface2">
+        <div className="relative aspect-square overflow-hidden bg-surface2">
           <ProductImage
             publicId={product.images[0] ?? ''}
             alt={product.name}

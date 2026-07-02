@@ -14,6 +14,8 @@ const LABELS: Record<keyof HomeSections, { label: string; hint: string }> = {
   featured: { label: 'Featured scents', hint: 'Featured products (drawer on mobile)' },
   gifting: { label: 'Gifting band', hint: 'Gift-box banner → bundles' },
   craft: { label: 'Atelier / craft', hint: '“Perfumery as inheritance” editorial' },
+  time: { label: 'Time as an Ingredient', hint: '“Patience is our rarest material” statement' },
+  testimonials: { label: 'Testimonials', hint: 'Customer quotes' },
   values: { label: 'Values strip', hint: 'Small-batch / COD / free shipping' },
   quiz: { label: 'Quiz CTA', hint: '“Find your signature scent” band' },
   faq: { label: 'FAQ', hint: 'Questions & answers accordion' },
@@ -24,7 +26,7 @@ export default function AdminHome() {
   const settings = useQuery({ queryKey: ['settings'], queryFn: fetchSettings });
 
   const [hero, setHero] = useState<HeroForm>({ title: '', subtitle: '', ctaText: '', ctaLink: '', image: '' });
-  const [sections, setSections] = useState<HomeSections>({ hero: true, essence: true, featured: true, gifting: true, craft: true, values: true, quiz: true, faq: true });
+  const [sections, setSections] = useState<HomeSections>({ hero: true, essence: true, featured: true, gifting: true, craft: true, time: true, testimonials: true, values: true, quiz: true, faq: true });
   const [order, setOrder] = useState<ReorderableSection[]>(DEFAULT_SECTION_ORDER);
   const [instapay, setInstapay] = useState<{ enabled: boolean; handle: string; qrImage: string }>({ enabled: false, handle: '', qrImage: '' });
   const [uploading, setUploading] = useState<'hero' | 'qr' | null>(null);

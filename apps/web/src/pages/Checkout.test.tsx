@@ -12,8 +12,8 @@ function setup() {
   vi.spyOn(api, 'fetchSettings').mockResolvedValue({
     whatsappNumber: '+20', shippingFee: 50, socialLinks: {},
     hero: { title: 'h', subtitle: 's', ctaText: 'c', ctaLink: '/', image: 'x' },
-    homeSections: { hero: true, essence: true, featured: true, gifting: true, craft: true, values: true, quiz: true, faq: true },
-    sectionOrder: ['essence', 'featured', 'gifting', 'craft', 'values', 'quiz', 'faq'],
+    homeSections: { hero: true, essence: true, featured: true, gifting: true, craft: true, time: true, testimonials: true, values: true, quiz: true, faq: true },
+    sectionOrder: ['essence', 'featured', 'gifting', 'craft', 'time', 'testimonials', 'values', 'quiz', 'faq'],
     instapay: { enabled: false },
   });
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });

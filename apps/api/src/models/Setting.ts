@@ -19,6 +19,8 @@ const settingSchema = new Schema(
       featured: { type: Boolean, default: true },
       gifting: { type: Boolean, default: true },
       craft: { type: Boolean, default: true },
+      time: { type: Boolean, default: true },
+      testimonials: { type: Boolean, default: true },
       values: { type: Boolean, default: true },
       quiz: { type: Boolean, default: true },
       faq: { type: Boolean, default: true },

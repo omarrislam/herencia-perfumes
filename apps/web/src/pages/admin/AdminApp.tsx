@@ -1,5 +1,5 @@
 // apps/web/src/pages/admin/AdminApp.tsx
-import { Routes, Route, Link } from 'react-router-dom';
+import { Routes, Route, NavLink } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { RequireAdmin } from '../../features/auth/RequireAdmin';
 import { useAuth } from '../../features/auth/AuthContext';
@@ -13,76 +13,95 @@ import AdminQuiz from './AdminQuiz';
 import AdminBanners from './AdminBanners';
 import AdminBlog from './AdminBlog';
 
+const NAV = [
+  { to: '/admin/home', label: 'Home' },
+  { to: '/admin/products', label: 'Products' },
+  { to: '/admin/scent-families', label: 'Scent families' },
+  { to: '/admin/orders', label: 'Orders', badgeKey: 'orders' as const },
+  { to: '/admin/reviews', label: 'Reviews' },
+  { to: '/admin/quiz', label: 'Quiz' },
+  { to: '/admin/banners', label: 'Banners' },
+  { to: '/admin/blog', label: 'Blog' },
+];
+
 export default function AdminApp() {
   const { logout } = useAuth();
-  // Poll pending (new) orders for the admin notification badge.
   const pending = useQuery({
     queryKey: ['admin-orders', 'pending'],
     queryFn: () => adminFetchOrders('pending'),
     refetchInterval: 60_000,
   });
   const pendingCount = pending.data?.total ?? 0;
+
+  const itemClass = ({ isActive }: { isActive: boolean }) =>
+    `flex items-center justify-between rounded-lg px-3 py-2 font-body text-sm transition-colors ${
+      isActive ? 'bg-accent/12 text-accent' : 'text-content hover:bg-accent/5 hover:text-accent'
+    }`;
+
+  const badge = (label: string) =>
+    label === 'Orders' && pendingCount > 0 ? (
+      <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-danger px-1.5 text-xs font-medium text-white">
+        {pendingCount}
+      </span>
+    ) : null;
+
   return (
     <RequireAdmin>
-      <div className="min-h-screen">
-        <header className="border-b border-line">
-          <nav className="mx-auto flex max-w-6xl items-center gap-6 p-4 font-body text-sm">
-            <Link to="/admin/products" className="font-display text-lg text-content">
-              HERENCIA Admin
-            </Link>
-            <Link to="/admin/home" className="text-content hover:text-accent">
-              Home
-            </Link>
-            <Link to="/admin/products" className="text-content hover:text-accent">
-              Products
-            </Link>
-            <Link to="/admin/scent-families" className="text-content hover:text-accent">
-              Scent families
-            </Link>
-            <Link to="/admin/orders" className="relative text-content hover:text-accent">
-              Orders
-              {pendingCount > 0 && (
-                <span className="ml-1 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-danger px-1.5 text-xs font-medium text-white" title={`${pendingCount} new order${pendingCount === 1 ? '' : 's'}`}>
-                  {pendingCount}
-                </span>
-              )}
-            </Link>
-            <Link to="/admin/reviews" className="text-content hover:text-accent">
-              Reviews
-            </Link>
-            <Link to="/admin/quiz" className="text-content hover:text-accent">
-              Quiz
-            </Link>
-            <Link to="/admin/banners" className="text-content hover:text-accent">
-              Banners
-            </Link>
-            <Link to="/admin/blog" className="text-content hover:text-accent">
-              Blog
-            </Link>
-            <Link to="/" className="text-muted hover:text-accent">
-              View store
-            </Link>
-            <button
-              onClick={() => void logout()}
-              className="ml-auto font-body text-sm text-muted hover:text-accent"
-            >
-              Sign out
-            </button>
+      <div className="flex min-h-[100dvh] bg-bg">
+        {/* Sidebar (desktop) */}
+        <aside className="hidden w-60 flex-col border-r border-hairline bg-surface md:flex">
+          <div className="flex items-center gap-2.5 border-b border-hairline p-5">
+            <img src="/logo.png" alt="" className="h-9 w-9 object-contain" />
+            <div>
+              <p className="font-display text-lg leading-none tracking-[0.15em] text-content">HERENCIA</p>
+              <p className="mt-1 font-body text-[10px] uppercase tracking-[0.2em] text-muted">Admin</p>
+            </div>
+          </div>
+          <nav className="flex-1 space-y-1 p-3">
+            {NAV.map((n) => (
+              <NavLink key={n.to} to={n.to} className={itemClass}>
+                <span>{n.label}</span>
+                {badge(n.label)}
+              </NavLink>
+            ))}
           </nav>
-        </header>
-        <main className="mx-auto max-w-6xl p-4">
-          <Routes>
-            <Route path="/" element={<AdminProducts />} />
-            <Route path="/home" element={<AdminHome />} />
-            <Route path="/products" element={<AdminProducts />} />
-            <Route path="/scent-families" element={<AdminScentFamilies />} />
-            <Route path="/orders" element={<AdminOrders />} />
-            <Route path="/reviews" element={<AdminReviews />} />
-            <Route path="/quiz" element={<AdminQuiz />} />
-            <Route path="/banners" element={<AdminBanners />} />
-            <Route path="/blog" element={<AdminBlog />} />
-          </Routes>
-        </main>
+          <div className="space-y-1 border-t border-hairline p-3">
+            <NavLink to="/" className="block rounded-lg px-3 py-2 font-body text-sm text-muted hover:text-accent">View store ↗</NavLink>
+            <button onClick={() => void logout()} className="block w-full rounded-lg px-3 py-2 text-left font-body text-sm text-muted hover:text-accent">Sign out</button>
+          </div>
+        </aside>
+
+        {/* Mobile top bar */}
+        <div className="flex min-w-0 flex-1 flex-col">
+          <header className="border-b border-hairline bg-surface md:hidden">
+            <div className="flex items-center justify-between px-4 py-3">
+              <span className="font-display text-lg tracking-[0.15em] text-content">HERENCIA Admin</span>
+              <button onClick={() => void logout()} className="font-body text-sm text-muted hover:text-accent">Sign out</button>
+            </div>
+            <nav className="flex gap-1 overflow-x-auto px-3 pb-3">
+              {NAV.map((n) => (
+                <NavLink key={n.to} to={n.to} className={({ isActive }) => `flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 font-body text-sm ${isActive ? 'bg-accent/12 text-accent' : 'text-content hover:text-accent'}`}>
+                  {n.label}
+                  {badge(n.label)}
+                </NavLink>
+              ))}
+            </nav>
+          </header>
+
+          <main className="mx-auto w-full max-w-5xl flex-1 p-5 md:p-8">
+            <Routes>
+              <Route path="/" element={<AdminProducts />} />
+              <Route path="/home" element={<AdminHome />} />
+              <Route path="/products" element={<AdminProducts />} />
+              <Route path="/scent-families" element={<AdminScentFamilies />} />
+              <Route path="/orders" element={<AdminOrders />} />
+              <Route path="/reviews" element={<AdminReviews />} />
+              <Route path="/quiz" element={<AdminQuiz />} />
+              <Route path="/banners" element={<AdminBanners />} />
+              <Route path="/blog" element={<AdminBlog />} />
+            </Routes>
+          </main>
+        </div>
       </div>
     </RequireAdmin>
   );

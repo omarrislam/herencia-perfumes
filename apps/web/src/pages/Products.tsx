@@ -19,29 +19,33 @@ export default function Products() {
   const data = products.data;
   return (
     <div>
-      <h1 className="mb-6 font-display text-3xl text-content">Perfumes</h1>
+      <div className="mb-8">
+        <p className="eyebrow">The Collection</p>
+        <h1 className="display mt-2 text-3xl text-content md:text-4xl">Perfumes</h1>
+        <div className="rule-gold-left mt-4" />
+      </div>
       <FilterBar key={resetKey} families={families.data ?? []} filters={filters} onChange={setFilter} onReset={reset} />
 
       {products.isLoading ? (
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="aspect-square" />)}
+        <div className="grid grid-cols-2 gap-5 md:grid-cols-4 md:gap-6">
+          {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="aspect-[4/5] rounded-xl" />)}
         </div>
       ) : products.isError ? (
         <p className="font-body text-muted">Could not load products. Please try again.</p>
       ) : data && data.items.length === 0 ? (
-        <p className="font-body text-muted">No perfumes match your filters.</p>
+        <p className="py-16 text-center font-body text-muted">No perfumes match your filters.</p>
       ) : (
         <>
           <Reveal>
-            <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+            <div className="grid grid-cols-2 gap-5 md:grid-cols-4 md:gap-6">
               {data?.items.map((p) => <ProductCard key={p.id} product={p} />)}
             </div>
           </Reveal>
           {data && data.pages > 1 ? (
-            <div className="mt-8 flex items-center justify-center gap-4 font-body">
-              <button disabled={data.page <= 1} onClick={() => setFilter('page', data.page - 1)} className="rounded-md border border-line px-4 py-2 text-content disabled:opacity-40">Previous</button>
-              <span className="text-muted">Page {data.page} of {data.pages}</span>
-              <button disabled={data.page >= data.pages} onClick={() => setFilter('page', data.page + 1)} className="rounded-md border border-line px-4 py-2 text-content disabled:opacity-40">Next</button>
+            <div className="mt-12 flex items-center justify-center gap-4 font-body">
+              <button disabled={data.page <= 1} onClick={() => setFilter('page', data.page - 1)} className="rounded-md border border-line px-4 py-2 text-content transition-colors hover:border-accent disabled:opacity-40">Previous</button>
+              <span className="text-sm text-muted">Page {data.page} of {data.pages}</span>
+              <button disabled={data.page >= data.pages} onClick={() => setFilter('page', data.page + 1)} className="rounded-md border border-line px-4 py-2 text-content transition-colors hover:border-accent disabled:opacity-40">Next</button>
             </div>
           ) : null}
         </>

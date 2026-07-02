@@ -15,17 +15,19 @@ export function ProductCard({ product }: { product: ProductDTO }) {
     <div className="group relative">
       <Link
         to={href}
-        className="block rounded-lg border border-line bg-surface p-3 transition-transform hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold motion-reduce:transform-none motion-reduce:transition-none"
+        className="card-lux block overflow-hidden rounded-xl focus-visible:outline-none"
       >
-        <div className="aspect-square overflow-hidden rounded-md bg-bg">
-          <ProductImage publicId={product.images[0] ?? ''} alt={product.name} w={400} className="h-full w-full object-cover transition-transform group-hover:scale-105 motion-reduce:transform-none motion-reduce:transition-none" />
+        <div className="aspect-[4/5] overflow-hidden bg-surface2">
+          <ProductImage publicId={product.images[0] ?? ''} alt={product.name} w={500} className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06] motion-reduce:transform-none motion-reduce:transition-none" />
         </div>
-        <h3 className="mt-3 font-display text-lg text-content">{product.name}</h3>
-        <p className="font-body text-sm text-muted">{product.scentFamily?.name ?? ''}</p>
-        <div className="mt-1"><Rating avg={product.rating.avg} count={product.rating.count} /></div>
-        <div className="mt-2"><Price value={product.basePrice} compareAt={baseSize?.compareAtPrice} /></div>
+        <div className="p-5">
+          {product.scentFamily?.name && <p className="eyebrow mb-1.5">{product.scentFamily.name}</p>}
+          <h3 className="font-display text-lg leading-snug text-content">{product.name}</h3>
+          <div className="mt-1.5"><Rating avg={product.rating.avg} count={product.rating.count} /></div>
+          <div className="mt-3"><Price value={product.basePrice} compareAt={baseSize?.compareAtPrice} /></div>
+        </div>
       </Link>
-      <div className="absolute right-2 top-2 z-10">
+      <div className="absolute right-3 top-3 z-10">
         <WishlistButton productId={product.id} />
       </div>
     </div>

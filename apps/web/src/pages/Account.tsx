@@ -36,7 +36,7 @@ function Field({
         type={type}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full rounded border border-line bg-bg px-2 py-1.5 font-body text-sm text-content focus:outline-none focus:ring-1 focus:ring-gold"
+        className="field-lux text-sm"
       />
     </div>
   );
@@ -83,7 +83,7 @@ function ProfileSection() {
   };
 
   return (
-    <section className="rounded-lg border border-line p-6 space-y-4">
+    <section className="card-lux space-y-4 rounded-2xl p-6 md:p-8">
       <h2 className="font-display text-xl text-content">Profile</h2>
       <form onSubmit={handleSubmit} className="space-y-3 max-w-sm">
         <Field label="Name" value={name} onChange={setName} />
@@ -190,7 +190,7 @@ function AddressesSection() {
   const addresses: AddressDTO[] = addressesQ.data ?? [];
 
   return (
-    <section className="rounded-lg border border-line p-6 space-y-4">
+    <section className="card-lux space-y-4 rounded-2xl p-6 md:p-8">
       <div className="flex items-center justify-between">
         <h2 className="font-display text-xl text-content">Addresses</h2>
         {!adding && (
@@ -204,7 +204,7 @@ function AddressesSection() {
 
       {addresses.map((addr) =>
         editingId === addr.id ? (
-          <div key={addr.id} className="rounded-md border border-gold p-3">
+          <div key={addr.id} className="rounded-xl border border-accent p-4">
             <AddressForm
               initial={addr}
               onSave={(input) => editMut.mutate({ id: addr.id, input })}
@@ -213,7 +213,7 @@ function AddressesSection() {
             />
           </div>
         ) : (
-          <div key={addr.id} className="rounded-md border border-line p-3 space-y-1">
+          <div key={addr.id} className="rounded-xl border border-hairline p-4 space-y-1">
             <div className="flex items-center gap-2">
               <span className="font-body font-semibold text-content">{addr.label}</span>
               {addr.isDefault && (
@@ -267,7 +267,7 @@ function OrdersSection() {
   const orders = ordersQ.data?.items ?? [];
 
   return (
-    <section className="rounded-lg border border-line p-6 space-y-4">
+    <section className="card-lux space-y-4 rounded-2xl p-6 md:p-8">
       <h2 className="font-display text-xl text-content">Orders</h2>
       {orders.length === 0 && (
         <p className="font-body text-sm text-muted">No orders yet.</p>
@@ -276,7 +276,7 @@ function OrdersSection() {
         {orders.map((order) => (
           <div
             key={order.id}
-            className="flex flex-wrap items-center gap-4 rounded-md border border-line p-3"
+            className="flex flex-wrap items-center gap-4 rounded-xl border border-hairline p-4"
           >
             <div className="min-w-0 flex-1">
               <p className="font-body text-sm font-semibold text-content">#{order.orderNumber}</p>
@@ -306,7 +306,7 @@ function WishlistSection() {
   const products = wishlistQ.data ?? [];
 
   return (
-    <section className="rounded-lg border border-line p-6 space-y-4">
+    <section className="card-lux space-y-4 rounded-2xl p-6 md:p-8">
       <h2 className="font-display text-xl text-content">Wishlist</h2>
       {products.length === 0 && (
         <p className="font-body text-sm text-muted">No saved items.</p>
@@ -332,9 +332,12 @@ export default function Account() {
   };
 
   return (
-    <div className="space-y-8 py-6">
-      <div className="flex items-center justify-between">
-        <h1 className="font-display text-3xl text-content">My Account</h1>
+    <div className="space-y-8">
+      <div className="flex items-end justify-between">
+        <div>
+          <p className="eyebrow">Your maison</p>
+          <h1 className="display mt-2 text-3xl text-content">My Account</h1>
+        </div>
         <Button variant="ghost" onClick={() => { void handleSignOut(); }}>Sign out</Button>
       </div>
       <ProfileSection />

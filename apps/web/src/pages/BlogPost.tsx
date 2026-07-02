@@ -31,17 +31,23 @@ export default function BlogPost() {
   }
 
   return (
-    <article className="mx-auto max-w-2xl py-10">
-      <h1 className="mb-4 font-display text-3xl text-content">{post.title}</h1>
+    <article className="mx-auto max-w-3xl">
+      <Link to="/blog" className="link-underline font-body text-sm text-accent">← Journal</Link>
+      <div className="mt-6 mb-8 text-center">
+        <p className="eyebrow">
+          {new Date(post.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+        </p>
+        <h1 className="display mx-auto mt-3 max-w-2xl text-4xl text-content md:text-5xl">{post.title}</h1>
+      </div>
       {post.coverImage && (
         <img
-          src={cld(post.coverImage, { w: 800 })}
+          src={cld(post.coverImage, { w: 1000 })}
           alt={post.title}
-          className="mb-6 w-full rounded-lg object-cover"
+          className="mb-10 aspect-[16/9] w-full rounded-2xl object-cover shadow-lux"
         />
       )}
       <div
-        className="prose-herencia font-body text-content"
+        className="prose-herencia mx-auto font-body text-content"
         dangerouslySetInnerHTML={{ __html: renderMarkdownSafe(post.body) }}
       />
     </article>

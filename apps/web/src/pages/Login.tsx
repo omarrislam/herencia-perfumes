@@ -28,21 +28,24 @@ export default function Login() {
   };
 
   return (
-    <form onSubmit={onSubmit} className="mx-auto max-w-sm py-16">
-      <h1 className="mb-6 font-display text-2xl text-content">Sign in</h1>
-      {error && <p className="mb-3 font-body text-sm text-danger">{error}</p>}
-      <label className="mb-3 block">
-        <span className="mb-1 block font-body text-sm text-muted">Email</span>
-        <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)}
-          className="w-full rounded-md border border-line bg-bg px-3 py-2 font-body text-content" />
-      </label>
-      <label className="mb-4 block">
-        <span className="mb-1 block font-body text-sm text-muted">Password</span>
-        <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)}
-          className="w-full rounded-md border border-line bg-bg px-3 py-2 font-body text-content" />
-      </label>
-      <Button type="submit" disabled={busy} className="w-full">{busy ? 'Signing in…' : 'Sign in'}</Button>
-      <p className="mt-4 font-body text-sm text-muted">No account? <Link to="/register" className="text-accent">Create one</Link></p>
-    </form>
+    <div className="mx-auto max-w-md py-16">
+      <div className="mb-8 text-center">
+        <p className="eyebrow">Welcome back</p>
+        <h1 className="display mt-2 text-3xl text-content">Sign in</h1>
+      </div>
+      <form onSubmit={onSubmit} className="card-lux space-y-4 rounded-2xl p-8">
+        {error && <p className="rounded-md bg-danger-soft px-3 py-2 font-body text-sm text-danger">{error}</p>}
+        <label className="block">
+          <span className="mb-1.5 block font-body text-sm text-muted">Email</span>
+          <input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} className="field-lux" />
+        </label>
+        <label className="block">
+          <span className="mb-1.5 block font-body text-sm text-muted">Password</span>
+          <input type="password" required value={password} onChange={(e) => setPassword(e.target.value)} className="field-lux" />
+        </label>
+        <Button type="submit" disabled={busy} className="w-full">{busy ? 'Signing in…' : 'Sign in'}</Button>
+        <p className="pt-1 text-center font-body text-sm text-muted">No account? <Link to="/register" className="link-underline text-accent">Create one</Link></p>
+      </form>
+    </div>
   );
 }

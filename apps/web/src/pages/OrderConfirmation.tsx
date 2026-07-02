@@ -20,17 +20,21 @@ export default function OrderConfirmation() {
   const { order, whatsappUrl } = result;
 
   return (
-    <div className="mx-auto max-w-xl space-y-8 py-8 font-body">
-      <div className="text-center space-y-2">
-        <h1 className="font-display text-3xl text-content">Order Confirmed</h1>
+    <div className="mx-auto max-w-xl space-y-8 font-body">
+      <div className="space-y-3 text-center">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-accent text-2xl text-accent">
+          ✓
+        </div>
+        <p className="eyebrow">Thank you</p>
+        <h1 className="display text-3xl text-content">Order confirmed</h1>
         <p className="text-muted">
-          Order number:{' '}
-          <span className="font-semibold text-content">{order.orderNumber}</span>
+          Order number{' '}
+          <span className="rounded-md bg-surface2 px-2 py-0.5 font-medium text-content">{order.orderNumber}</span>
         </p>
       </div>
 
-      <section className="rounded-md border border-line p-4 space-y-3">
-        <h2 className="font-display text-lg text-content">Summary</h2>
+      <section className="card-lux space-y-3 rounded-xl p-5">
+        <p className="eyebrow">Summary</p>
         <div className="space-y-1 text-sm">
           <div className="flex justify-between text-muted">
             <span>Subtotal</span>
@@ -62,7 +66,7 @@ export default function OrderConfirmation() {
       </div>
 
       <div className="text-center">
-        <Link to="/" className="text-sm text-accent hover:underline">
+        <Link to="/" className="link-underline text-sm text-accent">
           Continue shopping
         </Link>
       </div>

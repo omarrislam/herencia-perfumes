@@ -4,10 +4,15 @@ import { useSeo } from '../lib/useSeo';
 export default function NotFound() {
   useSeo({ title: 'Not found — HERENCIA' });
   return (
-    <section className="grid place-items-center gap-4 py-24 text-center">
-      <h1 className="font-display text-4xl text-content">404</h1>
-      <p className="font-body text-muted">This page drifted away like a top note.</p>
-      <Link to="/" className="font-body text-accent underline">Return home</Link>
+    <section className="grid min-h-[55vh] place-items-center py-24 text-center">
+      <div className="space-y-5">
+        <p className="eyebrow">Lost the trail</p>
+        <h1 className="display text-7xl text-content">404</h1>
+        <p className="mx-auto max-w-sm font-body text-muted">
+          This page drifted away like a top note. Let&apos;s get you back to the collection.
+        </p>
+        <Link to="/" className="btn-outline mt-2 inline-flex">Return home</Link>
+      </div>
     </section>
   );
 }

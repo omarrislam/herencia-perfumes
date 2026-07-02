@@ -11,11 +11,17 @@ export default {
         parchment: '#EBD6B1',
         // semantic tokens bound to CSS vars (theme-aware)
         bg: 'var(--bg)',
+        'bg-deep': 'var(--bg-deep)',
         surface: 'var(--surface)',
+        surface2: 'var(--surface-2)',
         content: 'var(--text)',
+        ink: 'var(--ink)',
         muted: 'var(--muted)',
         accent: 'var(--accent)',
+        'accent-strong': 'var(--accent-strong)',
+        'gold-hi': 'var(--gold-hi)',
         line: 'var(--border)',
+        hairline: 'var(--hairline)',
         success: 'var(--success)',
         'success-soft': 'var(--success-soft)',
         warning: 'var(--warning)',
@@ -28,6 +34,17 @@ export default {
       fontFamily: {
         display: ['Cinzel', 'serif'],
         body: ['Jost', 'system-ui', 'sans-serif'],
+      },
+      boxShadow: {
+        lux: 'var(--shadow-md)',
+        'lux-lg': 'var(--shadow-lg)',
+        'lux-sm': 'var(--shadow-sm)',
+      },
+      letterSpacing: {
+        luxe: '0.28em',
+      },
+      maxWidth: {
+        prose: '68ch',
       },
     },
   },

@@ -17,6 +17,13 @@ function ensureDb(): Promise<unknown> {
 const app = createApp({ clientOrigin: env.CLIENT_ORIGIN, origin: env.CLIENT_ORIGIN });
 
 export default async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
-  await ensureDb();
+  // Don't let a DB outage crash the function — otherwise Express never runs and
+  // even CORS/preflight headers are missing. Let the app respond (routes that
+  // need the DB will return a clean 5xx *with* CORS headers).
+  try {
+    await ensureDb();
+  } catch (err) {
+    console.error('[api] Mongo connection failed:', err instanceof Error ? err.message : err);
+  }
   (app as unknown as (req: IncomingMessage, res: ServerResponse) => void)(req, res);
 }

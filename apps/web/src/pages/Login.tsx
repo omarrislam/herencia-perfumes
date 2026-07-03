@@ -18,8 +18,8 @@ export default function Login() {
     setError('');
     setBusy(true);
     try {
-      const user = await login({ email, password });
-      navigate(location.state?.from ?? (user.role === 'admin' ? '/admin' : '/account'), { replace: true });
+      await login({ email, password });
+      navigate(location.state?.from ?? '/', { replace: true });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Login failed');
     } finally {

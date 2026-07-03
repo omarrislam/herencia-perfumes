@@ -6,10 +6,10 @@
 /* Brand tokens — heritage luxury (cream · maroon · gold)              */
 /* ------------------------------------------------------------------ */
 :root[data-theme='light'] {
-  --bg: #e8dab4;
-  --bg-deep: #ddca9f;
-  --surface: #fffef9;
-  --surface-2: #f5ead1;
+  --bg: #e6d7ae;
+  --bg-deep: #dbc79a;
+  --surface: #fbf4e3;
+  --surface-2: #f1e4c8;
   --text: #331111;
   --ink: #2a0f0f;
   --muted: #77634d;
@@ -269,6 +269,16 @@
 .prose-herencia a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
 .prose-herencia ul, .prose-herencia ol { margin: 0.9rem 0; padding-left: 1.5rem; list-style: revert; line-height: 1.8; }
 .prose-herencia blockquote { border-left: 2px solid var(--accent); padding-left: 1rem; margin: 1.25rem 0; font-style: italic; color: var(--muted); }
+
+/* Hero entrance — lightweight CSS rise-in (GPU-only). */
+@keyframes rise-in {
+  from { opacity: 0; transform: translate3d(0, 18px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+.rise { opacity: 0; animation: rise-in 0.7s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
+@media (prefers-reduced-motion: reduce) {
+  .rise { animation: none; opacity: 1; }
+}
 
 /* Quiz band — twinkling gold dust (GPU-only: opacity + transform). */
 .sparkle {

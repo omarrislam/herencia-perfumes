@@ -86,6 +86,10 @@ function ProfileSection() {
     <section className="card-lux space-y-4 rounded-2xl p-6 md:p-8">
       <h2 className="font-display text-xl text-content">Profile</h2>
       <form onSubmit={handleSubmit} className="space-y-3 max-w-sm">
+        <div>
+          <label className="mb-0.5 block font-body text-xs text-muted">Email</label>
+          <input value={profileQ.data?.email ?? ''} disabled readOnly className="field-lux text-sm opacity-70" />
+        </div>
         <Field label="Name" value={name} onChange={setName} />
         <Field label="Phone" value={phone} onChange={setPhone} type="tel" />
         {error && <p className="font-body text-sm text-danger">{error}</p>}

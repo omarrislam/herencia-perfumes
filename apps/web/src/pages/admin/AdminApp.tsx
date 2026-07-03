@@ -51,7 +51,7 @@ export default function AdminApp() {
     <RequireAdmin>
       <div className="flex min-h-[100dvh] bg-bg">
         {/* Sidebar (desktop) */}
-        <aside className="hidden w-60 flex-col border-r border-hairline bg-surface md:flex">
+        <aside className="hidden w-60 shrink-0 flex-col border-r border-hairline bg-surface md:sticky md:top-0 md:flex md:h-[100dvh]">
           <div className="flex items-center gap-2.5 border-b border-hairline p-5">
             <img src="/logo.png" alt="" className="h-9 w-9 object-contain" />
             <div>
@@ -78,7 +78,10 @@ export default function AdminApp() {
           <header className="border-b border-hairline bg-surface md:hidden">
             <div className="flex items-center justify-between px-4 py-3">
               <span className="font-display text-lg tracking-[0.15em] text-content">HERENCIA Admin</span>
-              <button onClick={() => void logout()} className="font-body text-sm text-muted hover:text-accent">Sign out</button>
+              <div className="flex items-center gap-4">
+                <NavLink to="/" className="font-body text-sm text-muted hover:text-accent">Store ↗</NavLink>
+                <button onClick={() => void logout()} className="font-body text-sm text-muted hover:text-accent">Sign out</button>
+              </div>
             </div>
             <nav className="flex gap-1 overflow-x-auto px-3 pb-3">
               {NAV.map((n) => (

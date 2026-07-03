@@ -19,7 +19,7 @@ export default function Register() {
     setBusy(true);
     try {
       await register({ name, email, password });
-      navigate('/account', { replace: true });
+      navigate('/', { replace: true });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Registration failed');
     } finally {

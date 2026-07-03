@@ -254,10 +254,10 @@ export default function Home() {
           <div className="absolute inset-0 flex items-center">
             <div className="mx-auto w-full max-w-6xl px-5 sm:px-6">
               <div className="max-w-2xl space-y-6">
-                <p className="eyebrow text-gold-hi">Heritage Perfumery</p>
-                <h1 className="display text-5xl leading-[1.02] text-cream sm:text-6xl md:text-7xl">{hero?.title ?? 'Luxury in every drop'}</h1>
-                <p className="max-w-md font-body text-base leading-relaxed text-cream/85 md:text-lg">{hero?.subtitle ?? 'Composed in small batches, worn like an heirloom.'}</p>
-                <div className="flex flex-wrap gap-3 pt-2">
+                <p className="eyebrow rise text-gold-hi" style={{ animationDelay: '0.05s' }}>Heritage Perfumery</p>
+                <h1 className="display rise text-5xl leading-[1.02] text-cream sm:text-6xl md:text-7xl" style={{ animationDelay: '0.15s' }}>{hero?.title ?? 'Luxury in every drop'}</h1>
+                <p className="rise max-w-md font-body text-base leading-relaxed text-cream/85 md:text-lg" style={{ animationDelay: '0.28s' }}>{hero?.subtitle ?? 'Composed in small batches, worn like an heirloom.'}</p>
+                <div className="rise flex flex-wrap gap-3 pt-2" style={{ animationDelay: '0.4s' }}>
                   <Link to={hero?.ctaLink ?? '/products'} className="btn-lux">{hero?.ctaText ?? 'Shop the collection'}</Link>
                   <Link to="/find-your-scent" className="btn-outline border-cream/40 text-cream hover:bg-cream hover:text-espresso">Find your scent</Link>
                 </div>
@@ -269,9 +269,18 @@ export default function Home() {
 
       {/* Contained content, in the admin-configured order */}
       <div className="mx-auto max-w-6xl space-y-20 px-5 py-16 sm:px-6 md:space-y-28 md:py-24">
-        {order.filter((k) => show(k)).map((k) => (
-          <div key={k}>{sectionMap[k]}</div>
-        ))}
+        {order.filter((k) => show(k)).flatMap((k, i) => {
+          const section = <div key={k}>{sectionMap[k]}</div>;
+          if (i === 0) return [section];
+          return [
+            <div key={`${k}-div`} className="flex items-center justify-center gap-3" aria-hidden="true">
+              <span className="h-px w-10 bg-hairline" />
+              <span className="text-xs text-accent/60">✦</span>
+              <span className="h-px w-10 bg-hairline" />
+            </div>,
+            section,
+          ];
+        })}
       </div>
     </div>
   );

@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { createOrderSchema, type CreateOrderInput, type CreateOrderResultDTO, type PaymentMethod } from '@herencia/shared';
+import { createOrderSchema, type CreateOrderInput, type CreateOrderResultDTO, type PaymentMethod, SAMPLE_BOX } from '@herencia/shared';
 import { useCart } from '../features/cart/CartContext';
+import { useSamples } from '../features/samples/SampleContext';
 import { useAuth } from '../features/auth/AuthContext';
 import { Price } from '../components/Price';
 import { Button } from '../components/Button';
@@ -24,6 +25,7 @@ type FormState = {
 
 export default function Checkout() {
   const { items, priced, clear } = useCart();
+  const { samples, clear: clearSamples } = useSamples();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -77,7 +79,14 @@ export default function Checkout() {
         governorate: form.governorate,
         phone: form.phone,
       },
-      ...(form.notes ? { notes: form.notes } : {}),
+      ...((() => {
+        const sampleNote =
+          priced?.items.some((i) => i.slug === SAMPLE_BOX.slug) && samples.length > 0
+            ? `Sample box (${samples.length} × 2ml): ${samples.map((s) => s.name).join(', ')}`
+            : '';
+        const notes = [sampleNote, form.notes].filter(Boolean).join('\n');
+        return notes ? { notes } : {};
+      })()),
       paymentMethod: instapayOn ? payment : 'cod',
     };
 
@@ -91,6 +100,7 @@ export default function Checkout() {
     try {
       const result: CreateOrderResultDTO = await api.createOrder(parsed.data);
       clear();
+      clearSamples();
       navigate('/order-confirmation', { state: result, replace: true });
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');

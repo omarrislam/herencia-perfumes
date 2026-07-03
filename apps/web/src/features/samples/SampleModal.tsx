@@ -1,21 +1,27 @@
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SAMPLE_BOX } from '@herencia/shared';
 import { useSamples } from './SampleContext';
-import { fetchProducts, fetchSettings } from '../../lib/api';
+import { fetchProducts, fetchProduct } from '../../lib/api';
+import { useCart } from '../cart/CartContext';
 import { ProductImage } from '../../components/ProductImage';
+import { formatEGP } from '../../components/Price';
 
 export function SampleModal() {
   const { isOpen, close, samples, add, remove, has, max, clear } = useSamples();
+  const { addItem, setOpen } = useCart();
   const products = useQuery({ queryKey: ['products', 'sample-pick'], queryFn: () => fetchProducts({ limit: 24 }), enabled: isOpen });
-  const whatsapp = useQuery({ queryKey: ['settings'], queryFn: fetchSettings }).data?.whatsappNumber;
+  const box = useQuery({ queryKey: ['product', SAMPLE_BOX.slug], queryFn: () => fetchProduct(SAMPLE_BOX.slug), enabled: isOpen, retry: false });
 
   const pool = (products.data?.items ?? []).filter((p) => p.type === 'perfume');
   const full = samples.length >= max;
+  const canAdd = samples.length > 0 && !!box.data;
 
-  const waHref = () => {
-    const num = (whatsapp ?? '').replace(/[^0-9]/g, '');
-    const list = samples.map((s, i) => `${i + 1}. ${s.name}`).join('%0A');
-    return `https://wa.me/${num}?text=${encodeURIComponent("Hi HERENCIA! I'd like to order a sample box (2ml each):")}%0A${list}`;
+  const addBoxToCart = () => {
+    if (!box.data || samples.length === 0) return;
+    addItem({ productId: box.data.id, sizeLabel: SAMPLE_BOX.sizeLabel, qty: 1 });
+    close();
+    setOpen(true);
   };
 
   return (
@@ -92,17 +98,16 @@ export function SampleModal() {
             </div>
 
             {/* footer */}
-            <div className="border-t border-hairline p-4">
-              <a
-                href={samples.length > 0 ? waHref() : undefined}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-disabled={samples.length === 0}
-                onClick={(e) => { if (samples.length === 0) e.preventDefault(); }}
-                className={`block w-full rounded-md py-3 text-center font-body text-sm font-medium tracking-wide transition-colors ${samples.length > 0 ? 'bg-espresso text-cream hover:bg-accent-strong' : 'cursor-not-allowed bg-surface2 text-muted'}`}
+            <div className="flex items-center justify-between gap-4 border-t border-hairline p-4">
+              <span className="font-body text-sm text-muted">Sample box · <span className="text-content">{formatEGP(SAMPLE_BOX.price)}</span></span>
+              <button
+                type="button"
+                onClick={addBoxToCart}
+                disabled={!canAdd}
+                className={`rounded-md px-5 py-3 font-body text-sm font-medium tracking-wide transition-colors ${canAdd ? 'bg-espresso text-cream hover:bg-accent-strong' : 'cursor-not-allowed bg-surface2 text-muted'}`}
               >
-                {samples.length > 0 ? `Order ${samples.length}-sample box on WhatsApp` : 'Pick at least one fragrance'}
-              </a>
+                {samples.length === 0 ? 'Pick at least one' : 'Add sample box to cart'}
+              </button>
             </div>
           </motion.div>
         </motion.div>

@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Checkout from './Checkout';
 import { AuthProvider } from '../features/auth/AuthContext';
 import { CartProvider } from '../features/cart/CartContext';
+import { SampleProvider } from '../features/samples/SampleContext';
 import * as api from '../lib/api';
 
 function setup() {
@@ -26,12 +27,12 @@ function setup() {
   return render(
     <QueryClientProvider client={qc}>
       <MemoryRouter initialEntries={['/checkout']}>
-        <AuthProvider><CartProvider>
+        <AuthProvider><CartProvider><SampleProvider>
           <Routes>
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/order-confirmation" element={<div>Thank you</div>} />
           </Routes>
-        </CartProvider></AuthProvider>
+        </SampleProvider></CartProvider></AuthProvider>
       </MemoryRouter>
     </QueryClientProvider>,
   );

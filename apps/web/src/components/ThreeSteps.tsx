@@ -17,13 +17,23 @@ export function ThreeSteps() {
       </div>
       <div className="grid gap-8 md:grid-cols-3">
         {STEPS.map((s) => (
-          <div key={s.n}>
+          <div key={s.n} className="group">
             <div className="relative overflow-hidden rounded-xl shadow-lux">
-              <img src={s.img} alt={s.title} loading="lazy" className="aspect-[4/3] w-full object-cover" />
-              <span className="absolute left-4 top-4 flex h-9 min-w-[3rem] items-center justify-center rounded bg-espresso px-2 font-display text-sm tracking-wider text-cream">{s.n}</span>
+              <img
+                src={s.img}
+                alt={s.title}
+                loading="lazy"
+                className="aspect-[4/3] w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.07] motion-reduce:transform-none motion-reduce:transition-none"
+              />
+              <div className="absolute inset-0 bg-espresso/0 transition-colors duration-500 group-hover:bg-espresso/15" />
+              <span className="absolute left-4 top-4 flex h-9 min-w-[3rem] items-center justify-center rounded bg-espresso px-2 font-display text-sm tracking-wider text-gold-hi">{s.n}</span>
             </div>
-            <h3 className="mt-5 font-display text-lg uppercase tracking-wide text-content">{s.title}</h3>
-            <p className="mt-2 font-body text-sm leading-relaxed text-muted">{s.body}</p>
+            <div className="mt-5 flex items-baseline gap-3">
+              <span className="font-display text-sm text-accent/70">{s.n}</span>
+              <h3 className="font-display text-xl uppercase tracking-wide text-accent-strong transition-colors group-hover:text-accent">{s.title}</h3>
+            </div>
+            <div className="mt-2 h-px w-10 bg-accent/40 transition-all duration-500 group-hover:w-16" />
+            <p className="mt-3 font-body text-sm leading-relaxed text-muted">{s.body}</p>
           </div>
         ))}
       </div>

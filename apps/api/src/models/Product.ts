@@ -21,7 +21,7 @@ const productSchema = new Schema(
     images: { type: [String], default: [] },
     sizes: { type: [sizeSchema], required: true },
     basePrice: { type: Number, required: true, index: true },
-    scentFamily: { type: Schema.Types.ObjectId, ref: 'ScentFamily', required: true, index: true },
+    scentFamily: { type: Schema.Types.ObjectId, ref: 'ScentFamily', index: true },
     notes: {
       top: { type: [String], default: [] },
       heart: { type: [String], default: [] },

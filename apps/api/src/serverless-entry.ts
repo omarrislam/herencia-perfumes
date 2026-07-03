@@ -4,13 +4,14 @@ import type { IncomingMessage, ServerResponse } from 'node:http';
 import mongoose from 'mongoose';
 import { createApp } from './app';
 import { loadEnv } from './config/env';
+import { ensureSampleBox } from './lib/ensureSampleBox';
 
 const env = loadEnv(process.env);
 
 // Reuse the Mongoose connection across warm invocations.
 let ready: Promise<unknown> | null = null;
 function ensureDb(): Promise<unknown> {
-  ready ??= mongoose.connect(env.MONGODB_URI, { serverSelectionTimeoutMS: 8000 });
+  ready ??= mongoose.connect(env.MONGODB_URI, { serverSelectionTimeoutMS: 8000 }).then(() => ensureSampleBox());
   return ready;
 }
 

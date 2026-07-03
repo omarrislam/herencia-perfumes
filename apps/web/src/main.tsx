@@ -7,6 +7,7 @@ import { queryClient } from './app/queryClient';
 import { AppRoutes } from './app/AppRoutes';
 import { AuthProvider } from './features/auth/AuthContext';
 import { CartProvider } from './features/cart/CartContext';
+import { PageLoader } from './components/PageLoader';
 import '@fontsource/cinzel/400.css';
 import '@fontsource/cinzel/600.css';
 import '@fontsource/cinzel/700.css';
@@ -23,7 +24,7 @@ const app = (
         <CartProvider>
           <ThemeProvider>
             <BrowserRouter>
-              <Suspense fallback={<div className="p-8 text-center font-body text-muted">Loading…</div>}>
+              <Suspense fallback={<PageLoader />}>
                 <AppRoutes />
               </Suspense>
             </BrowserRouter>
@@ -37,3 +38,13 @@ const app = (
 const root = document.getElementById('root')!;
 if (root.hasChildNodes()) hydrateRoot(root, app);
 else createRoot(root).render(app);
+
+// Fade out the first-load splash once React has mounted (the branded PageLoader
+// takes over seamlessly if a lazy route is still loading).
+function hideSplash() {
+  const s = document.getElementById('app-splash');
+  if (!s) return;
+  s.classList.add('splash-hide');
+  setTimeout(() => s.remove(), 500);
+}
+requestAnimationFrame(() => requestAnimationFrame(hideSplash));

@@ -272,6 +272,10 @@
 .prose-herencia ul, .prose-herencia ol { margin: 0.9rem 0; padding-left: 1.5rem; list-style: revert; line-height: 1.8; }
 .prose-herencia blockquote { border-left: 2px solid var(--accent); padding-left: 1rem; margin: 1.25rem 0; font-style: italic; color: var(--muted); }
 
+/* Branded splash / page-loader animations (also inlined in index.html). */
+@keyframes splashPulse { 0%, 100% { opacity: 0.55; transform: scale(0.97); } 50% { opacity: 1; transform: scale(1); } }
+@keyframes splashSlide { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+
 /* Hero entrance — lightweight CSS rise-in (GPU-only). */
 @keyframes rise-in {
   from { opacity: 0; transform: translate3d(0, 18px, 0); }

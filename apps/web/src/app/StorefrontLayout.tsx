@@ -167,7 +167,7 @@ export function StorefrontLayout() {
                       onClick={() => setMenuOpen(false)}
                       className="group flex items-center gap-4 border-b border-cream/10 py-5"
                     >
-                      <span className="font-body text-xs tracking-[0.25em] text-gold-hi/70">0{i + 1}</span>
+                      <span className="font-body text-xs tracking-[0.25em] text-[#d8b878]">0{i + 1}</span>
                       <span className="font-display text-3xl text-cream transition-colors group-hover:text-gold-hi">{n.label}</span>
                     </NavLink>
                   </motion.div>

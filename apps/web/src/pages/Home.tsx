@@ -74,7 +74,7 @@ export default function Home() {
     essence: (
       <Reveal>
         <section className="grid items-center gap-8 md:grid-cols-2 md:gap-14">
-          <ParallaxImage src="/essence.png" alt="Herencia raw materials on gold silk" className="aspect-square rounded-2xl shadow-lux" />
+          <ParallaxImage src="/essence.webp" alt="Herencia raw materials on gold silk" className="aspect-square rounded-2xl shadow-lux" />
           <div>
             <p className="eyebrow">The Essence of Heritage</p>
             <h2 className="display mt-3 text-3xl text-content md:text-4xl">Composed from the rarest materials</h2>
@@ -114,7 +114,7 @@ export default function Home() {
     gifting: (
       <Reveal>
         <section className="relative overflow-hidden rounded-2xl shadow-lux">
-          <ParallaxImage src="/giftbox.png" alt="Herencia maroon gift box" className="h-[360px] w-full md:h-[460px]" />
+          <ParallaxImage src="/giftbox.webp" alt="Herencia maroon gift box" className="h-[360px] w-full md:h-[460px]" />
           <div className="absolute inset-0 bg-gradient-to-r from-espresso/90 via-espresso/55 to-transparent" />
           <div className="absolute inset-0 flex items-center">
             <div className="max-w-md px-7 md:px-12">
@@ -141,7 +141,7 @@ export default function Home() {
             </p>
             <Link to="/blog" className="btn-outline mt-6">Read the journal</Link>
           </div>
-          <ParallaxImage src="/apothecary.png" alt="Herencia apothecary" className="order-1 aspect-square rounded-2xl shadow-lux md:order-2" />
+          <ParallaxImage src="/apothecary.webp" alt="Herencia apothecary" className="order-1 aspect-square rounded-2xl shadow-lux md:order-2" />
         </section>
       </Reveal>
     ),
@@ -149,7 +149,7 @@ export default function Home() {
       // Full-bleed band (breaks out of the max-w container).
       <div className="relative left-1/2 right-1/2 -mx-[50vw] w-screen">
         <section className="relative overflow-hidden">
-          <ParallaxImage src="/time.png" alt="An hourglass in the atelier" className="h-[420px] w-full md:h-[520px]" />
+          <ParallaxImage src="/time.webp" alt="An hourglass in the atelier" className="h-[420px] w-full md:h-[520px]" />
           <div className="absolute inset-0 bg-gradient-to-r from-espresso/95 via-espresso/70 to-espresso/20" />
           <div className="absolute inset-0 flex items-center">
             <div className="mx-auto w-full max-w-6xl px-5 sm:px-6">
@@ -241,15 +241,13 @@ export default function Home() {
     <div className="overflow-x-clip">
       {/* Full-bleed hero */}
       {show('hero') && (
-        <section className="relative overflow-hidden">
-          {settings.data ? (
-            useCloudHero && heroPublicId ? (
-              <ProductImage publicId={heroPublicId} alt={hero?.title ?? 'HERENCIA'} w={1920} loading="eager" sizes="100vw" className="h-[72vh] max-h-[760px] min-h-[440px] w-full object-cover" />
-            ) : (
-              <img src="/hero-swirl.png" alt={hero?.title ?? 'HERENCIA'} className="h-[72vh] max-h-[760px] min-h-[440px] w-full object-cover" />
-            )
+        <section className="relative overflow-hidden bg-espresso">
+          {/* Render immediately (no settings gate) so there's no placeholder flash.
+              A dark espresso base sits under the image while it loads. */}
+          {useCloudHero && heroPublicId ? (
+            <ProductImage publicId={heroPublicId} alt={hero?.title ?? 'HERENCIA'} w={1920} loading="eager" sizes="100vw" className="h-[72vh] max-h-[760px] min-h-[440px] w-full object-cover" />
           ) : (
-            <Skeleton className="h-[72vh] max-h-[760px] min-h-[440px] w-full" />
+            <img src="/hero-swirl.webp" alt={hero?.title ?? 'HERENCIA'} className="h-[72vh] max-h-[760px] min-h-[440px] w-full bg-espresso object-cover" />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-espresso/90 via-espresso/45 to-espresso/15" />
           <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-espresso/55 to-transparent" />

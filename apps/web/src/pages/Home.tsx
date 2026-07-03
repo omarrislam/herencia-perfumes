@@ -9,6 +9,7 @@ import { ProductCard } from '../components/ProductCard';
 import { ProductImage } from '../components/ProductImage';
 import { Skeleton } from '../components/Skeleton';
 import { Reveal } from '../components/Reveal';
+import { ParallaxImage } from '../components/ParallaxImage';
 import { TestimonialCarousel } from '../components/TestimonialCarousel';
 
 // Simple inline icons for the values strip (single stroke weight).
@@ -69,9 +70,7 @@ export default function Home() {
     essence: (
       <Reveal>
         <section className="grid items-center gap-8 md:grid-cols-2 md:gap-14">
-          <div className="overflow-hidden rounded-2xl shadow-lux">
-            <img src="/essence.png" alt="Herencia raw materials on gold silk" loading="lazy" className="aspect-square w-full object-cover" />
-          </div>
+          <ParallaxImage src="/essence.png" alt="Herencia raw materials on gold silk" className="aspect-square rounded-2xl shadow-lux" />
           <div>
             <p className="eyebrow">The Essence of Heritage</p>
             <h2 className="display mt-3 text-3xl text-content md:text-4xl">Composed from the rarest materials</h2>
@@ -111,7 +110,7 @@ export default function Home() {
     gifting: (
       <Reveal>
         <section className="relative overflow-hidden rounded-2xl shadow-lux">
-          <img src="/giftbox.png" alt="Herencia maroon gift box" loading="lazy" className="h-[360px] w-full object-cover md:h-[460px]" />
+          <ParallaxImage src="/giftbox.png" alt="Herencia maroon gift box" className="h-[360px] w-full md:h-[460px]" />
           <div className="absolute inset-0 bg-gradient-to-r from-espresso/90 via-espresso/55 to-transparent" />
           <div className="absolute inset-0 flex items-center">
             <div className="max-w-md px-7 md:px-12">
@@ -138,9 +137,7 @@ export default function Home() {
             </p>
             <Link to="/blog" className="btn-outline mt-6">Read the journal</Link>
           </div>
-          <div className="order-1 overflow-hidden rounded-2xl shadow-lux md:order-2">
-            <img src="/apothecary.png" alt="Herencia apothecary" loading="lazy" className="aspect-square w-full object-cover" />
-          </div>
+          <ParallaxImage src="/apothecary.png" alt="Herencia apothecary" className="order-1 aspect-square rounded-2xl shadow-lux md:order-2" />
         </section>
       </Reveal>
     ),
@@ -148,7 +145,7 @@ export default function Home() {
       // Full-bleed band (breaks out of the max-w container).
       <div className="relative left-1/2 right-1/2 -mx-[50vw] w-screen">
         <section className="relative overflow-hidden">
-          <img src="/time.png" alt="An hourglass in the atelier" loading="lazy" className="h-[420px] w-full object-cover md:h-[520px]" />
+          <ParallaxImage src="/time.png" alt="An hourglass in the atelier" className="h-[420px] w-full md:h-[520px]" />
           <div className="absolute inset-0 bg-gradient-to-r from-espresso/95 via-espresso/70 to-espresso/20" />
           <div className="absolute inset-0 flex items-center">
             <div className="mx-auto w-full max-w-6xl px-5 sm:px-6">

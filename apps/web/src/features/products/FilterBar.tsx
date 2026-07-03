@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { GENDER, CONCENTRATION, PRODUCT_SORT, type ScentFamilyDTO } from '@herencia/shared';
 import type { ProductFilters } from '../../lib/api';
 
@@ -9,33 +11,75 @@ export function FilterBar({
   onChange: (key: keyof ProductFilters, value: string | number | undefined) => void;
   onReset: () => void;
 }) {
-  const field = 'field-lux py-1.5 text-sm';
+  const [open, setOpen] = useState(false);
+  const active = [filters.scentFamily, filters.gender, filters.concentration, filters.minPrice, filters.maxPrice].filter(
+    (v) => v !== undefined && v !== '',
+  ).length;
+  const field = 'field-lux py-2 text-sm';
+
   return (
-    <div className="mb-8 flex flex-wrap items-center gap-2 rounded-xl border border-hairline bg-surface px-3 py-2.5">
-      <input
-        type="search" placeholder="Search…" defaultValue={filters.q ?? ''}
-        onChange={(e) => onChange('q', e.target.value || undefined)}
-        className={`${field} min-w-[150px] flex-1`}
-        aria-label="Search perfumes"
-      />
-      <select aria-label="Scent family" value={filters.scentFamily ?? ''} onChange={(e) => onChange('scentFamily', e.target.value || undefined)} className={field}>
-        <option value="">All families</option>
-        {families.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
-      </select>
-      <select aria-label="Gender" value={filters.gender ?? ''} onChange={(e) => onChange('gender', e.target.value || undefined)} className={field}>
-        <option value="">All genders</option>
-        {GENDER.map((g) => <option key={g} value={g}>{g}</option>)}
-      </select>
-      <select aria-label="Concentration" value={filters.concentration ?? ''} onChange={(e) => onChange('concentration', e.target.value || undefined)} className={field}>
-        <option value="">All strengths</option>
-        {CONCENTRATION.map((c) => <option key={c} value={c}>{c}</option>)}
-      </select>
-      <input type="number" min={0} placeholder="Min" defaultValue={filters.minPrice ?? ''} onChange={(e) => onChange('minPrice', e.target.value ? Number(e.target.value) : undefined)} className={`${field} w-20`} aria-label="Minimum price" />
-      <input type="number" min={0} placeholder="Max" defaultValue={filters.maxPrice ?? ''} onChange={(e) => onChange('maxPrice', e.target.value ? Number(e.target.value) : undefined)} className={`${field} w-20`} aria-label="Maximum price" />
-      <select aria-label="Sort" value={filters.sort ?? 'newest'} onChange={(e) => onChange('sort', e.target.value)} className={field}>
-        {PRODUCT_SORT.map((s) => <option key={s} value={s}>{s}</option>)}
-      </select>
-      <button onClick={onReset} className="ml-auto whitespace-nowrap px-2 py-1.5 font-body text-sm text-accent hover:underline">Reset</button>
+    <div className="mb-8">
+      {/* Slim bar: search · sort · filters toggle */}
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted">
+            <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" strokeLinecap="round" />
+          </svg>
+          <input
+            type="search" placeholder="Search perfumes…" defaultValue={filters.q ?? ''}
+            onChange={(e) => onChange('q', e.target.value || undefined)}
+            className={`${field} w-full pl-9`}
+            aria-label="Search perfumes"
+          />
+        </div>
+        <select aria-label="Sort" value={filters.sort ?? 'newest'} onChange={(e) => onChange('sort', e.target.value)} className={`${field} hidden sm:block`}>
+          {PRODUCT_SORT.map((s) => <option key={s} value={s}>{s}</option>)}
+        </select>
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-expanded={open}
+          className={`flex shrink-0 items-center gap-2 rounded-lg border px-3.5 py-2 font-body text-sm transition-colors ${open || active ? 'border-accent text-accent' : 'border-hairline text-content hover:border-accent'}`}
+        >
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-4 w-4"><path d="M3 5h18M6 12h12M10 19h4" strokeLinecap="round" /></svg>
+          Filters
+          {active > 0 && <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-xs text-surface">{active}</span>}
+        </button>
+      </div>
+
+      {/* Collapsible panel */}
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: 'auto' }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            className="overflow-hidden"
+          >
+            <div className="mt-3 grid grid-cols-2 gap-3 rounded-xl border border-hairline bg-surface p-4 sm:grid-cols-3 lg:grid-cols-4">
+              <select aria-label="Scent family" value={filters.scentFamily ?? ''} onChange={(e) => onChange('scentFamily', e.target.value || undefined)} className={field}>
+                <option value="">All families</option>
+                {families.map((f) => <option key={f.id} value={f.id}>{f.name}</option>)}
+              </select>
+              <select aria-label="Gender" value={filters.gender ?? ''} onChange={(e) => onChange('gender', e.target.value || undefined)} className={field}>
+                <option value="">All genders</option>
+                {GENDER.map((g) => <option key={g} value={g}>{g}</option>)}
+              </select>
+              <select aria-label="Concentration" value={filters.concentration ?? ''} onChange={(e) => onChange('concentration', e.target.value || undefined)} className={field}>
+                <option value="">All strengths</option>
+                {CONCENTRATION.map((c) => <option key={c} value={c}>{c}</option>)}
+              </select>
+              <select aria-label="Sort" value={filters.sort ?? 'newest'} onChange={(e) => onChange('sort', e.target.value)} className={`${field} sm:hidden`}>
+                {PRODUCT_SORT.map((s) => <option key={s} value={s}>{s}</option>)}
+              </select>
+              <input type="number" min={0} placeholder="Min EGP" defaultValue={filters.minPrice ?? ''} onChange={(e) => onChange('minPrice', e.target.value ? Number(e.target.value) : undefined)} className={field} aria-label="Minimum price" />
+              <input type="number" min={0} placeholder="Max EGP" defaultValue={filters.maxPrice ?? ''} onChange={(e) => onChange('maxPrice', e.target.value ? Number(e.target.value) : undefined)} className={field} aria-label="Maximum price" />
+              <button onClick={onReset} className="col-span-2 rounded-lg border border-hairline py-2 font-body text-sm text-muted transition-colors hover:border-accent hover:text-accent sm:col-span-1">Reset</button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

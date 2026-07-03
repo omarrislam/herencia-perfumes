@@ -23,6 +23,9 @@ const VALUE_ICONS: Record<string, JSX.Element> = {
   ship: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6"><path d="M3 6.5h10v9H3zM13 9.5h4l4 3.5v2.5h-8" /><circle cx="7" cy="17.5" r="1.6" /><circle cx="17" cy="17.5" r="1.6" /></svg>
   ),
+  returns: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" className="h-6 w-6"><path d="M3 8a9 9 0 1 1-1.5 5" /><path d="M3 3v5h5" /></svg>
+  ),
 };
 
 const FAQ: { q: string; a: string }[] = [
@@ -30,6 +33,7 @@ const FAQ: { q: string; a: string }[] = [
   { q: 'How can I pay?', a: 'Cash on delivery across Egypt, or InstaPay — transfer and send us the screenshot on WhatsApp to confirm.' },
   { q: 'Do you deliver nationwide?', a: 'Yes, we ship across Egypt. Delivery is free on orders over 2,000 EGP.' },
   { q: 'How are the perfumes made?', a: 'Each scent is composed from rare raw materials and layered by hand in small batches — never mass-produced.' },
+  { q: 'What if I change my mind?', a: 'Unopened items can be returned within 14 days of delivery for a full refund. See our Returns & refunds page for the details.' },
 ];
 
 // Twinkling gold-dust positions for the quiz band (top%, left%, size px, delay s).
@@ -174,11 +178,12 @@ export default function Home() {
       </Reveal>
     ),
     values: (
-      <div className="grid grid-cols-1 gap-8 border-y border-hairline py-10 sm:grid-cols-3 sm:gap-6">
+      <div className="grid grid-cols-1 gap-8 border-y border-hairline py-10 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
         {([
           ['batch', 'Small-batch', 'Composed in limited runs'],
           ['cod', 'Cash on delivery', 'Pay when it arrives'],
           ['ship', 'Free shipping', 'On orders over 2,000 EGP'],
+          ['returns', '14-day returns', 'Unopened items, full refund'],
         ] as const).map(([icon, title, sub]) => (
           <div key={title} className="flex flex-col items-center gap-3 text-center sm:flex-row sm:text-left">
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent/12 text-accent">

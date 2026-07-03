@@ -18,6 +18,7 @@ const Account = lazy(() => import('../pages/Account'));
 const FindYourScent = lazy(() => import('../pages/FindYourScent'));
 const Blog = lazy(() => import('../pages/Blog'));
 const BlogPost = lazy(() => import('../pages/BlogPost'));
+const Returns = lazy(() => import('../pages/Returns'));
 
 export const routes: RouteObject[] = [
   {
@@ -37,6 +38,7 @@ export const routes: RouteObject[] = [
       { path: '/find-your-scent', element: <FindYourScent /> },
       { path: '/blog', element: <Blog /> },
       { path: '/blog/:slug', element: <BlogPost /> },
+      { path: '/returns', element: <Returns /> },
     ],
   },
   { path: '/admin/*', element: <Admin /> },

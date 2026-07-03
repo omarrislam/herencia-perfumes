@@ -19,30 +19,27 @@ export function FilterBar({
 
   return (
     <div className="mb-8">
-      {/* Slim bar: search · sort · filters toggle */}
+      {/* Prominent search + a compact Filters toggle */}
       <div className="flex items-center gap-2">
         <div className="relative flex-1">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted">
             <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" strokeLinecap="round" />
           </svg>
           <input
             type="search" placeholder="Search perfumes…" defaultValue={filters.q ?? ''}
             onChange={(e) => onChange('q', e.target.value || undefined)}
-            className={`${field} w-full pl-9`}
+            className="field-lux w-full py-3 pl-12 text-base"
             aria-label="Search perfumes"
           />
         </div>
-        <select aria-label="Sort" value={filters.sort ?? 'newest'} onChange={(e) => onChange('sort', e.target.value)} className={`${field} hidden sm:block`}>
-          {PRODUCT_SORT.map((s) => <option key={s} value={s}>{s}</option>)}
-        </select>
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}
           aria-expanded={open}
-          className={`flex shrink-0 items-center gap-2 rounded-lg border px-3.5 py-2 font-body text-sm transition-colors ${open || active ? 'border-accent text-accent' : 'border-hairline text-content hover:border-accent'}`}
+          className={`flex shrink-0 items-center gap-2 rounded-lg border px-4 py-3 font-body text-sm transition-colors ${open || active ? 'border-accent text-accent' : 'border-hairline text-content hover:border-accent'}`}
         >
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" className="h-4 w-4"><path d="M3 5h18M6 12h12M10 19h4" strokeLinecap="round" /></svg>
-          Filters
+          <span className="hidden sm:inline">Filters</span>
           {active > 0 && <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-xs text-surface">{active}</span>}
         </button>
       </div>
@@ -70,8 +67,8 @@ export function FilterBar({
                 <option value="">All strengths</option>
                 {CONCENTRATION.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
-              <select aria-label="Sort" value={filters.sort ?? 'newest'} onChange={(e) => onChange('sort', e.target.value)} className={`${field} sm:hidden`}>
-                {PRODUCT_SORT.map((s) => <option key={s} value={s}>{s}</option>)}
+              <select aria-label="Sort" value={filters.sort ?? 'newest'} onChange={(e) => onChange('sort', e.target.value)} className={field}>
+                {PRODUCT_SORT.map((s) => <option key={s} value={s}>Sort: {s}</option>)}
               </select>
               <input type="number" min={0} placeholder="Min EGP" defaultValue={filters.minPrice ?? ''} onChange={(e) => onChange('minPrice', e.target.value ? Number(e.target.value) : undefined)} className={field} aria-label="Minimum price" />
               <input type="number" min={0} placeholder="Max EGP" defaultValue={filters.maxPrice ?? ''} onChange={(e) => onChange('maxPrice', e.target.value ? Number(e.target.value) : undefined)} className={field} aria-label="Maximum price" />

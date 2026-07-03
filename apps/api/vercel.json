@@ -1,4 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "esbuild src/serverless-entry.ts --bundle --platform=node --format=esm --packages=external --alias:@herencia/shared=../../packages/shared/src/index.ts --outfile=dist/serverless.mjs && mkdir -p public && echo 'HERENCIA API' > public/index.html",
+  "outputDirectory": "public",
   "rewrites": [{ "source": "/(.*)", "destination": "/api" }]
 }

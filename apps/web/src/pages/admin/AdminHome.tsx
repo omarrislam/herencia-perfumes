@@ -30,6 +30,7 @@ export default function AdminHome() {
   const [order, setOrder] = useState<ReorderableSection[]>(DEFAULT_SECTION_ORDER);
   const [instapay, setInstapay] = useState<{ enabled: boolean; handle: string; qrImage: string }>({ enabled: false, handle: '', qrImage: '' });
   const [promoBar, setPromoBar] = useState<{ enabled: boolean; text: string; ctaText: string; ctaLink: string }>({ enabled: false, text: '', ctaText: '', ctaLink: '' });
+  const [social, setSocial] = useState<{ instagram: string; facebook: string; tiktok: string }>({ instagram: '', facebook: '', tiktok: '' });
   const [uploading, setUploading] = useState<'hero' | 'qr' | null>(null);
   const [uploadErr, setUploadErr] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -42,6 +43,7 @@ export default function AdminHome() {
     setOrder(s.sectionOrder);
     setInstapay({ enabled: s.instapay.enabled, handle: s.instapay.handle ?? '', qrImage: s.instapay.qrImage ?? '' });
     setPromoBar({ enabled: s.promoBar.enabled, text: s.promoBar.text ?? '', ctaText: s.promoBar.ctaText ?? '', ctaLink: s.promoBar.ctaLink ?? '' });
+    setSocial({ instagram: s.socialLinks?.instagram ?? '', facebook: s.socialLinks?.facebook ?? '', tiktok: s.socialLinks?.tiktok ?? '' });
   }, [settings.data]);
 
   const move = (i: number, dir: -1 | 1) => {
@@ -93,6 +95,11 @@ export default function AdminHome() {
         text: promoBar.text || undefined,
         ctaText: promoBar.ctaText || undefined,
         ctaLink: promoBar.ctaLink || undefined,
+      },
+      socialLinks: {
+        instagram: social.instagram || undefined,
+        facebook: social.facebook || undefined,
+        tiktok: social.tiktok || undefined,
       },
     });
   };
@@ -187,6 +194,24 @@ export default function AdminHome() {
             <input value={promoBar.ctaLink} onChange={(e) => setPromoBar({ ...promoBar, ctaLink: e.target.value })} placeholder="/products" className="field-lux" />
           </label>
         </div>
+      </section>
+
+      {/* Social links */}
+      <section className="rounded-xl border border-hairline bg-surface p-5 space-y-4">
+        <h2 className="font-display text-lg text-content">Social links</h2>
+        <p className="font-body text-sm text-muted">Shown as icons in the footer. Leave blank to hide (WhatsApp uses your store number).</p>
+        <label className="block">
+          <span className="mb-1 block font-body text-sm text-muted">Instagram URL</span>
+          <input value={social.instagram} onChange={(e) => setSocial({ ...social, instagram: e.target.value })} placeholder="https://instagram.com/yourhandle" className="field-lux" />
+        </label>
+        <label className="block">
+          <span className="mb-1 block font-body text-sm text-muted">Facebook URL</span>
+          <input value={social.facebook} onChange={(e) => setSocial({ ...social, facebook: e.target.value })} placeholder="https://facebook.com/yourpage" className="field-lux" />
+        </label>
+        <label className="block">
+          <span className="mb-1 block font-body text-sm text-muted">TikTok URL</span>
+          <input value={social.tiktok} onChange={(e) => setSocial({ ...social, tiktok: e.target.value })} placeholder="https://tiktok.com/@yourhandle" className="field-lux" />
+        </label>
       </section>
 
       {/* InstaPay */}

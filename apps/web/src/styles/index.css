@@ -16,6 +16,7 @@
   --accent: #a9793b;
   --accent-strong: #8f6329;
   --gold-hi: #cfa862;
+  --shimmer: #d9a441;
   --border: rgba(52, 18, 18, 0.2);
   --hairline: rgba(52, 18, 18, 0.13);
   --shadow-color: 40 22 10;
@@ -43,6 +44,7 @@
   --accent: #d0a866;
   --accent-strong: #e0bd82;
   --gold-hi: #ecd6a0;
+  --shimmer: #9a6a24;
   --border: rgba(208, 168, 102, 0.28);
   --hairline: rgba(208, 168, 102, 0.18);
   --shadow-color: 0 0 0;
@@ -251,9 +253,9 @@
   100% { background-position: 220% 0; }
 }
 .logo-shimmer {
-  /* Highlight uses --accent (medium gold) so the sweep is visible on both the
-     dark text (light mode) and the cream text (dark mode). */
-  background: linear-gradient(100deg, var(--text) 0%, var(--text) 38%, var(--accent) 47%, var(--gold-hi) 50%, var(--accent) 53%, var(--text) 62%, var(--text) 100%);
+  /* Highlight uses a per-theme --shimmer: a brighter gold on dark text (light mode)
+     and a darker gold on the cream text (dark mode), so the sweep reads in both. */
+  background: linear-gradient(100deg, var(--text) 0%, var(--text) 40%, var(--shimmer) 50%, var(--text) 60%, var(--text) 100%);
   background-size: 220% 100%;
   -webkit-background-clip: text;
   background-clip: text;

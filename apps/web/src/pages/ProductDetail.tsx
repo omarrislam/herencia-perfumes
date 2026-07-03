@@ -10,6 +10,7 @@ import { Rating } from '../components/Rating';
 import { ProductCard } from '../components/ProductCard';
 import { Skeleton } from '../components/Skeleton';
 import { WishlistButton } from '../components/WishlistButton';
+import { TryScentButton } from '../components/TryScentButton';
 import { useCart } from '../features/cart/CartContext';
 import { ReviewsSection } from '../features/reviews/ReviewsSection';
 
@@ -95,6 +96,13 @@ export default function ProductDetail() {
             </button>
             <WishlistButton productId={p.id} />
           </div>
+
+          {p.type === 'perfume' && (
+            <TryScentButton
+              product={p}
+              className="mt-3 w-full rounded-md border border-hairline py-3 font-body text-sm font-medium tracking-wide text-content transition-colors hover:border-accent hover:text-accent"
+            />
+          )}
 
           {p.type === 'bundle' && p.bundleItems?.length ? (
             <div className="card-lux rounded-xl p-5">

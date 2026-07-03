@@ -6,6 +6,7 @@ import { useTheme } from './ThemeProvider';
 import { useAuth } from '../features/auth/AuthContext';
 import { useCart } from '../features/cart/CartContext';
 import { CartDrawer } from '../features/cart/CartDrawer';
+import { SampleModal } from '../features/samples/SampleModal';
 import { fetchSettings } from '../lib/api';
 
 const NAV = [
@@ -69,7 +70,7 @@ export function StorefrontLayout() {
           </div>
         )}
         <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-5 sm:py-4">
-          <Link to="/" className="flex items-center gap-2.5">
+          <Link to="/" onClick={() => window.scrollTo(0, 0)} className="flex items-center gap-2.5">
             <img src="/logo.png" alt="HERENCIA crest" className="h-10 w-10 object-contain" />
             <span className={`logo-shimmer font-display text-xl tracking-[0.2em] sm:text-2xl ${light ? 'text-cream' : 'text-content'}`}>
               HERENCIA
@@ -251,6 +252,7 @@ export function StorefrontLayout() {
         </div>
       </footer>
       <CartDrawer />
+      <SampleModal />
     </div>
   );
 }

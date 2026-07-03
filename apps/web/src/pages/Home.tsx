@@ -10,6 +10,7 @@ import { ProductImage } from '../components/ProductImage';
 import { Skeleton } from '../components/Skeleton';
 import { Reveal } from '../components/Reveal';
 import { ParallaxImage } from '../components/ParallaxImage';
+import { ThreeSteps } from '../components/ThreeSteps';
 import { TestimonialCarousel } from '../components/TestimonialCarousel';
 
 // Simple inline icons for the values strip (single stroke weight).
@@ -269,18 +270,21 @@ export default function Home() {
 
       {/* Contained content, in the admin-configured order */}
       <div className="mx-auto max-w-6xl space-y-20 px-5 py-16 sm:px-6 md:space-y-28 md:py-24">
-        {order.filter((k) => show(k)).flatMap((k, i) => {
-          const section = <div key={k}>{sectionMap[k]}</div>;
-          if (i === 0) return [section];
-          return [
-            <div key={`${k}-div`} className="flex items-center justify-center gap-3" aria-hidden="true">
-              <span className="h-px w-10 bg-hairline" />
-              <span className="text-xs text-accent/60">✦</span>
-              <span className="h-px w-10 bg-hairline" />
-            </div>,
-            section,
-          ];
-        })}
+        {[
+          <Reveal key="three-steps"><ThreeSteps /></Reveal>,
+          ...order.filter((k) => show(k)).map((k) => <div key={k}>{sectionMap[k]}</div>),
+        ].flatMap((el, i) =>
+          i === 0
+            ? [el]
+            : [
+                <div key={`div-${i}`} className="flex items-center justify-center gap-3" aria-hidden="true">
+                  <span className="h-px w-10 bg-hairline" />
+                  <span className="text-xs text-accent/60">✦</span>
+                  <span className="h-px w-10 bg-hairline" />
+                </div>,
+                el,
+              ],
+        )}
       </div>
     </div>
   );

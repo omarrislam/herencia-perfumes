@@ -8,6 +8,8 @@ import { AppRoutes } from './app/AppRoutes';
 import { AuthProvider } from './features/auth/AuthContext';
 import { CartProvider } from './features/cart/CartContext';
 import { PageLoader } from './components/PageLoader';
+import { ScrollToTop } from './components/ScrollToTop';
+import { SampleProvider } from './features/samples/SampleContext';
 import '@fontsource/cinzel/400.css';
 import '@fontsource/cinzel/600.css';
 import '@fontsource/cinzel/700.css';
@@ -24,9 +26,12 @@ const app = (
         <CartProvider>
           <ThemeProvider>
             <BrowserRouter>
-              <Suspense fallback={<PageLoader />}>
-                <AppRoutes />
-              </Suspense>
+              <ScrollToTop />
+              <SampleProvider>
+                <Suspense fallback={<PageLoader />}>
+                  <AppRoutes />
+                </Suspense>
+              </SampleProvider>
             </BrowserRouter>
           </ThemeProvider>
         </CartProvider>
@@ -34,6 +39,9 @@ const app = (
     </QueryClientProvider>
   </StrictMode>
 );
+
+// Don't let the browser restore scroll on refresh — always start at the top.
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
 const root = document.getElementById('root')!;
 if (root.hasChildNodes()) hydrateRoot(root, app);

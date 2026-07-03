@@ -6,6 +6,7 @@ import ProductDetail from './ProductDetail';
 import type { ProductDTO } from '@herencia/shared';
 import { AuthProvider } from '../features/auth/AuthContext';
 import { CartProvider } from '../features/cart/CartContext';
+import { SampleProvider } from '../features/samples/SampleContext';
 import * as api from '../lib/api';
 
 const product: ProductDTO = {
@@ -31,7 +32,9 @@ function renderAt(path: string) {
       <MemoryRouter initialEntries={[path]}>
         <AuthProvider>
           <CartProvider>
-            <Routes><Route path="/products/:slug" element={<ProductDetail />} /></Routes>
+            <SampleProvider>
+              <Routes><Route path="/products/:slug" element={<ProductDetail />} /></Routes>
+            </SampleProvider>
           </CartProvider>
         </AuthProvider>
       </MemoryRouter>

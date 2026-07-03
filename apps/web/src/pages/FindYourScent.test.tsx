@@ -5,12 +5,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import FindYourScent from './FindYourScent';
 import { AuthProvider } from '../features/auth/AuthContext';
 import { CartProvider } from '../features/cart/CartContext';
+import { SampleProvider } from '../features/samples/SampleContext';
 import * as api from '../lib/api';
 
 function wrap(ui: React.ReactNode) {
   return (
     <QueryClientProvider client={new QueryClient()}>
-      <MemoryRouter><AuthProvider><CartProvider>{ui}</CartProvider></AuthProvider></MemoryRouter>
+      <MemoryRouter><AuthProvider><CartProvider><SampleProvider>{ui}</SampleProvider></CartProvider></AuthProvider></MemoryRouter>
     </QueryClientProvider>
   );
 }

@@ -4,6 +4,7 @@ import { ProductImage } from './ProductImage';
 import { Price } from './Price';
 import { Rating } from './Rating';
 import { WishlistButton } from './WishlistButton';
+import { TryScentButton } from './TryScentButton';
 import { useCart } from '../features/cart/CartContext';
 
 export function ProductCard({ product }: { product: ProductDTO }) {
@@ -55,6 +56,7 @@ export function ProductCard({ product }: { product: ProductDTO }) {
         >
           {inStock ? 'Add to cart' : 'Sold out'}
         </button>
+        {product.type === 'perfume' && <TryScentButton product={product} />}
       </div>
       <div className="absolute right-3 top-3 z-10">
         <WishlistButton productId={product.id} />

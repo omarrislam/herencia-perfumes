@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ProductCard } from './ProductCard';
 import { AuthProvider } from '../features/auth/AuthContext';
 import { CartProvider } from '../features/cart/CartContext';
+import { SampleProvider } from '../features/samples/SampleContext';
 import type { ProductDTO } from '@herencia/shared';
 import * as api from '../lib/api';
 
@@ -29,7 +30,9 @@ function wrap(ui: React.ReactElement) {
       <MemoryRouter>
         <AuthProvider>
           <CartProvider>
-            {ui}
+            <SampleProvider>
+              {ui}
+            </SampleProvider>
           </CartProvider>
         </AuthProvider>
       </MemoryRouter>

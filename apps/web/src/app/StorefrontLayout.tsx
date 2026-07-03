@@ -1,6 +1,6 @@
 import { Suspense, useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { useTheme } from './ThemeProvider';
 import { useAuth } from '../features/auth/AuthContext';
@@ -117,23 +117,65 @@ export function StorefrontLayout() {
           </div>
         </nav>
 
-        {menuOpen && (
-          <div className="border-t border-hairline bg-bg md:hidden">
-            <div className="mx-auto flex max-w-6xl flex-col gap-1 px-4 py-3">
-              {NAV.map((n) => (
-                <NavLink key={n.to} to={n.to} className="rounded-lg px-3 py-2.5 font-body text-content hover:bg-accent/10 hover:text-accent">{n.label}</NavLink>
-              ))}
-              {user ? (
-                <>
-                  <NavLink to="/account" className="rounded-lg px-3 py-2.5 font-body text-content hover:bg-accent/10 hover:text-accent">Account</NavLink>
-                  <button onClick={() => void logout()} className="rounded-lg px-3 py-2.5 text-left font-body text-muted hover:bg-accent/10 hover:text-accent">Sign out</button>
-                </>
-              ) : (
-                <NavLink to="/login" className="rounded-lg px-3 py-2.5 font-body text-content hover:bg-accent/10 hover:text-accent">Sign in</NavLink>
-              )}
-            </div>
-          </div>
-        )}
+        <AnimatePresence>
+          {menuOpen && (
+            <motion.div
+              key="mobile-menu"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="fixed left-0 top-0 z-[60] flex h-[100dvh] w-screen flex-col bg-espresso md:hidden"
+            >
+              <div className="flex items-center justify-between px-5 py-4">
+                <span className="font-display text-xl tracking-[0.2em] text-cream">HERENCIA</span>
+                <button
+                  type="button"
+                  onClick={() => setMenuOpen(false)}
+                  aria-label="Close menu"
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-cream/40 text-cream transition-colors hover:border-gold-hi hover:text-gold-hi"
+                >
+                  ✕
+                </button>
+              </div>
+
+              <nav className="flex flex-1 flex-col justify-center px-7">
+                {NAV.map((n, i) => (
+                  <motion.div
+                    key={n.to}
+                    initial={{ opacity: 0, y: 18 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.06 + i * 0.06, duration: 0.4, ease: 'easeOut' }}
+                  >
+                    <NavLink
+                      to={n.to}
+                      onClick={() => setMenuOpen(false)}
+                      className="group flex items-center gap-4 border-b border-cream/10 py-5"
+                    >
+                      <span className="font-body text-xs tracking-[0.25em] text-gold-hi/70">0{i + 1}</span>
+                      <span className="font-display text-3xl text-cream transition-colors group-hover:text-gold-hi">{n.label}</span>
+                    </NavLink>
+                  </motion.div>
+                ))}
+              </nav>
+
+              <div className="px-7 pb-10 pt-4">
+                <div className="rule-gold mb-5 w-16" />
+                <div className="flex items-center gap-6">
+                  {user ? (
+                    <>
+                      <NavLink to="/account" onClick={() => setMenuOpen(false)} className="font-body text-sm tracking-wide text-cream/80 hover:text-gold-hi">Account</NavLink>
+                      <button onClick={() => { setMenuOpen(false); void logout(); }} className="font-body text-sm tracking-wide text-cream/60 hover:text-gold-hi">Sign out</button>
+                    </>
+                  ) : (
+                    <NavLink to="/login" onClick={() => setMenuOpen(false)} className="font-body text-sm tracking-wide text-cream/80 hover:text-gold-hi">Sign in</NavLink>
+                  )}
+                </div>
+                <p className="mt-4 font-body text-xs tracking-wide text-cream/40">Heritage perfumery · Crafted in Egypt</p>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </header>
 
       <main className={isHome ? 'w-full flex-1' : 'mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-5'}>

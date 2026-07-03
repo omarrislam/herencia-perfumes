@@ -44,14 +44,14 @@ export function ProductCard({ product }: { product: ProductDTO }) {
           <div className="mt-1"><Rating avg={product.rating.avg} count={product.rating.count} /></div>
         </div>
       </Link>
-      <div className="mt-auto flex items-center justify-between gap-2 px-4 pb-4">
+      <div className="mt-auto flex flex-col gap-2.5 px-4 pb-4">
         <Price value={product.basePrice} compareAt={baseSize?.compareAtPrice} />
         <button
           type="button"
           onClick={addToCart}
           disabled={!inStock}
           aria-label={`Add ${product.name} to cart`}
-          className="shrink-0 whitespace-nowrap rounded-md bg-espresso px-3 py-1.5 font-body text-xs font-medium tracking-wide text-cream transition-colors hover:bg-accent-strong disabled:opacity-50"
+          className="w-full whitespace-nowrap rounded-md bg-espresso py-2 font-body text-xs font-medium tracking-wide text-cream transition-colors hover:bg-accent-strong disabled:opacity-50"
         >
           {inStock ? 'Add to cart' : 'Sold out'}
         </button>

@@ -22,6 +22,8 @@ export default {
         muted: 'var(--muted)',
         accent: 'var(--accent)',
         'accent-strong': 'var(--accent-strong)',
+        cta: 'var(--cta)',
+        'cta-hover': 'var(--cta-hover)',
         'gold-hi': 'var(--gold-hi)',
         line: 'var(--border)',
         hairline: 'var(--hairline)',

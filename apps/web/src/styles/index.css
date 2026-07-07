@@ -8,8 +8,11 @@
 :root[data-theme='light'] {
   --bg: #e6d7ae;
   --bg-deep: #dbc79a;
-  --surface: #fbf4e3;
-  --surface-2: #f1e4c8;
+  --surface: #fdf8ec;
+  --surface-2: #f6ecd3;
+  /* Primary buy-CTA (maroon) — theme-tuned so it pops on both backgrounds. */
+  --cta: #4b1d1d;
+  --cta-hover: #5e2626;
   --text: #331111;
   --ink: #2a0f0f;
   --muted: #77634d;
@@ -38,6 +41,8 @@
   --bg-deep: #0d0505;
   --surface: #2c1a16;
   --surface-2: #3a2620;
+  --cta: #5e2626;
+  --cta-hover: #713030;
   --text: #f4ead0;
   --ink: #fbf3df;
   --muted: #cbb794;
@@ -176,9 +181,8 @@
     gap: 0.5rem;
     overflow: hidden;
     border-radius: 0.5rem;
-    /* Fixed dark surface + cream text so the CTA reads in BOTH themes
-       (--ink flips to cream in dark mode). */
-    background: #241111;
+    /* Brand-maroon CTA + cream text; --cta is theme-tuned so it reads in BOTH themes. */
+    background: var(--cta);
     color: #f4ead0;
     font-family: 'Jost', sans-serif;
     font-weight: 500;
@@ -188,6 +192,7 @@
     box-shadow: var(--shadow-sm);
   }
   .btn-lux:hover {
+    background: var(--cta-hover);
     box-shadow: var(--shadow-md);
     transform: translateY(-1px);
   }

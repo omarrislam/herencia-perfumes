@@ -1,6 +1,25 @@
 # Current State
 
-_Last updated: 2026-07-02_
+_Last updated: 2026-07-07_
+
+## Post-M4 round 9 (conversion polish, on master, 2026-07-07)
+- ✅ **Maroon primary CTAs** — theme-tuned `--cta`/`--cta-hover` vars (light #4b1d1d, dark #5e2626) + Tailwind `cta`/`cta-hover`; applied to `.btn-lux`, Button primary, ProductCard add-to-cart, SampleModal footer, CartDrawer checkout. **Lighter light-mode surfaces** (`--surface` #fdf8ec, `--surface-2` #f6ecd3) for card separation.
+- ✅ **Free-shipping progress bar** in CartDrawer footer ("Add EGP X more…" gold bar → green "✓ unlocked") from `settings.freeShippingThreshold`.
+- ✅ **Email popup → non-blocking floating banner** (cookie-style): fixed bottom card (bottom-right on desktop, full-width bottom on mobile), no backdrop/scroll-lock, page stays interactive; same delay/dismissal/subscribe/code logic (`EmailPopup.tsx` rewritten).
+- ✅ **Parfinity-style fragrance notes** on product detail — `NotesPyramid` rewritten: Top/Heart/Base groups, square tiles (Cinzel initial + name). **Admin ProductForm now edits notes** (comma-separated Top/Heart/Base inputs — notes previously had NO admin UI at all).
+- ✅ Verified: typecheck/lint 0, web 22 files/37 tests green (api/shared untouched); Playwright QA desktop+mobile (banner non-blocking scroll confirmed, drawer progress both states, notes on royal-oud, mobile checkout).
+- ⚠️ tailwind.config.ts changed → restart dev server to pick up `cta` tokens.
+- Git: no remote configured — commits are local; ask the user for a remote URL to push.
+
+## Post-M4 round 8 (sales-first UX overhaul, on master, 2026-07-07) — decisions #37–40
+- ✅ **Hero flash fixed** — hero image/text gated on settings load (espresso placeholder, same height, no CLS); swirl preload removed from index.html. Swirl is fallback-only now.
+- ✅ **Sales-first home order** — `featured` under hero, then `samples` (ThreeSteps is now a reorderable CMS section, 11 section keys). Stored orders without `'samples'` serve the new default until admin re-saves (serialize normalization).
+- ✅ **Email discount popup end-to-end** — `settings.emailPopup` (Admin → Home card), `Subscriber` model, rate-limited idempotent `POST /api/newsletter`, storefront popup (5s delay, 7-day re-dismiss, suppressed on cart/checkout/confirmation/admin), code → `localStorage['herencia.discountCode']` → auto-applied at checkout; `createOrder` validates the code server-side and persists `discount`/`discountCode` (Order model + DTO). **NOTE: QA enabled it in the dev DB with code WELCOME10 / 10% — edit in Admin → Home.**
+- ✅ **Sample flow reworked** — per-unit "Perfume Sample" product (`ensureSampleBox` migrates the old 5×2ml box on boot; 2ml @ 60 EGP default, price editable in **Admin → Products**). Card CTA "Order a sample"; modal preselects clicked product with green ✓ (success tokens), visible gold + buttons, per-sample price + running total, adds qty = picked count; cart drawer/page list picked sample names.
+- ✅ **Checkout compact 2-col** (form + sticky summary), address line 2 removed, discount row + manual "Have a discount code?", payment cards only (no InstaPay dropdown/QR at checkout).
+- ✅ **Confirmation** — COD: confirmed + "4–5 business days", WhatsApp optional (no required confirm). InstaPay: pay-link button from `settings.instapay.payLink` (new field, Admin → Home; QR upload UI removed) + screenshot-on-WhatsApp step. WhatsApp order message now says InstaPay when applicable.
+- ✅ Verified: lint 0, typecheck 0, tests **shared 41 / api 130 (+7 new: newsletter ×3, discount ×2, settings ×2) / web 37**; Playwright visual QA of the full buy flow (popup→subscribe→samples→checkout→COD confirmation), light+dark+mobile.
+- ⚠️ QA left one test order in the dev DB ("QA Tester", COD, WELCOME10) and a subscriber `qa-test@herencia.example`; Royal Oud 50ml stock −1, samples −2. Cancel/ignore in Admin → Orders.
 
 ## Post-M4 round 7 (dashboard, inventory, promo bar editable, full-width time, on master, 2026-07-02)
 - ✅ **Admin Dashboard** (`AdminDashboard.tsx`, index route) — stat cards (orders, pending, revenue from recent orders, products, low/out-of-stock) + recent-orders list. **Admin Inventory** (`AdminInventory.tsx`) — SKU × size stock table sorted low-first with Low/Out badges + summary. Both in sidebar nav + routes.

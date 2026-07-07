@@ -1,5 +1,5 @@
 import { useEffect, type ReactNode } from 'react';
-import type { ReorderableSection } from '@herencia/shared';
+import { DEFAULT_SECTION_ORDER, type ReorderableSection } from '@herencia/shared';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { fetchProducts, fetchSettings } from '../lib/api';
@@ -69,9 +69,14 @@ export default function Home() {
 
   const sec = settings.data?.homeSections;
   const show = (k: keyof NonNullable<typeof sec>) => (sec ? sec[k] : true);
-  const order: ReorderableSection[] = settings.data?.sectionOrder ?? ['essence', 'featured', 'gifting', 'craft', 'time', 'testimonials', 'values', 'quiz', 'faq'];
+  const order: ReorderableSection[] = settings.data?.sectionOrder ?? [...DEFAULT_SECTION_ORDER];
 
   const sectionMap: Record<ReorderableSection, ReactNode> = {
+    samples: (
+      <Reveal>
+        <ThreeSteps />
+      </Reveal>
+    ),
     essence: (
       <Reveal>
         <section className="grid items-center gap-8 md:grid-cols-2 md:gap-14">
@@ -243,37 +248,41 @@ export default function Home() {
       {/* Full-bleed hero */}
       {show('hero') && (
         <section className="relative overflow-hidden bg-espresso">
-          {/* Render immediately (no settings gate) so there's no placeholder flash.
-              A dark espresso base sits under the image while it loads. */}
-          {useCloudHero && heroPublicId ? (
+          {/* Hold the espresso base until settings resolve so the fallback swirl never
+              flashes before an admin-uploaded hero. Same fixed height → no CLS. */}
+          {settings.isLoading ? (
+            <div className="h-[72vh] max-h-[760px] min-h-[440px] w-full" />
+          ) : useCloudHero && heroPublicId ? (
             <ProductImage publicId={heroPublicId} alt={hero?.title ?? 'HERENCIA'} w={1920} loading="eager" sizes="100vw" className="h-[72vh] max-h-[760px] min-h-[440px] w-full object-cover" />
           ) : (
             <img src="/hero-swirl.webp" alt={hero?.title ?? 'HERENCIA'} className="h-[72vh] max-h-[760px] min-h-[440px] w-full bg-espresso object-cover" />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-espresso/90 via-espresso/45 to-espresso/15" />
           <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-espresso/55 to-transparent" />
-          <div className="absolute inset-0 flex items-center">
-            <div className="mx-auto w-full max-w-6xl px-5 sm:px-6">
-              <div className="max-w-2xl space-y-6">
-                <p className="eyebrow rise text-gold-hi" style={{ animationDelay: '0.05s' }}>Heritage Perfumery</p>
-                <h1 className="display rise text-5xl leading-[1.02] text-cream sm:text-6xl md:text-7xl" style={{ animationDelay: '0.15s' }}>{hero?.title ?? 'Luxury in every drop'}</h1>
-                <p className="rise max-w-md font-body text-base leading-relaxed text-cream/85 md:text-lg" style={{ animationDelay: '0.28s' }}>{hero?.subtitle ?? 'Composed in small batches, worn like an heirloom.'}</p>
-                <div className="rise flex flex-wrap gap-3 pt-2" style={{ animationDelay: '0.4s' }}>
-                  <Link to={hero?.ctaLink ?? '/products'} className="btn-lux">{hero?.ctaText ?? 'Shop the collection'}</Link>
-                  <Link to="/find-your-scent" className="btn-outline border-cream/40 text-cream hover:bg-cream hover:text-espresso">Find your scent</Link>
+          {!settings.isLoading && (
+            <div className="absolute inset-0 flex items-center">
+              <div className="mx-auto w-full max-w-6xl px-5 sm:px-6">
+                <div className="max-w-2xl space-y-6">
+                  <p className="eyebrow rise text-gold-hi" style={{ animationDelay: '0.05s' }}>Heritage Perfumery</p>
+                  <h1 className="display rise text-5xl leading-[1.02] text-cream sm:text-6xl md:text-7xl" style={{ animationDelay: '0.15s' }}>{hero?.title ?? 'Luxury in every drop'}</h1>
+                  <p className="rise max-w-md font-body text-base leading-relaxed text-cream/85 md:text-lg" style={{ animationDelay: '0.28s' }}>{hero?.subtitle ?? 'Composed in small batches, worn like an heirloom.'}</p>
+                  <div className="rise flex flex-wrap gap-3 pt-2" style={{ animationDelay: '0.4s' }}>
+                    <Link to={hero?.ctaLink ?? '/products'} className="btn-lux">{hero?.ctaText ?? 'Shop the collection'}</Link>
+                    <Link to="/find-your-scent" className="btn-outline border-cream/40 text-cream hover:bg-cream hover:text-espresso">Find your scent</Link>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
         </section>
       )}
 
       {/* Contained content, in the admin-configured order */}
       <div className="mx-auto max-w-6xl space-y-20 px-5 py-16 sm:px-6 md:space-y-28 md:py-24">
-        {[
-          <Reveal key="three-steps"><ThreeSteps /></Reveal>,
-          ...order.filter((k) => show(k)).map((k) => <div key={k}>{sectionMap[k]}</div>),
-        ].flatMap((el, i) =>
+        {order
+          .filter((k) => show(k))
+          .map((k) => <div key={k}>{sectionMap[k]}</div>)
+          .flatMap((el, i) =>
           i === 0
             ? [el]
             : [

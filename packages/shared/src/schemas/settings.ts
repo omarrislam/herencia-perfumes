@@ -11,8 +11,9 @@ export type HeroContent = z.infer<typeof heroSchema>;
 
 export const homeSectionsSchema = z.object({
   hero: z.boolean(),
-  essence: z.boolean(),
   featured: z.boolean(),
+  samples: z.boolean(),
+  essence: z.boolean(),
   gifting: z.boolean(),
   craft: z.boolean(),
   time: z.boolean(),
@@ -24,7 +25,8 @@ export const homeSectionsSchema = z.object({
 export type HomeSections = z.infer<typeof homeSectionsSchema>;
 
 // Order of the re-orderable (contained) home sections. Hero is fixed first.
-export const REORDERABLE_SECTIONS = ['essence', 'featured', 'gifting', 'craft', 'time', 'testimonials', 'values', 'quiz', 'faq'] as const;
+// Sales-first default: products, then the sample path, then the editorial story.
+export const REORDERABLE_SECTIONS = ['featured', 'samples', 'essence', 'gifting', 'craft', 'time', 'testimonials', 'values', 'quiz', 'faq'] as const;
 export type ReorderableSection = (typeof REORDERABLE_SECTIONS)[number];
 export const DEFAULT_SECTION_ORDER: ReorderableSection[] = [...REORDERABLE_SECTIONS];
 export const sectionOrderSchema = z.array(z.enum(REORDERABLE_SECTIONS));
@@ -32,9 +34,21 @@ export const sectionOrderSchema = z.array(z.enum(REORDERABLE_SECTIONS));
 export const instapaySchema = z.object({
   enabled: z.boolean(),
   handle: z.string().max(120).optional(),
+  // Payment link shown on the confirmation page (simpler than a QR).
+  payLink: z.string().max(300).optional(),
   qrImage: z.string().max(300).optional(),
 });
 export type InstaPaySettings = z.infer<typeof instapaySchema>;
+
+// Email-capture popup that grants a storewide discount code.
+export const emailPopupSchema = z.object({
+  enabled: z.boolean(),
+  title: z.string().max(80).optional(),
+  text: z.string().max(200).optional(),
+  code: z.string().max(40).optional(),
+  discountPercent: z.number().min(1).max(90).optional(),
+});
+export type EmailPopupSettings = z.infer<typeof emailPopupSchema>;
 
 // Top announcement / promo bar (above the navbar), managed in Admin → Home.
 export const promoBarSchema = z.object({
@@ -65,6 +79,7 @@ export const updateSettingsSchema = z.object({
   sectionOrder: sectionOrderSchema.optional(),
   instapay: instapaySchema.partial().optional(),
   promoBar: promoBarSchema.partial().optional(),
+  emailPopup: emailPopupSchema.partial().optional(),
 });
 export type UpdateSettingsInput = z.infer<typeof updateSettingsSchema>;
 
@@ -78,13 +93,15 @@ export type SettingDTO = {
   sectionOrder: ReorderableSection[];
   instapay: InstaPaySettings;
   promoBar: PromoBarSettings;
+  emailPopup: EmailPopupSettings;
   contactEmail?: string;
 };
 
 export const DEFAULT_HOME_SECTIONS: HomeSections = {
   hero: true,
-  essence: true,
   featured: true,
+  samples: true,
+  essence: true,
   gifting: true,
   craft: true,
   time: true,

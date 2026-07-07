@@ -115,6 +115,9 @@ export const submitQuizResult = (input: QuizResultInput) => apiSend<QuizResultDT
 export const fetchBanners = (placement?: BannerPlacement) =>
   apiGet<BannerDTO[]>(`/api/banners${placement ? `?placement=${placement}` : ''}`);
 
+export const subscribeNewsletter = (email: string) =>
+  apiSend<{ ok: true; code: string | null; discountPercent: number | null }>('POST', '/api/newsletter', { email });
+
 export const fetchBlogList = (page = 1, tag?: string) =>
   apiGet<BlogListDTO>(`/api/blog?page=${page}${tag ? `&tag=${encodeURIComponent(tag)}` : ''}`);
 export const fetchBlogPost = (slug: string) => apiGet<BlogPostDTO>(`/api/blog/${slug}`);

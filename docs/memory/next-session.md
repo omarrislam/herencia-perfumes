@@ -1,6 +1,11 @@
 # Next Session — START HERE
 
-_Last updated: 2026-07-02_
+_Last updated: 2026-07-07_
+
+## NEW (2026-07-07, round 9): maroon CTAs + lighter light surfaces, free-shipping progress bar in cart drawer, email popup is now a non-blocking floating bottom banner, parfinity-style notes tiles on product detail + notes editable in Admin → Products (ProductForm). No git remote yet — ask the user for one to push.
+
+## NEW (2026-07-07): Post-M4 round 8 merged on master — sales-first UX
+Hero-flash fix, featured+samples first on home, email-discount popup (server-validated `discountCode` on orders), per-unit sample product (price in Admin → Products), compact 2-col checkout (no line2, no InstaPay dropdown), COD auto-confirmed (4–5 days) / InstaPay pay-link (`settings.instapay.payLink`). Decisions #37–40. All suites green (41/130/37). Email popup was enabled in the dev DB (WELCOME10, 10%) — manage in Admin → Home. A QA test order + subscriber exist in the dev DB. Uncommitted — user hasn't asked to commit yet.
 
 ## TL;DR
 Milestones 0–4 are all merged to `master` (M4 merge `cbe8ba7`), PLUS a post-M4 follow-up (merged 2026-07-02) that **made the built server runnable** (`node dist/server.js` via esbuild bundle + `--env-file`) and cleared the batched M4 minors. The app now RUNS end-to-end (verified: boots on Node 24, serves prerendered storefront + API). **Your job: Milestone 5 (Ops / Deploy)** — the last milestone. No git remote — add one only if the user asks to push/PR.

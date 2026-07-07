@@ -10,12 +10,14 @@ export type Concentration = (typeof CONCENTRATION)[number];
 export const PRODUCT_TYPE = ['perfume', 'bundle', 'sample'] as const;
 export type ProductType = (typeof PRODUCT_TYPE)[number];
 
-// The sample discovery box — a real product (type 'sample', hidden from listings)
-// so it flows through the normal cart + checkout.
+// The perfume sample — a real per-unit product (type 'sample', hidden from listings)
+// so it flows through the normal cart + checkout. Cart qty = number of samples picked.
+// Price lives on the product (admin-editable in Products); `price` here is only the
+// seed/migration default.
 export const SAMPLE_BOX = {
   slug: 'sample-box',
-  sizeLabel: '5 × 2ml',
-  price: 300,
+  sizeLabel: '2ml',
+  price: 60,
   count: 5,
 } as const;
 

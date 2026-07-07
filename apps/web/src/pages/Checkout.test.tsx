@@ -13,10 +13,11 @@ function setup() {
   vi.spyOn(api, 'fetchSettings').mockResolvedValue({
     whatsappNumber: '+20', shippingFee: 50, socialLinks: {},
     hero: { title: 'h', subtitle: 's', ctaText: 'c', ctaLink: '/', image: 'x' },
-    homeSections: { hero: true, essence: true, featured: true, gifting: true, craft: true, time: true, testimonials: true, values: true, quiz: true, faq: true },
-    sectionOrder: ['essence', 'featured', 'gifting', 'craft', 'time', 'testimonials', 'values', 'quiz', 'faq'],
+    homeSections: { hero: true, featured: true, samples: true, essence: true, gifting: true, craft: true, time: true, testimonials: true, values: true, quiz: true, faq: true },
+    sectionOrder: ['featured', 'samples', 'essence', 'gifting', 'craft', 'time', 'testimonials', 'values', 'quiz', 'faq'],
     instapay: { enabled: false },
     promoBar: { enabled: false },
+    emailPopup: { enabled: false },
   });
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   vi.spyOn(api, 'priceCart').mockResolvedValue({
@@ -44,14 +45,14 @@ describe('Checkout', () => {
     const create = vi.spyOn(api, 'createOrder').mockResolvedValue({
       order: { id: '1', orderNumber: 'HRC-1', items: [], customer: { name: 'Mai', phone: '0100000000' },
         shippingAddress: { line1: '1 St', city: 'Cairo', governorate: 'Cairo', phone: '0100000000' },
-        subtotal: 800, shipping: 50, total: 850, status: 'pending', paymentMethod: 'cod', createdAt: '2026-06-30T00:00:00Z' },
+        subtotal: 800, shipping: 50, discount: 0, total: 850, status: 'pending', paymentMethod: 'cod', createdAt: '2026-06-30T00:00:00Z' },
       whatsappUrl: 'https://wa.me/201000000000?text=hi',
     });
     setup();
     await waitFor(() => expect(screen.getByText(/Royal Oud/)).toBeInTheDocument());
     fireEvent.change(screen.getByLabelText('Full name'), { target: { value: 'Mai' } });
     fireEvent.change(screen.getByLabelText('Phone'), { target: { value: '0100000000' } });
-    fireEvent.change(screen.getByLabelText('Address line 1'), { target: { value: '1 St' } });
+    fireEvent.change(screen.getByLabelText('Address'), { target: { value: '1 St' } });
     fireEvent.change(screen.getByLabelText('City'), { target: { value: 'Cairo' } });
     fireEvent.change(screen.getByLabelText('Governorate'), { target: { value: 'Cairo' } });
     fireEvent.click(screen.getByRole('button', { name: /place order/i }));

@@ -31,6 +31,8 @@ const orderSchema = new Schema(
     },
     subtotal: { type: Number, required: true },
     shipping: { type: Number, required: true },
+    discount: { type: Number, default: 0 },
+    discountCode: { type: String },
     total: { type: Number, required: true },
     status: { type: String, enum: [...ORDER_STATUS], default: 'pending', index: true },
     paymentMethod: { type: String, enum: [...PAYMENT_METHOD], default: 'cod' },

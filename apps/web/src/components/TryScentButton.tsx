@@ -16,7 +16,7 @@ export function TryScentButton({ product, className }: { product: ProductDTO; cl
         'w-full rounded-md border border-hairline py-2 font-body text-xs font-medium tracking-wide text-content transition-colors hover:border-accent hover:text-accent'
       }
     >
-      Try scent
+      Order a sample
     </button>
   );
 }

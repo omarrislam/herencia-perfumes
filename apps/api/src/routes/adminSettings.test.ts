@@ -56,7 +56,30 @@ describe('admin settings (home CMS)', () => {
   it('defaults homeSections to all-true for a setting saved without them', async () => {
     await Setting.create(baseSetting);
     const pub = await request(app).get('/api/settings').expect(200);
-    expect(pub.body.homeSections).toEqual({ hero: true, essence: true, featured: true, gifting: true, craft: true, time: true, testimonials: true, values: true, quiz: true, faq: true });
+    expect(pub.body.homeSections).toEqual({ hero: true, featured: true, samples: true, essence: true, gifting: true, craft: true, time: true, testimonials: true, values: true, quiz: true, faq: true });
     expect(pub.body.instapay.enabled).toBe(false);
+  });
+
+  it('serves the sales-first default order for a stored order without samples, honors one with it', async () => {
+    await Setting.create({ ...baseSetting, sectionOrder: ['faq', 'essence', 'featured'] });
+    const pub = await request(app).get('/api/settings').expect(200);
+    // pre-'samples' orders are treated as unmigrated → new default
+    expect(pub.body.sectionOrder.slice(0, 2)).toEqual(['featured', 'samples']);
+
+    await Setting.updateOne({}, { $set: { sectionOrder: ['samples', 'faq', 'featured'] } });
+    const pub2 = await request(app).get('/api/settings').expect(200);
+    expect(pub2.body.sectionOrder.slice(0, 3)).toEqual(['samples', 'faq', 'featured']);
+  });
+
+  it('updates the email popup and exposes it publicly', async () => {
+    await Setting.create(baseSetting);
+    const res = await request(app)
+      .put('/api/admin/settings')
+      .set('Cookie', ADMIN)
+      .send({ emailPopup: { enabled: true, code: 'WELCOME10', discountPercent: 10 } })
+      .expect(200);
+    expect(res.body.emailPopup).toMatchObject({ enabled: true, code: 'WELCOME10', discountPercent: 10 });
+    const pub = await request(app).get('/api/settings').expect(200);
+    expect(pub.body.emailPopup.code).toBe('WELCOME10');
   });
 });

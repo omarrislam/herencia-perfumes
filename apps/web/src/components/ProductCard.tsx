@@ -52,7 +52,7 @@ export function ProductCard({ product }: { product: ProductDTO }) {
           onClick={addToCart}
           disabled={!inStock}
           aria-label={`Add ${product.name} to cart`}
-          className="w-full whitespace-nowrap rounded-md bg-espresso py-2 font-body text-xs font-medium tracking-wide text-cream transition-colors hover:bg-accent-strong disabled:opacity-50"
+          className="w-full whitespace-nowrap rounded-md bg-cta py-2 font-body text-xs font-medium tracking-wide text-cream transition-colors hover:bg-cta-hover disabled:opacity-50"
         >
           {inStock ? 'Add to cart' : 'Sold out'}
         </button>

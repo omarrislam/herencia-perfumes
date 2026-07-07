@@ -15,8 +15,9 @@ const settingSchema = new Schema(
     },
     homeSections: {
       hero: { type: Boolean, default: true },
-      essence: { type: Boolean, default: true },
       featured: { type: Boolean, default: true },
+      samples: { type: Boolean, default: true },
+      essence: { type: Boolean, default: true },
       gifting: { type: Boolean, default: true },
       craft: { type: Boolean, default: true },
       time: { type: Boolean, default: true },
@@ -29,7 +30,15 @@ const settingSchema = new Schema(
     instapay: {
       enabled: { type: Boolean, default: false },
       handle: { type: String },
+      payLink: { type: String },
       qrImage: { type: String },
+    },
+    emailPopup: {
+      enabled: { type: Boolean, default: false },
+      title: { type: String },
+      text: { type: String },
+      code: { type: String },
+      discountPercent: { type: Number },
     },
     promoBar: {
       enabled: { type: Boolean, default: false },

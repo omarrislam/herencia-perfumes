@@ -46,6 +46,25 @@ describe('createOrder', () => {
   it('throws 409 when a line exceeds stock', async () => {
     await expect(createOrder(input(5))).rejects.toMatchObject({ status: 409 });
   });
+  it('applies the email-popup discount for a valid code (case-insensitive), server-computed', async () => {
+    await Setting.updateOne({}, { $set: { emailPopup: { enabled: true, code: 'WELCOME10', discountPercent: 10 } } });
+    const { order } = await createOrder({ ...input(2), discountCode: 'welcome10' });
+    expect(order.discount).toBe(160); // 10% of 1600
+    expect(order.discountCode).toBe('WELCOME10');
+    expect(order.total).toBe(1490); // 1600 + 50 shipping − 160
+  });
+  it('ignores an invalid or disabled discount code', async () => {
+    await Setting.updateOne({}, { $set: { emailPopup: { enabled: false, code: 'WELCOME10', discountPercent: 10 } } });
+    const { order } = await createOrder({ ...input(1), discountCode: 'WELCOME10' });
+    expect(order.discount).toBe(0);
+    expect(order.discountCode).toBeUndefined();
+    expect(order.total).toBe(850);
+
+    await Setting.updateOne({}, { $set: { 'emailPopup.enabled': true } });
+    const { order: order2 } = await createOrder({ ...input(1), discountCode: 'WRONG' });
+    expect(order2.discount).toBe(0);
+    expect(order2.total).toBe(850);
+  });
   it('409 cart_unavailable carries details.items listing the unavailable lines', async () => {
     let caught: unknown;
     try {

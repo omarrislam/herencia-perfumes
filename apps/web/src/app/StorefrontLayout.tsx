@@ -7,6 +7,7 @@ import { useAuth } from '../features/auth/AuthContext';
 import { useCart } from '../features/cart/CartContext';
 import { CartDrawer } from '../features/cart/CartDrawer';
 import { SampleModal } from '../features/samples/SampleModal';
+import { EmailPopup } from '../components/EmailPopup';
 import { fetchSettings } from '../lib/api';
 
 const NAV = [
@@ -253,6 +254,7 @@ export function StorefrontLayout() {
       </footer>
       <CartDrawer />
       <SampleModal />
+      <EmailPopup />
     </div>
   );
 }

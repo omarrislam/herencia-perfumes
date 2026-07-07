@@ -29,6 +29,8 @@ export const createOrderSchema = z.object({
   }),
   notes: z.string().max(500).optional(),
   paymentMethod: z.enum(PAYMENT_METHOD).optional(),
+  // Validated server-side against the email-popup discount code; never trusted as an amount.
+  discountCode: z.string().max(40).optional(),
 });
 
 export type CreateOrderInput = z.infer<typeof createOrderSchema>;
@@ -60,6 +62,8 @@ export type OrderDTO = {
   shippingAddress: { line1: string; line2?: string; city: string; governorate: string; phone: string };
   subtotal: number;
   shipping: number;
+  discount: number;
+  discountCode?: string;
   total: number;
   status: OrderStatus;
   paymentMethod: PaymentMethod;

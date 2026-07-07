@@ -43,3 +43,5 @@ Thumbs.db
 .pm2/
 
 .serena/
+
+.vercel

@@ -10,8 +10,9 @@ import { ApiError } from '../../lib/api';
 type HeroForm = { title: string; subtitle: string; ctaText: string; ctaLink: string; image: string };
 const LABELS: Record<keyof HomeSections, { label: string; hint: string }> = {
   hero: { label: 'Hero', hint: 'Main banner at the top (always first)' },
-  essence: { label: 'Essence', hint: '“Essence of Heritage” editorial split' },
   featured: { label: 'Featured scents', hint: 'Featured products (drawer on mobile)' },
+  samples: { label: 'Samples — 3 steps', hint: '“3 Steps to Your Favorite Fragrance” + sample box CTA' },
+  essence: { label: 'Essence', hint: '“Essence of Heritage” editorial split' },
   gifting: { label: 'Gifting band', hint: 'Gift-box banner → bundles' },
   craft: { label: 'Atelier / craft', hint: '“Perfumery as inheritance” editorial' },
   time: { label: 'Time as an Ingredient', hint: '“Patience is our rarest material” statement' },
@@ -26,12 +27,13 @@ export default function AdminHome() {
   const settings = useQuery({ queryKey: ['settings'], queryFn: fetchSettings });
 
   const [hero, setHero] = useState<HeroForm>({ title: '', subtitle: '', ctaText: '', ctaLink: '', image: '' });
-  const [sections, setSections] = useState<HomeSections>({ hero: true, essence: true, featured: true, gifting: true, craft: true, time: true, testimonials: true, values: true, quiz: true, faq: true });
+  const [sections, setSections] = useState<HomeSections>({ hero: true, featured: true, samples: true, essence: true, gifting: true, craft: true, time: true, testimonials: true, values: true, quiz: true, faq: true });
   const [order, setOrder] = useState<ReorderableSection[]>(DEFAULT_SECTION_ORDER);
-  const [instapay, setInstapay] = useState<{ enabled: boolean; handle: string; qrImage: string }>({ enabled: false, handle: '', qrImage: '' });
+  const [instapay, setInstapay] = useState<{ enabled: boolean; handle: string; payLink: string }>({ enabled: false, handle: '', payLink: '' });
+  const [emailPopup, setEmailPopup] = useState<{ enabled: boolean; title: string; text: string; code: string; discountPercent: string }>({ enabled: false, title: '', text: '', code: '', discountPercent: '10' });
   const [promoBar, setPromoBar] = useState<{ enabled: boolean; text: string; ctaText: string; ctaLink: string }>({ enabled: false, text: '', ctaText: '', ctaLink: '' });
   const [social, setSocial] = useState<{ instagram: string; facebook: string; tiktok: string }>({ instagram: '', facebook: '', tiktok: '' });
-  const [uploading, setUploading] = useState<'hero' | 'qr' | null>(null);
+  const [uploading, setUploading] = useState<'hero' | null>(null);
   const [uploadErr, setUploadErr] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
@@ -41,7 +43,14 @@ export default function AdminHome() {
     setHero({ title: s.hero.title, subtitle: s.hero.subtitle, ctaText: s.hero.ctaText, ctaLink: s.hero.ctaLink, image: s.hero.image });
     setSections(s.homeSections);
     setOrder(s.sectionOrder);
-    setInstapay({ enabled: s.instapay.enabled, handle: s.instapay.handle ?? '', qrImage: s.instapay.qrImage ?? '' });
+    setInstapay({ enabled: s.instapay.enabled, handle: s.instapay.handle ?? '', payLink: s.instapay.payLink ?? '' });
+    setEmailPopup({
+      enabled: s.emailPopup.enabled,
+      title: s.emailPopup.title ?? '',
+      text: s.emailPopup.text ?? '',
+      code: s.emailPopup.code ?? '',
+      discountPercent: s.emailPopup.discountPercent != null ? String(s.emailPopup.discountPercent) : '10',
+    });
     setPromoBar({ enabled: s.promoBar.enabled, text: s.promoBar.text ?? '', ctaText: s.promoBar.ctaText ?? '', ctaLink: s.promoBar.ctaLink ?? '' });
     setSocial({ instagram: s.socialLinks?.instagram ?? '', facebook: s.socialLinks?.facebook ?? '', tiktok: s.socialLinks?.tiktok ?? '' });
   }, [settings.data]);
@@ -65,14 +74,13 @@ export default function AdminHome() {
     },
   });
 
-  const pickImage = async (which: 'hero' | 'qr', file?: File) => {
+  const pickImage = async (which: 'hero', file?: File) => {
     if (!file) return;
     setUploading(which);
     setUploadErr(null);
     try {
       const publicId = await uploadImage(file);
-      if (which === 'hero') setHero((h) => ({ ...h, image: publicId }));
-      else setInstapay((i) => ({ ...i, qrImage: publicId }));
+      setHero((h) => ({ ...h, image: publicId }));
     } catch (err) {
       setUploadErr(err instanceof Error ? err.message : 'Upload failed');
     } finally {
@@ -88,7 +96,14 @@ export default function AdminHome() {
       instapay: {
         enabled: instapay.enabled,
         handle: instapay.handle || undefined,
-        qrImage: instapay.qrImage || undefined,
+        payLink: instapay.payLink || undefined,
+      },
+      emailPopup: {
+        enabled: emailPopup.enabled,
+        title: emailPopup.title || undefined,
+        text: emailPopup.text || undefined,
+        code: emailPopup.code.trim().toUpperCase() || undefined,
+        discountPercent: Number(emailPopup.discountPercent) > 0 ? Number(emailPopup.discountPercent) : undefined,
       },
       promoBar: {
         enabled: promoBar.enabled,
@@ -217,6 +232,7 @@ export default function AdminHome() {
       {/* InstaPay */}
       <section className="rounded-xl border border-hairline bg-surface p-5 space-y-4">
         <h2 className="font-display text-lg text-content">InstaPay</h2>
+        <p className="font-body text-sm text-muted">Payment details are shown only after the customer places the order.</p>
         <label className="flex items-center gap-2">
           <input type="checkbox" checked={instapay.enabled} onChange={(e) => setInstapay({ ...instapay, enabled: e.target.checked })} className="h-4 w-4" />
           <span className="font-body text-sm text-content">Offer InstaPay at checkout</span>
@@ -225,13 +241,37 @@ export default function AdminHome() {
           <span className="mb-1 block font-body text-sm text-muted">InstaPay handle / address</span>
           <input value={instapay.handle} onChange={(e) => setInstapay({ ...instapay, handle: e.target.value })} placeholder="omarislamelsady@instapay" className="field-lux" />
         </label>
-        <div>
-          <span className="mb-1 block font-body text-sm text-muted">QR image</span>
-          <div className="flex items-center gap-3">
-            {instapay.qrImage && <img src={cld(instapay.qrImage, { w: 160 })} alt="" className="h-20 w-20 rounded object-cover" />}
-            <input type="file" accept="image/*" onChange={(e) => void pickImage('qr', e.target.files?.[0])} disabled={uploading === 'qr'} className="font-body text-sm text-content" />
-            {uploading === 'qr' && <span className="font-body text-xs text-muted">Uploading…</span>}
-          </div>
+        <label className="block">
+          <span className="mb-1 block font-body text-sm text-muted">Payment link (shown on the order-confirmation page)</span>
+          <input value={instapay.payLink} onChange={(e) => setInstapay({ ...instapay, payLink: e.target.value })} placeholder="https://ipn.eg/S/yourname/instapay/XXXX" className="field-lux" />
+        </label>
+      </section>
+
+      {/* Email discount popup */}
+      <section className="rounded-xl border border-hairline bg-surface p-5 space-y-4">
+        <h2 className="font-display text-lg text-content">Email discount popup</h2>
+        <p className="font-body text-sm text-muted">A popup invites visitors to leave their email for a discount code. The code is applied automatically at checkout.</p>
+        <label className="flex items-center gap-2">
+          <input type="checkbox" checked={emailPopup.enabled} onChange={(e) => setEmailPopup({ ...emailPopup, enabled: e.target.checked })} className="h-4 w-4" />
+          <span className="font-body text-sm text-content">Show the popup</span>
+        </label>
+        <label className="block">
+          <span className="mb-1 block font-body text-sm text-muted">Title</span>
+          <input value={emailPopup.title} onChange={(e) => setEmailPopup({ ...emailPopup, title: e.target.value })} placeholder="Take 10% off your first order" className="field-lux" />
+        </label>
+        <label className="block">
+          <span className="mb-1 block font-body text-sm text-muted">Message</span>
+          <input value={emailPopup.text} onChange={(e) => setEmailPopup({ ...emailPopup, text: e.target.value })} placeholder="Join the maison — your discount is applied automatically at checkout." className="field-lux" />
+        </label>
+        <div className="grid grid-cols-2 gap-3">
+          <label className="block">
+            <span className="mb-1 block font-body text-sm text-muted">Discount code</span>
+            <input value={emailPopup.code} onChange={(e) => setEmailPopup({ ...emailPopup, code: e.target.value })} placeholder="WELCOME10" className="field-lux" />
+          </label>
+          <label className="block">
+            <span className="mb-1 block font-body text-sm text-muted">Discount %</span>
+            <input type="number" min={1} max={90} value={emailPopup.discountPercent} onChange={(e) => setEmailPopup({ ...emailPopup, discountPercent: e.target.value })} className="field-lux" />
+          </label>
         </div>
       </section>
 

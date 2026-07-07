@@ -68,6 +68,13 @@ export function ProductForm({
   const images = watch('images');
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  // Notes are edited as comma-separated text and parsed into arrays on submit.
+  const [notesText, setNotesText] = useState({
+    top: (initial?.notes.top ?? []).join(', '),
+    heart: (initial?.notes.heart ?? []).join(', '),
+    base: (initial?.notes.base ?? []).join(', '),
+  });
+  const parseNotes = (s: string) => s.split(',').map((n) => n.trim()).filter(Boolean);
 
   async function onPickImage(file: File | undefined) {
     if (!file) return;
@@ -92,8 +99,14 @@ export function ProductForm({
     setValue('images', arr);
   };
 
+  const submitWithNotes = (data: AdminProductInput) =>
+    onSubmit({
+      ...data,
+      notes: { top: parseNotes(notesText.top), heart: parseNotes(notesText.heart), base: parseNotes(notesText.base) },
+    });
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleSubmit(submitWithNotes)} className="space-y-4">
       <label className="block">
         <span className="mb-1 block font-body text-xs text-muted">Product name</span>
         <input
@@ -225,6 +238,31 @@ export function ProductForm({
         >
           Add size
         </button>
+      </div>
+
+      <div>
+        <p className="mb-2 font-display text-content">
+          Fragrance notes <span className="font-body text-xs text-muted">(comma-separated — shown as the pyramid on the product page)</span>
+        </p>
+        <div className="space-y-2">
+          {(
+            [
+              ['top', 'Top notes', 'Bergamot, Pink Pepper, Cardamom'],
+              ['heart', 'Heart notes', 'Rose, Jasmine, Cinnamon'],
+              ['base', 'Base notes', 'Oud, Sandalwood, Vanilla'],
+            ] as const
+          ).map(([key, label, placeholder]) => (
+            <label key={key} className="block">
+              <span className="mb-1 block font-body text-xs text-muted">{label}</span>
+              <input
+                value={notesText[key]}
+                onChange={(e) => setNotesText((prev) => ({ ...prev, [key]: e.target.value }))}
+                placeholder={placeholder}
+                className="w-full rounded-md border border-line bg-bg px-3 py-2 font-body text-content"
+              />
+            </label>
+          ))}
+        </div>
       </div>
 
       <div>

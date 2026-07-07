@@ -2,15 +2,16 @@ import type { ProductDTO, ScentFamilyDTO, UserDTO, OrderDTO, AddressDTO, ReviewD
 import { DEFAULT_HOME_SECTIONS, DEFAULT_SECTION_ORDER, REORDERABLE_SECTIONS } from '@herencia/shared';
 
 function normalizeSectionOrder(raw: unknown): ReorderableSection[] {
+  // Orders saved before the 'samples' section existed predate the sales-first
+  // layout — serve the new default until the admin saves a fresh order.
+  if (!Array.isArray(raw) || !raw.includes('samples')) return [...DEFAULT_SECTION_ORDER];
   const valid = new Set<string>(REORDERABLE_SECTIONS);
   const seen = new Set<string>();
   const out: ReorderableSection[] = [];
-  if (Array.isArray(raw)) {
-    for (const k of raw) {
-      if (typeof k === 'string' && valid.has(k) && !seen.has(k)) {
-        seen.add(k);
-        out.push(k as ReorderableSection);
-      }
+  for (const k of raw) {
+    if (typeof k === 'string' && valid.has(k) && !seen.has(k)) {
+      seen.add(k);
+      out.push(k as ReorderableSection);
     }
   }
   for (const k of DEFAULT_SECTION_ORDER) if (!seen.has(k)) out.push(k);
@@ -27,8 +28,9 @@ export function toSettingDTO(doc: AnyDoc): SettingDTO {
     hero: doc.hero,
     homeSections: {
       hero: hs.hero ?? DEFAULT_HOME_SECTIONS.hero,
-      essence: hs.essence ?? DEFAULT_HOME_SECTIONS.essence,
       featured: hs.featured ?? DEFAULT_HOME_SECTIONS.featured,
+      samples: hs.samples ?? DEFAULT_HOME_SECTIONS.samples,
+      essence: hs.essence ?? DEFAULT_HOME_SECTIONS.essence,
       gifting: hs.gifting ?? DEFAULT_HOME_SECTIONS.gifting,
       craft: hs.craft ?? DEFAULT_HOME_SECTIONS.craft,
       time: hs.time ?? DEFAULT_HOME_SECTIONS.time,
@@ -41,7 +43,15 @@ export function toSettingDTO(doc: AnyDoc): SettingDTO {
     instapay: {
       enabled: doc.instapay?.enabled ?? false,
       handle: doc.instapay?.handle ?? undefined,
+      payLink: doc.instapay?.payLink ?? undefined,
       qrImage: doc.instapay?.qrImage ?? undefined,
+    },
+    emailPopup: {
+      enabled: doc.emailPopup?.enabled ?? false,
+      title: doc.emailPopup?.title ?? undefined,
+      text: doc.emailPopup?.text ?? undefined,
+      code: doc.emailPopup?.code ?? undefined,
+      discountPercent: doc.emailPopup?.discountPercent ?? undefined,
     },
     promoBar: {
       enabled: doc.promoBar?.enabled ?? false,
@@ -205,6 +215,8 @@ export function toOrderDTO(doc: AnyDoc): OrderDTO {
     },
     subtotal: doc.subtotal,
     shipping: doc.shipping,
+    discount: doc.discount ?? 0,
+    discountCode: doc.discountCode ?? undefined,
     total: doc.total,
     status: doc.status,
     paymentMethod: doc.paymentMethod ?? 'cod',

@@ -5,23 +5,22 @@ import { createOrderSchema, type CreateOrderInput, type CreateOrderResultDTO, ty
 import { useCart } from '../features/cart/CartContext';
 import { useSamples } from '../features/samples/SampleContext';
 import { useAuth } from '../features/auth/AuthContext';
+import { DISCOUNT_KEY } from '../components/EmailPopup';
 import { Price } from '../components/Price';
 import { Button } from '../components/Button';
-import { cld } from '../lib/cloudinary';
 import * as api from '../lib/api';
-
-const QR_FALLBACK = '/instapay-qr.jpg';
 
 type FormState = {
   name: string;
   phone: string;
   email: string;
   line1: string;
-  line2: string;
   city: string;
   governorate: string;
   notes: string;
 };
+
+const round2 = (n: number) => Math.round(n * 100) / 100;
 
 export default function Checkout() {
   const { items, priced, clear } = useCart();
@@ -34,7 +33,6 @@ export default function Checkout() {
     phone: user?.phone ?? '',
     email: user?.email ?? '',
     line1: '',
-    line2: '',
     city: '',
     governorate: '',
     notes: '',
@@ -42,9 +40,20 @@ export default function Checkout() {
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const settings = useQuery({ queryKey: ['settings'], queryFn: api.fetchSettings });
-  const instapay = settings.data?.instapay;
-  const instapayOn = !!instapay?.enabled;
+  const instapayOn = !!settings.data?.instapay?.enabled;
   const [payment, setPayment] = useState<PaymentMethod>('cod');
+  const [discountCode, setDiscountCode] = useState<string>(() => {
+    try { return localStorage.getItem(DISCOUNT_KEY) ?? ''; } catch { return ''; }
+  });
+  const [showCodeField, setShowCodeField] = useState(false);
+
+  // Client-side preview only — the server re-validates the code and recomputes the total.
+  const popup = settings.data?.emailPopup;
+  const codeValid =
+    !!popup?.enabled && !!popup.code && !!popup.discountPercent &&
+    discountCode.trim().toUpperCase() === popup.code.trim().toUpperCase();
+  const discount = codeValid && priced ? round2(priced.subtotal * (popup!.discountPercent! / 100)) : 0;
+  const totalDue = priced ? round2(priced.total - discount) : 0;
 
   const update =
     (field: keyof FormState) =>
@@ -74,7 +83,6 @@ export default function Checkout() {
       },
       shippingAddress: {
         line1: form.line1,
-        ...(form.line2 ? { line2: form.line2 } : {}),
         city: form.city,
         governorate: form.governorate,
         phone: form.phone,
@@ -82,12 +90,13 @@ export default function Checkout() {
       ...((() => {
         const sampleNote =
           priced?.items.some((i) => i.slug === SAMPLE_BOX.slug) && samples.length > 0
-            ? `Sample box (${samples.length} × 2ml): ${samples.map((s) => s.name).join(', ')}`
+            ? `Samples (${samples.length} × 2ml): ${samples.map((s) => s.name).join(', ')}`
             : '';
         const notes = [sampleNote, form.notes].filter(Boolean).join('\n');
         return notes ? { notes } : {};
       })()),
       paymentMethod: instapayOn ? payment : 'cod',
+      ...(discountCode.trim() ? { discountCode: discountCode.trim() } : {}),
     };
 
     const parsed = createOrderSchema.safeParse(input);
@@ -101,6 +110,7 @@ export default function Checkout() {
       const result: CreateOrderResultDTO = await api.createOrder(parsed.data);
       clear();
       clearSamples();
+      try { localStorage.removeItem(DISCOUNT_KEY); } catch { /* private mode */ }
       navigate('/order-confirmation', { state: result, replace: true });
     } catch (err) {
       setFormError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
@@ -109,25 +119,19 @@ export default function Checkout() {
     }
   };
 
-  return (
-    <div className="mx-auto max-w-2xl space-y-8">
-      <div>
-        <p className="eyebrow">Almost there</p>
-        <h1 className="display mt-2 text-3xl text-content">Checkout</h1>
-        <div className="rule-gold-left mt-4" />
-      </div>
-
+  const summary = (
+    <section className="card-lux space-y-3 rounded-xl p-5">
+      <p className="eyebrow">Order summary</p>
       {priced && (
-        <section className="card-lux space-y-3 rounded-xl p-5">
-          <p className="eyebrow">Order summary</p>
-          <ul className="space-y-2">
+        <>
+          <ul className="max-h-48 space-y-2 overflow-y-auto pr-1">
             {priced.items.map((item) => (
               <li
                 key={`${item.productId}-${item.sizeLabel}`}
-                className="flex items-center justify-between font-body text-sm text-content"
+                className="flex items-center justify-between gap-3 font-body text-sm text-content"
               >
-                <span>
-                  {item.name} &times; {item.qty} ({item.sizeLabel})
+                <span className="min-w-0 truncate">
+                  {item.name} × {item.qty} <span className="text-muted">({item.sizeLabel})</span>
                 </span>
                 <Price value={item.lineTotal} />
               </li>
@@ -140,119 +144,148 @@ export default function Checkout() {
             </div>
             <div className="flex justify-between text-muted">
               <span>Shipping</span>
-              <Price value={priced.shipping} />
+              {priced.shipping === 0 ? <span className="text-success">Free</span> : <Price value={priced.shipping} />}
             </div>
-            <div className="flex justify-between pt-1 text-base font-medium text-content">
-              <span>Total</span>
-              <Price value={priced.total} />
-            </div>
-          </div>
-        </section>
-      )}
-
-      <form onSubmit={handleSubmit} noValidate className="space-y-6">
-        <section className="space-y-4">
-          <h2 className="font-display text-lg text-content">Customer Information</h2>
-          <InputField id="checkout-name" label="Full name" value={form.name} onChange={update('name')} required />
-          <InputField id="checkout-phone" label="Phone" value={form.phone} onChange={update('phone')} required />
-          <InputField
-            id="checkout-email"
-            label="Email (optional)"
-            type="email"
-            value={form.email}
-            onChange={update('email')}
-          />
-        </section>
-
-        <section className="space-y-4">
-          <h2 className="font-display text-lg text-content">Shipping Address</h2>
-          <InputField
-            id="checkout-line1"
-            label="Address line 1"
-            value={form.line1}
-            onChange={update('line1')}
-            required
-          />
-          <InputField
-            id="checkout-line2"
-            label="Address line 2 (optional)"
-            value={form.line2}
-            onChange={update('line2')}
-          />
-          <InputField id="checkout-city" label="City" value={form.city} onChange={update('city')} required />
-          <InputField
-            id="checkout-governorate"
-            label="Governorate"
-            value={form.governorate}
-            onChange={update('governorate')}
-            required
-          />
-        </section>
-
-        <section className="space-y-4">
-          <h2 className="font-display text-lg text-content">Additional</h2>
-          <div className="space-y-1">
-            <label htmlFor="checkout-notes" className="mb-1.5 block font-body text-sm text-muted">
-              Notes (optional)
-            </label>
-            <textarea
-              id="checkout-notes"
-              value={form.notes}
-              onChange={update('notes')}
-              rows={3}
-              className="field-lux text-sm"
-            />
-          </div>
-        </section>
-
-        {instapayOn && (
-          <section className="space-y-3">
-            <h2 className="font-display text-lg text-content">Payment</h2>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <button
-                type="button"
-                onClick={() => setPayment('cod')}
-                className={`rounded-xl border p-4 text-left transition-colors ${payment === 'cod' ? 'border-accent bg-accent/5' : 'border-line hover:border-accent'}`}
-              >
-                <span className="block font-body text-sm font-medium text-content">Cash on delivery</span>
-                <span className="mt-0.5 block font-body text-xs text-muted">Pay when your order arrives.</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setPayment('instapay')}
-                className={`rounded-xl border p-4 text-left transition-colors ${payment === 'instapay' ? 'border-accent bg-accent/5' : 'border-line hover:border-accent'}`}
-              >
-                <span className="block font-body text-sm font-medium text-content">InstaPay</span>
-                <span className="mt-0.5 block font-body text-xs text-muted">Transfer now, confirm on WhatsApp.</span>
-              </button>
-            </div>
-
-            {payment === 'instapay' && (
-              <div className="card-lux flex flex-col items-center gap-3 rounded-xl p-5 text-center sm:flex-row sm:text-left">
-                <img
-                  src={instapay?.qrImage ? cld(instapay.qrImage, { w: 320 }) : QR_FALLBACK}
-                  alt="InstaPay QR code"
-                  className="h-40 w-40 flex-shrink-0 rounded-lg border border-hairline bg-surface object-contain p-2"
-                />
-                <div className="space-y-1.5 font-body text-sm">
-                  <p className="text-content">Transfer the total to:</p>
-                  <p className="font-medium text-accent">{instapay?.handle ?? 'omarislamelsady@instapay'}</p>
-                  <p className="text-muted">
-                    Scan the QR or use the handle above, then place your order and send the
-                    transfer screenshot to us on WhatsApp to confirm.
-                  </p>
-                </div>
+            {discount > 0 && (
+              <div className="flex justify-between text-success">
+                <span>Discount ({popup!.discountPercent}% · {popup!.code})</span>
+                <span>−<Price value={discount} /></span>
               </div>
             )}
+            <div className="flex justify-between pt-1 text-base font-medium text-content">
+              <span>Total</span>
+              <Price value={totalDue} />
+            </div>
+          </div>
+          {/* Discount code — auto-filled from the email popup, or entered manually */}
+          {!codeValid && (
+            showCodeField ? (
+              <div className="flex items-center gap-2 pt-1">
+                <label htmlFor="checkout-code" className="sr-only">Discount code</label>
+                <input
+                  id="checkout-code"
+                  value={discountCode}
+                  onChange={(e) => setDiscountCode(e.target.value)}
+                  placeholder="Discount code"
+                  className="field-lux flex-1 text-sm uppercase"
+                />
+                {discountCode.trim() && (
+                  <span className="font-body text-xs text-danger">Invalid code</span>
+                )}
+              </div>
+            ) : (
+              <button type="button" onClick={() => setShowCodeField(true)} className="font-body text-xs text-muted underline-offset-2 hover:text-accent hover:underline">
+                Have a discount code?
+              </button>
+            )
+          )}
+        </>
+      )}
+    </section>
+  );
+
+  return (
+    <div className="mx-auto max-w-5xl">
+      <div className="mb-6">
+        <p className="eyebrow">Almost there</p>
+        <h1 className="display mt-1 text-3xl text-content">Checkout</h1>
+        <div className="rule-gold-left mt-3" />
+      </div>
+
+      <div className="grid items-start gap-6 lg:grid-cols-[1fr_360px] lg:gap-10">
+        <form onSubmit={handleSubmit} noValidate className="space-y-5">
+          <section className="space-y-3">
+            <h2 className="font-display text-lg text-content">Your details</h2>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <InputField id="checkout-name" label="Full name" autoComplete="name" value={form.name} onChange={update('name')} required />
+              <InputField id="checkout-phone" label="Phone" type="tel" autoComplete="tel" value={form.phone} onChange={update('phone')} required />
+            </div>
+            <InputField
+              id="checkout-email"
+              label="Email (optional)"
+              type="email"
+              autoComplete="email"
+              value={form.email}
+              onChange={update('email')}
+            />
           </section>
-        )}
 
-        {formError && <p className="font-body text-sm text-danger">{formError}</p>}
+          <section className="space-y-3">
+            <h2 className="font-display text-lg text-content">Delivery address</h2>
+            <InputField
+              id="checkout-line1"
+              label="Address"
+              autoComplete="street-address"
+              value={form.line1}
+              onChange={update('line1')}
+              required
+            />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <InputField id="checkout-city" label="City" autoComplete="address-level2" value={form.city} onChange={update('city')} required />
+              <InputField
+                id="checkout-governorate"
+                label="Governorate"
+                value={form.governorate}
+                onChange={update('governorate')}
+                required
+              />
+            </div>
+            <div>
+              <label htmlFor="checkout-notes" className="mb-1.5 block font-body text-sm text-muted">
+                Delivery notes (optional)
+              </label>
+              <textarea
+                id="checkout-notes"
+                value={form.notes}
+                onChange={update('notes')}
+                rows={2}
+                className="field-lux text-sm"
+              />
+            </div>
+          </section>
 
-        <Button type="submit" disabled={disabled} className="w-full py-3">
-          {instapayOn && payment === 'instapay' ? 'Place order & pay via InstaPay' : 'Place order'}
-        </Button>
-      </form>
+          <section className="space-y-3">
+            <h2 className="font-display text-lg text-content">Payment</h2>
+            {instapayOn ? (
+              <div className="grid gap-3 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => setPayment('cod')}
+                  aria-pressed={payment === 'cod'}
+                  className={`rounded-xl border p-4 text-left transition-colors ${payment === 'cod' ? 'border-accent bg-accent/5' : 'border-line hover:border-accent'}`}
+                >
+                  <span className="block font-body text-sm font-medium text-content">Cash on delivery</span>
+                  <span className="mt-0.5 block font-body text-xs text-muted">Pay when your order arrives.</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPayment('instapay')}
+                  aria-pressed={payment === 'instapay'}
+                  className={`rounded-xl border p-4 text-left transition-colors ${payment === 'instapay' ? 'border-accent bg-accent/5' : 'border-line hover:border-accent'}`}
+                >
+                  <span className="block font-body text-sm font-medium text-content">InstaPay</span>
+                  <span className="mt-0.5 block font-body text-xs text-muted">Payment link shown after you place the order.</span>
+                </button>
+              </div>
+            ) : (
+              <p className="rounded-xl border border-line p-4 font-body text-sm text-muted">
+                <span className="font-medium text-content">Cash on delivery</span> — pay when your order arrives.
+              </p>
+            )}
+          </section>
+
+          {formError && <p className="font-body text-sm text-danger">{formError}</p>}
+
+          <Button type="submit" disabled={disabled} className="w-full py-3">
+            {submitting ? 'Placing order…' : 'Place order'}
+          </Button>
+          <p className="text-center font-body text-xs text-muted">
+            Delivery in 4–5 business days · Free returns on unopened items
+          </p>
+        </form>
+
+        <div className="order-first lg:order-none lg:sticky lg:top-24">{summary}</div>
+      </div>
     </div>
   );
 }
@@ -263,6 +296,7 @@ function InputField({
   value,
   onChange,
   type = 'text',
+  autoComplete,
   required,
 }: {
   id: string;
@@ -270,6 +304,7 @@ function InputField({
   value: string;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   type?: string;
+  autoComplete?: string;
   required?: boolean;
 }) {
   return (
@@ -282,6 +317,7 @@ function InputField({
         type={type}
         value={value}
         onChange={onChange}
+        autoComplete={autoComplete}
         required={required}
         className="field-lux text-sm"
       />

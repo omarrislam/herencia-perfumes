@@ -1,9 +1,9 @@
 import { useSamples } from '../features/samples/SampleContext';
 
 const STEPS = [
-  { n: '01', img: '/sample-choose.webp', title: 'Choose your fragrances', body: 'Add up to 5 samples to your box. Get personalized picks or build your own — from the full HERENCIA collection.' },
-  { n: '02', img: '/sample-try.webp', title: 'Try at home', body: 'Receive 5 × 2ml samples in your box. Try them at your leisure and experience how they develop on your skin.' },
-  { n: '03', img: '/sample-buy.webp', title: 'Buy what you love', body: "We'll credit the full box value toward your bottle. Testing without extra cost — guaranteed." },
+  { n: '01', img: '/sample-choose.webp', title: 'Choose your fragrances', body: 'Order up to 5 samples — pick exactly the scents you want to try, from the full HERENCIA collection.' },
+  { n: '02', img: '/sample-try.webp', title: 'Try at home', body: 'Receive your 2ml samples at your door. Try them at your leisure and experience how they develop on your skin.' },
+  { n: '03', img: '/sample-buy.webp', title: 'Buy what you love', body: "We'll credit the full sample value toward your bottle. Testing without extra cost — guaranteed." },
 ];
 
 export function ThreeSteps() {
@@ -38,7 +38,7 @@ export function ThreeSteps() {
         ))}
       </div>
       <div className="mt-10 text-center">
-        <button type="button" onClick={() => open()} className="btn-lux">Build your sample box</button>
+        <button type="button" onClick={() => open()} className="btn-lux">Order your samples</button>
       </div>
     </section>
   );

@@ -47,6 +47,19 @@ export async function createOrder(
 
   try {
     const setting = await Setting.findOne().lean();
+
+    // Email-popup discount — validated against settings, never the client amount.
+    const popup = setting?.emailPopup;
+    const codeValid =
+      !!input.discountCode &&
+      !!popup?.enabled &&
+      !!popup.code &&
+      !!popup.discountPercent &&
+      input.discountCode.trim().toUpperCase() === popup.code.trim().toUpperCase();
+    const discount = codeValid
+      ? Math.round(priced.subtotal * (popup!.discountPercent! / 100) * 100) / 100
+      : 0;
+
     const doc = await Order.create({
       orderNumber: generateOrderNumber(),
       items: priced.items.map((l) => ({
@@ -61,7 +74,9 @@ export async function createOrder(
       shippingAddress: input.shippingAddress,
       subtotal: priced.subtotal,
       shipping: priced.shipping,
-      total: priced.total,
+      discount,
+      discountCode: codeValid ? popup!.code : undefined,
+      total: Math.round((priced.total - discount) * 100) / 100,
       status: 'pending',
       paymentMethod: input.paymentMethod ?? 'cod',
       notes: input.notes,

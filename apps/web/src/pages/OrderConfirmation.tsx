@@ -2,10 +2,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import type { CreateOrderResultDTO } from '@herencia/shared';
 import { Price } from '../components/Price';
-import { cld } from '../lib/cloudinary';
 import { fetchSettings } from '../lib/api';
-
-const QR_FALLBACK = '/instapay-qr.jpg';
 
 export default function OrderConfirmation() {
   const { state } = useLocation();
@@ -30,73 +27,101 @@ export default function OrderConfirmation() {
   return (
     <div className="mx-auto max-w-xl space-y-8 font-body">
       <div className="space-y-3 text-center">
-        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-accent text-2xl text-accent">
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-success-soft text-2xl text-success">
           ✓
         </div>
         <p className="eyebrow">Thank you</p>
-        <h1 className="display text-3xl text-content">Order confirmed</h1>
+        <h1 className="display text-3xl text-content">
+          {isInstapay ? 'Order placed' : 'Order confirmed'}
+        </h1>
         <p className="text-muted">
           Order number{' '}
           <span className="rounded-md bg-surface2 px-2 py-0.5 font-medium text-content">{order.orderNumber}</span>
         </p>
+        <p className="mx-auto max-w-sm text-sm text-muted">
+          Estimated delivery: <span className="font-medium text-content">4–5 business days</span>
+          {isInstapay ? '' : ' — you pay the courier on arrival.'}
+        </p>
       </div>
+
+      {isInstapay && (
+        <section className="card-lux space-y-4 rounded-xl p-5 text-center">
+          <p className="eyebrow">Complete your payment</p>
+          <p className="text-sm text-content">
+            Transfer <span className="font-semibold"><Price value={order.total} /></span> via InstaPay
+            {instapay?.handle && (
+              <>
+                {' '}to <span className="font-medium text-accent">{instapay.handle}</span>
+              </>
+            )}
+            .
+          </p>
+          {instapay?.payLink && (
+            <a
+              href={instapay.payLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-lux inline-flex w-full justify-center sm:w-auto"
+            >
+              Pay via InstaPay
+            </a>
+          )}
+          <p className="text-sm text-muted">
+            Then send the transfer screenshot on{' '}
+            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="font-medium text-accent underline-offset-2 hover:underline">
+              WhatsApp
+            </a>{' '}
+            so we can ship your order right away.
+          </p>
+        </section>
+      )}
 
       <section className="card-lux space-y-3 rounded-xl p-5">
         <p className="eyebrow">Summary</p>
-        <div className="space-y-1 text-sm">
+        <ul className="space-y-1.5 text-sm">
+          {order.items.map((item) => (
+            <li key={`${item.product}-${item.sizeLabel}`} className="flex items-center justify-between gap-3 text-content">
+              <span className="min-w-0 truncate">
+                {item.name} × {item.qty} <span className="text-muted">({item.sizeLabel})</span>
+              </span>
+              <Price value={item.unitPrice * item.qty} />
+            </li>
+          ))}
+        </ul>
+        <div className="space-y-1 border-t border-hairline pt-3 text-sm">
           <div className="flex justify-between text-muted">
             <span>Subtotal</span>
             <Price value={order.subtotal} />
           </div>
           <div className="flex justify-between text-muted">
             <span>Shipping</span>
-            <Price value={order.shipping} />
+            {order.shipping === 0 ? <span className="text-success">Free</span> : <Price value={order.shipping} />}
           </div>
+          {order.discount > 0 && (
+            <div className="flex justify-between text-success">
+              <span>Discount{order.discountCode ? ` (${order.discountCode})` : ''}</span>
+              <span>−<Price value={order.discount} /></span>
+            </div>
+          )}
           <div className="flex justify-between font-semibold text-content">
-            <span>Total</span>
+            <span>Total{isInstapay ? ' to transfer' : ' due on delivery'}</span>
             <Price value={order.total} />
           </div>
         </div>
       </section>
 
-      {isInstapay && (
-        <section className="card-lux space-y-3 rounded-xl p-5">
-          <p className="eyebrow">Pay via InstaPay</p>
-          <div className="flex flex-col items-center gap-4 sm:flex-row sm:text-left">
-            <img
-              src={instapay?.qrImage ? cld(instapay.qrImage, { w: 320 }) : QR_FALLBACK}
-              alt="InstaPay QR code"
-              className="h-40 w-40 flex-shrink-0 rounded-lg border border-hairline bg-surface object-contain p-2"
-            />
-            <div className="space-y-1.5 text-center text-sm sm:text-left">
-              <p className="text-content">Transfer <span className="font-semibold"><Price value={order.total} /></span> to:</p>
-              <p className="font-medium text-accent">{instapay?.handle ?? 'omarislamelsady@instapay'}</p>
-              <p className="text-muted">Then send the transfer screenshot to us on WhatsApp to confirm your order.</p>
-            </div>
-          </div>
-        </section>
-      )}
-
-      <div className="text-center space-y-3">
-        <a
-          href={whatsappUrl}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center justify-center gap-2 rounded-md bg-[#25D366] px-6 py-3 font-body text-sm font-semibold text-white hover:bg-[#1fb558] transition-colors"
-        >
-          {isInstapay ? 'Send screenshot on WhatsApp' : 'Confirm on WhatsApp'}
-        </a>
-        <p className="text-sm text-muted">
-          {isInstapay
-            ? 'Send your InstaPay transfer screenshot on WhatsApp to complete your order.'
-            : 'Please confirm your order via WhatsApp to proceed.'}
-        </p>
-      </div>
-
-      <div className="text-center">
-        <Link to="/" className="link-underline text-sm text-accent">
+      <div className="space-y-3 text-center">
+        <Link to="/products" className="btn-lux inline-flex justify-center">
           Continue shopping
         </Link>
+        {!isInstapay && (
+          <p className="text-sm text-muted">
+            Questions about your order?{' '}
+            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="text-accent underline-offset-2 hover:underline">
+              Chat with us on WhatsApp
+            </a>
+          </p>
+        )}
       </div>
     </div>
   );

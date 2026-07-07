@@ -1,8 +1,12 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
+import { SAMPLE_BOX } from '@herencia/shared';
+import { useQuery } from '@tanstack/react-query';
 import { useCart } from './CartContext';
-import { Price } from '../../components/Price';
+import { useSamples } from '../samples/SampleContext';
+import { Price, formatEGP } from '../../components/Price';
+import { fetchSettings } from '../../lib/api';
 import { cld } from '../../lib/cloudinary';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { DURATION, EASE_OUT } from '../../lib/motion';
@@ -10,9 +14,14 @@ import { useReducedMotion } from '../../hooks/useReducedMotion';
 
 export function CartDrawer() {
   const { priced, open, setOpen, updateQty, removeItem } = useCart();
+  const { samples } = useSamples();
+  const threshold = useQuery({ queryKey: ['settings'], queryFn: fetchSettings }).data?.freeShippingThreshold;
   const trapRef = useFocusTrap(open);
   const reduced = useReducedMotion();
   const d = reduced ? 0 : DURATION.base;
+
+  const subtotal = priced?.subtotal ?? 0;
+  const toFree = threshold != null && subtotal > 0 ? Math.max(0, threshold - subtotal) : null;
 
   // Close on Escape
   useEffect(() => {
@@ -94,6 +103,11 @@ export function CartDrawer() {
                           <div>
                             <p className="font-body text-sm font-medium text-content">{line.name}</p>
                             <p className="font-body text-xs text-muted">{line.sizeLabel}</p>
+                            {line.slug === SAMPLE_BOX.slug && samples.length > 0 && (
+                              <p className="mt-0.5 font-body text-xs text-muted">
+                                {samples.map((s) => s.name).join(' · ')}
+                              </p>
+                            )}
                             {!line.available && (
                               <p className="font-body text-xs text-danger">Unavailable</p>
                             )}
@@ -141,6 +155,24 @@ export function CartDrawer() {
             {/* Footer totals + checkout */}
             {priced && priced.items.length > 0 && (
               <div className="border-t border-line px-6 py-4 space-y-2">
+                {/* Free-shipping progress */}
+                {toFree !== null && (
+                  <div className="pb-1">
+                    <p className="font-body text-xs text-muted">
+                      {toFree > 0 ? (
+                        <>Add <span className="font-medium text-content">{formatEGP(toFree)}</span> more for free shipping</>
+                      ) : (
+                        <span className="font-medium text-success">✓ You&apos;ve unlocked free shipping</span>
+                      )}
+                    </p>
+                    <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-surface2" role="presentation">
+                      <div
+                        className={`h-full rounded-full transition-[width] duration-500 ease-out motion-reduce:transition-none ${toFree > 0 ? 'bg-accent' : 'bg-success'}`}
+                        style={{ width: `${Math.min(100, (subtotal / (threshold || 1)) * 100)}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
                 <div className="flex justify-between font-body text-sm text-muted">
                   <span>Subtotal</span>
                   <Price value={priced.subtotal} />
@@ -160,7 +192,7 @@ export function CartDrawer() {
                 <Link
                   to="/checkout"
                   onClick={() => setOpen(false)}
-                  className="mt-3 block w-full rounded-md bg-maroon px-4 py-3 text-center font-body text-sm text-cream transition-colors hover:bg-maroon/90"
+                  className="mt-3 block w-full rounded-md bg-cta px-4 py-3 text-center font-body text-sm text-cream transition-colors hover:bg-cta-hover"
                 >
                   Checkout
                 </Link>

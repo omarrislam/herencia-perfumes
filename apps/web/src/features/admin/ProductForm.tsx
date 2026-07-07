@@ -1,9 +1,12 @@
 // apps/web/src/features/admin/ProductForm.tsx
 import { useForm, useFieldArray } from 'react-hook-form';
 import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { AdminProductInput, ProductDTO, ScentFamilyDTO } from '@herencia/shared';
 import { GENDER, CONCENTRATION, PRODUCT_TYPE } from '@herencia/shared';
-import { uploadImage } from './adminClient';
+import { uploadImage, adminCreateNoteIcon } from './adminClient';
+import { fetchNoteIcons } from '../../lib/api';
+import { NOTE_LIBRARY, builtinNoteImage } from '../../lib/noteLibrary';
 import { cld } from '../../lib/cloudinary';
 
 function toFormDefaults(p?: ProductDTO): AdminProductInput {
@@ -68,13 +71,11 @@ export function ProductForm({
   const images = watch('images');
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  // Notes are edited as comma-separated text and parsed into arrays on submit.
-  const [notesText, setNotesText] = useState({
-    top: (initial?.notes.top ?? []).join(', '),
-    heart: (initial?.notes.heart ?? []).join(', '),
-    base: (initial?.notes.base ?? []).join(', '),
+  const [notesSel, setNotesSel] = useState<{ top: string[]; heart: string[]; base: string[] }>({
+    top: initial?.notes.top ?? [],
+    heart: initial?.notes.heart ?? [],
+    base: initial?.notes.base ?? [],
   });
-  const parseNotes = (s: string) => s.split(',').map((n) => n.trim()).filter(Boolean);
 
   async function onPickImage(file: File | undefined) {
     if (!file) return;
@@ -99,11 +100,7 @@ export function ProductForm({
     setValue('images', arr);
   };
 
-  const submitWithNotes = (data: AdminProductInput) =>
-    onSubmit({
-      ...data,
-      notes: { top: parseNotes(notesText.top), heart: parseNotes(notesText.heart), base: parseNotes(notesText.base) },
-    });
+  const submitWithNotes = (data: AdminProductInput) => onSubmit({ ...data, notes: notesSel });
 
   return (
     <form onSubmit={handleSubmit(submitWithNotes)} className="space-y-4">
@@ -240,30 +237,7 @@ export function ProductForm({
         </button>
       </div>
 
-      <div>
-        <p className="mb-2 font-display text-content">
-          Fragrance notes <span className="font-body text-xs text-muted">(comma-separated — shown as the pyramid on the product page)</span>
-        </p>
-        <div className="space-y-2">
-          {(
-            [
-              ['top', 'Top notes', 'Bergamot, Pink Pepper, Cardamom'],
-              ['heart', 'Heart notes', 'Rose, Jasmine, Cinnamon'],
-              ['base', 'Base notes', 'Oud, Sandalwood, Vanilla'],
-            ] as const
-          ).map(([key, label, placeholder]) => (
-            <label key={key} className="block">
-              <span className="mb-1 block font-body text-xs text-muted">{label}</span>
-              <input
-                value={notesText[key]}
-                onChange={(e) => setNotesText((prev) => ({ ...prev, [key]: e.target.value }))}
-                placeholder={placeholder}
-                className="w-full rounded-md border border-line bg-bg px-3 py-2 font-body text-content"
-              />
-            </label>
-          ))}
-        </div>
-      </div>
+      <NotesEditor value={notesSel} onChange={setNotesSel} />
 
       <div>
         <p className="mb-2 font-display text-content">
@@ -322,5 +296,148 @@ export function ProductForm({
         {submitting ? 'Saving…' : 'Save product'}
       </button>
     </form>
+  );
+}
+
+type NotesValue = { top: string[]; heart: string[]; base: string[] };
+const TIERS = [
+  ['top', 'Top notes'],
+  ['heart', 'Heart notes'],
+  ['base', 'Base notes'],
+] as const;
+
+// Per-tier note picker: chips with real icons, type-ahead suggestions from the
+// built-in library + custom icons, and an inline uploader for new note icons.
+function NotesEditor({ value, onChange }: { value: NotesValue; onChange: (v: NotesValue) => void }) {
+  const qc = useQueryClient();
+  const icons = useQuery({ queryKey: ['note-icons'], queryFn: fetchNoteIcons });
+  const custom = new Map((icons.data ?? []).map((i) => [i.name.toLowerCase(), i.image]));
+  const [drafts, setDrafts] = useState<Record<(typeof TIERS)[number][0], string>>({ top: '', heart: '', base: '' });
+  const [iconName, setIconName] = useState('');
+  const [iconBusy, setIconBusy] = useState(false);
+  const [iconMsg, setIconMsg] = useState<string | null>(null);
+
+  const imageFor = (note: string): string | null => {
+    const publicId = custom.get(note.trim().toLowerCase());
+    if (publicId) {
+      const url = cld(publicId, { w: 96 });
+      if (/^https?:\/\//.test(url)) return url;
+    }
+    return builtinNoteImage(note);
+  };
+
+  const addNote = (tier: keyof NotesValue) => {
+    const name = drafts[tier].trim();
+    if (!name) return;
+    if (!value[tier].some((n) => n.toLowerCase() === name.toLowerCase())) {
+      onChange({ ...value, [tier]: [...value[tier], name] });
+    }
+    setDrafts((d) => ({ ...d, [tier]: '' }));
+  };
+  const removeNote = (tier: keyof NotesValue, name: string) =>
+    onChange({ ...value, [tier]: value[tier].filter((n) => n !== name) });
+
+  const uploadIcon = async (file: File | undefined) => {
+    const name = iconName.trim();
+    if (!file || !name) return;
+    setIconBusy(true);
+    setIconMsg(null);
+    try {
+      const publicId = await uploadImage(file);
+      await adminCreateNoteIcon({ name, image: publicId });
+      await qc.invalidateQueries({ queryKey: ['note-icons'] });
+      setIconMsg(`Icon saved for “${name}”.`);
+      setIconName('');
+    } catch (err) {
+      setIconMsg(err instanceof Error ? err.message : 'Icon upload failed');
+    } finally {
+      setIconBusy(false);
+    }
+  };
+
+  const suggestions = [
+    ...NOTE_LIBRARY.map((n) => n.name),
+    ...(icons.data ?? []).map((i) => i.name),
+  ].sort((a, b) => a.localeCompare(b));
+
+  return (
+    <div>
+      <p className="mb-2 font-display text-content">
+        Fragrance notes <span className="font-body text-xs text-muted">(shown as the pyramid on the product page)</span>
+      </p>
+      <datalist id="note-suggestions">
+        {suggestions.map((n) => <option key={n} value={n} />)}
+      </datalist>
+      <div className="space-y-3">
+        {TIERS.map(([tier, label]) => (
+          <div key={tier}>
+            <span className="mb-1 block font-body text-xs text-muted">{label}</span>
+            {value[tier].length > 0 && (
+              <div className="mb-2 flex flex-wrap gap-2">
+                {value[tier].map((note) => {
+                  const img = imageFor(note);
+                  return (
+                    <span key={note} className="inline-flex items-center gap-2 rounded-full border border-hairline bg-surface py-1 pl-1 pr-2 font-body text-xs text-content">
+                      {img ? (
+                        <img src={img} alt="" className="h-6 w-6 rounded-full object-cover" />
+                      ) : (
+                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-surface2 font-display text-[11px] text-accent">
+                          {note.charAt(0).toUpperCase()}
+                        </span>
+                      )}
+                      {note}
+                      <button type="button" onClick={() => removeNote(tier, note)} aria-label={`Remove ${note}`} className="text-muted hover:text-danger">✕</button>
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+            <div className="flex gap-2">
+              <input
+                value={drafts[tier]}
+                onChange={(e) => setDrafts((d) => ({ ...d, [tier]: e.target.value }))}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addNote(tier);
+                  }
+                }}
+                list="note-suggestions"
+                placeholder="Type a note, e.g. Bergamot"
+                className="w-full rounded-md border border-line bg-bg px-3 py-1.5 font-body text-sm text-content"
+              />
+              <button type="button" onClick={() => addNote(tier)} className="shrink-0 rounded-md border border-gold px-3 py-1 font-body text-sm text-content">
+                Add
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="mt-3 rounded-md border border-hairline bg-surface p-3">
+        <span className="mb-1 block font-body text-xs text-muted">
+          New note icon — for notes without a picture (uploading again replaces the icon)
+        </span>
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            value={iconName}
+            onChange={(e) => setIconName(e.target.value)}
+            placeholder="Note name, e.g. Blue Lotus"
+            className="rounded-md border border-line bg-bg px-3 py-1.5 font-body text-sm text-content"
+          />
+          <input
+            type="file"
+            accept="image/*"
+            disabled={iconBusy || !iconName.trim()}
+            onChange={(e) => {
+              void uploadIcon(e.target.files?.[0]);
+              e.target.value = '';
+            }}
+            className="font-body text-sm text-content"
+          />
+          {iconBusy && <span className="font-body text-xs text-muted">Uploading…</span>}
+        </div>
+        {iconMsg && <p className="mt-1 font-body text-xs text-muted">{iconMsg}</p>}
+      </div>
+    </div>
   );
 }

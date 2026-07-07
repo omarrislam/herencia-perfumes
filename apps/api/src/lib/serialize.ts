@@ -172,6 +172,10 @@ export function toQuizQuestionAdminDTO(doc: AnyDoc): QuizQuestionAdminDTO {
   };
 }
 
+export function toNoteIconDTO(doc: AnyDoc): { id: string; name: string; image: string } {
+  return { id: String(doc._id), name: doc.name, image: doc.image };
+}
+
 export function toBannerDTO(doc: AnyDoc): BannerDTO {
   const iso = (d: unknown) => (d ? (d instanceof Date ? d : new Date(d as string)).toISOString() : undefined);
   return {

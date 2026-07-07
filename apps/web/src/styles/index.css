@@ -312,3 +312,12 @@
   html { scroll-behavior: auto; }
   .sparkle { display: none; }
 }
+
+/* Printable receipt (order confirmation): hide the app, show only #receipt. */
+#receipt { display: none; }
+@media print {
+  #root { display: none !important; }
+  body::after { display: none !important; } /* paper grain */
+  body { background: #fff !important; }
+  #receipt { display: block; }
+}

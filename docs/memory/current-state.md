@@ -2,6 +2,13 @@
 
 _Last updated: 2026-07-07_
 
+## Post-M4 round 11 (note icons + receipt, deployed, 2026-07-07)
+- ✅ **Real fragrance-note icons** — 48 static webp images in `apps/web/public/notes/` (sourced from parfinity's Shopify CDN); `lib/noteLibrary.ts` (slug + alias resolution, e.g. frankincense→incense, cedarwood→cedar). **NoteIcon** model + public `GET /api/notes` + admin `POST/DELETE /api/admin/notes` (upsert by name) for custom uploads. NotesPyramid tiles resolve custom→builtin→initial fallback.
+- ✅ **Admin notes editor** in ProductForm — per-tier chips with icons, type-ahead datalist (library + customs), Enter/Add, and an inline "New note icon" uploader (name + image → Cloudinary → NoteIcon upsert).
+- ✅ **Receipt download** — OrderConfirmation "Download receipt (PDF)" → `window.print()`; print-only `#receipt` portal (branded, itemized, discount-aware) + print CSS hides `#root`/grain. Verified as an actual PDF via Playwright page.pdf().
+- ✅ api tests +3 (noteIcons), web ProductDetail test mock covers /api/notes. All suites green (shared 41 / api 133 / web 37).
+- NOTE: the user replaced the catalog in the shared DB (amber-noir, cedar-smoke, heritage-trio… royal-oud is gone) — QA scripts must fetch a live slug. More QA orders exist in Orders (pending badge).
+
 ## Post-M4 round 10 (instant hero + lighter light palette, deployed, 2026-07-07)
 - ✅ **Instant hero** — `lib/heroCache.ts` caches the hero (content + resolved image URL) in `localStorage['herencia.hero']` on every settings load; `main.tsx` preloads the cached image before React mounts; Home renders the cached hero immediately (fresh settings replace it silently — same image, no swap). First-ever visit still holds the espresso base briefly (no SSR on Vercel static hosting). Verified by delaying /api/settings 5s — hero rendered instantly from cache.
 - ✅ **Lighter light-mode palette** — `--bg` #f2e9d1 (was #e6d7ae), `--bg-deep` #e8dcbb, `--surface` #fefcf5, `--surface-2` #f5eeda. Dark theme unchanged.

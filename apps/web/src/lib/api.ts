@@ -115,6 +115,8 @@ export const submitQuizResult = (input: QuizResultInput) => apiSend<QuizResultDT
 export const fetchBanners = (placement?: BannerPlacement) =>
   apiGet<BannerDTO[]>(`/api/banners${placement ? `?placement=${placement}` : ''}`);
 
+export const fetchNoteIcons = () => apiGet<import('@herencia/shared').NoteIconDTO[]>('/api/notes');
+
 export const subscribeNewsletter = (email: string) =>
   apiSend<{ ok: true; code: string | null; discountPercent: number | null }>('POST', '/api/newsletter', { email });
 

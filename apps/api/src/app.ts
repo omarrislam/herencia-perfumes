@@ -15,6 +15,7 @@ import { quizRouter } from './routes/quiz';
 import { bannerRouter } from './routes/banners';
 import { blogRouter } from './routes/blog';
 import { newsletterRouter } from './routes/newsletter';
+import { noteIconRouter } from './routes/noteIcons';
 import { buildSitemap, ROBOTS_TXT } from './lib/seo';
 import { mountSpa } from './middleware/spa';
 import { Product } from './models/Product';
@@ -74,6 +75,7 @@ export function createApp(opts: {
   app.use('/api', bannerRouter());
   app.use('/api', blogRouter());
   app.use('/api', newsletterRouter());
+  app.use('/api', noteIconRouter);
   app.use('/api', notFound);
 
   const origin = opts.origin ?? '';

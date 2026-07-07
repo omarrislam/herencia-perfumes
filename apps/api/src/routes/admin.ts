@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { adminProductSchema, scentFamilySchema, slugify, updateOrderStatusSchema, updateReviewSchema, quizQuestionSchema, bannerSchema, blogPostSchema, updateSettingsSchema, ORDER_STATUS, ORDER_STATUS_TRANSITIONS, type OrderStatus } from '@herencia/shared';
+import { adminProductSchema, scentFamilySchema, slugify, updateOrderStatusSchema, updateReviewSchema, quizQuestionSchema, bannerSchema, blogPostSchema, updateSettingsSchema, noteIconSchema, ORDER_STATUS, ORDER_STATUS_TRANSITIONS, type OrderStatus } from '@herencia/shared';
 import { Product } from '../models/Product';
 import { ScentFamily } from '../models/ScentFamily';
 import { Order } from '../models/Order';
@@ -8,10 +8,11 @@ import { QuizQuestion } from '../models/QuizQuestion';
 import { Banner } from '../models/Banner';
 import { BlogPost } from '../models/BlogPost';
 import { Setting } from '../models/Setting';
+import { NoteIcon } from '../models/NoteIcon';
 import { HttpError } from '../middleware/error';
 import { requireAdmin } from '../middleware/requireAdmin';
 import { isCloudinaryConfigured, signUploadParams } from '../lib/cloudinary';
-import { toProductDTO, toScentFamilyDTO, toOrderDTO, toReviewDTO, toQuizQuestionAdminDTO, toBannerDTO, toBlogPostDTO, toSettingDTO } from '../lib/serialize';
+import { toProductDTO, toScentFamilyDTO, toOrderDTO, toReviewDTO, toQuizQuestionAdminDTO, toBannerDTO, toBlogPostDTO, toSettingDTO, toNoteIconDTO } from '../lib/serialize';
 import { recomputeProductRating } from '../modules/review/service';
 
 export function adminRouter(): Router {
@@ -119,6 +120,34 @@ export function adminRouter(): Router {
     try {
       const doc = await Product.findByIdAndDelete(req.params['id']).lean();
       if (!doc) throw new HttpError(404, 'Product not found', 'not_found');
+      res.status(204).end();
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // ---- Note icons (custom fragrance-note images) ----
+  router.post('/notes', async (req, res, next) => {
+    try {
+      const parsed = noteIconSchema.safeParse(req.body);
+      if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? 'Invalid', 'invalid');
+      const name = parsed.data.name.toLowerCase().trim();
+      // Upsert by name so re-uploading an icon simply replaces the image.
+      const doc = await NoteIcon.findOneAndUpdate(
+        { name },
+        { name, image: parsed.data.image },
+        { new: true, upsert: true },
+      ).lean();
+      res.status(201).json(toNoteIconDTO(doc));
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  router.delete('/notes/:id', async (req, res, next) => {
+    try {
+      const doc = await NoteIcon.findByIdAndDelete(req.params['id']).lean();
+      if (!doc) throw new HttpError(404, 'Note icon not found', 'not_found');
       res.status(204).end();
     } catch (err) {
       next(err);

@@ -45,7 +45,7 @@ function renderAt(path: string) {
 describe('ProductDetail', () => {
   it('renders product name, notes, and price after load', async () => {
     vi.stubGlobal('fetch', vi.fn(async (url: string) =>
-      url.endsWith('/related')
+      url.endsWith('/related') || url.endsWith('/api/notes')
         ? new Response(JSON.stringify([]), { status: 200 })
         : new Response(JSON.stringify(product), { status: 200 }),
     ));

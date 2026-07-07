@@ -2,7 +2,7 @@
 
 _Last updated: 2026-07-07_
 
-## NEW (2026-07-07, round 12): homepage trimmed (3-Steps one-liners, essence+craft merged — `craft` key removed app-wide, gifting headline-only), checkout payment cards get green selected state, Admin Orders rows expand to full details + Delete order (`DELETE /api/admin/orders/:id`), hero LCP fixed (hero `<img>` now uses the exact preloaded w=1600 URL + fetchpriority=high; splash 1100→400ms). Suites: shared 41 / api 135 / web 38. Uncommitted on master.
+## NEW (2026-07-07, round 12): homepage trimmed (3-Steps one-liners, essence+craft merged — `craft` key removed app-wide, gifting headline-only), checkout payment cards get green selected state, Admin Orders rows expand to full details + Delete order (`DELETE /api/admin/orders/:id`), hero LCP fixed (hero `<img>` now uses the exact preloaded w=1600 URL + fetchpriority=high; splash 1100→400ms). Suites: shared 41 / api 135 / web 38. Committed `dabdcb5` on master + DEPLOYED to production (web + api).
 
 ## NEW (2026-07-07, round 9): maroon CTAs + lighter light surfaces, free-shipping progress bar in cart drawer, email popup is now a non-blocking floating bottom banner, parfinity-style notes tiles on product detail + notes editable in Admin → Products (ProductForm). No git remote yet — ask the user for one to push.
 

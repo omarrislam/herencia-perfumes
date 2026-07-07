@@ -2,7 +2,7 @@
 
 _Last updated: 2026-07-07_
 
-## Post-M4 round 12 (homepage trim + payment highlight + admin order details/delete + hero preload fix, on master, 2026-07-07)
+## Post-M4 round 12 (homepage trim + payment highlight + admin order details/delete + hero preload fix, COMMITTED `dabdcb5` + DEPLOYED web+api, 2026-07-07)
 - ✅ **3-Steps copy trimmed** to one scannable line each ("Pick up to 5 scents · 2ml each" / "Test them on your skin, at home" / "Full sample value credited to your bottle"); photos + titles kept.
 - ✅ **Essence + Atelier/craft MERGED** into one image-led split (essence.webp + headline "Composed by hand. Matured for months. Bottled in small batches."). **`craft` section key REMOVED** from shared (`REORDERABLE_SECTIONS`, `homeSectionsSchema`, defaults), Setting model, serialize, AdminHome — stored sectionOrders self-heal (normalizeSectionOrder drops unknown keys; verified live). apothecary.webp now unused on Home.
 - ✅ **Gifting band trimmed** to headline + Shop bundles button only.
@@ -10,7 +10,7 @@ _Last updated: 2026-07-07_
 - ✅ **Admin Orders: click row → expanded details** (customer, address, payment, items, subtotal/shipping/discount/total, notes) + **Delete order** (confirm dialog → `DELETE /api/admin/orders/:id`, 204; does NOT restore stock — same semantics as cancel). Status `<select>` stops row-toggle propagation.
 - ✅ **Hero LCP fix (root cause of "hero still slow")** — hero rendered via ProductImage srcset [400/800/1200] while the preload fetched w=1600 → preload wasted + late second download. Hero is now a plain `<img>` with the EXACT preloaded URL (`cld(id,{w:1600})`) + `fetchpriority=high`; splash hold cut 1100ms → 400ms. Verified: rendered src === preload href, ~330 KB f_auto/q_auto transfer.
 - ✅ Verified: typecheck/lint 0; tests **shared 41 / api 135 (+2 delete-order) / web 38 (+1 expand/delete)**; Playwright QA of home sections, checkout both payment states, admin expand + real delete (removed the leftover "QA Tester" order HRC-MRAR9HI3-THJX from the shared DB).
-- Uncommitted on master — user hasn't asked to commit.
+- Committed `dabdcb5` on master; **deployed to production** (both projects: herencia-one.vercel.app + herencia-api-pi.vercel.app). Smoke-checked live: sectionOrder has no `craft`, web 200.
 
 ## Post-M4 round 11 (note icons + receipt, deployed, 2026-07-07)
 - ✅ **Real fragrance-note icons** — 48 static webp images in `apps/web/public/notes/` (sourced from parfinity's Shopify CDN); `lib/noteLibrary.ts` (slug + alias resolution, e.g. frankincense→incense, cedarwood→cedar). **NoteIcon** model + public `GET /api/notes` + admin `POST/DELETE /api/admin/notes` (upsert by name) for custom uploads. NotesPyramid tiles resolve custom→builtin→initial fallback.

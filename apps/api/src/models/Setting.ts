@@ -19,7 +19,6 @@ const settingSchema = new Schema(
       samples: { type: Boolean, default: true },
       essence: { type: Boolean, default: true },
       gifting: { type: Boolean, default: true },
-      craft: { type: Boolean, default: true },
       time: { type: Boolean, default: true },
       testimonials: { type: Boolean, default: true },
       values: { type: Boolean, default: true },

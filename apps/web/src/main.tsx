@@ -59,5 +59,5 @@ function hideSplash() {
   s.classList.add('splash-hide');
   setTimeout(() => s.remove(), 500);
 }
-// Keep the branded splash up a touch longer so it's actually seen.
-setTimeout(() => requestAnimationFrame(hideSplash), 1100);
+// Short hold so the splash doesn't flash, then get out of the hero's way.
+setTimeout(() => requestAnimationFrame(hideSplash), 400);

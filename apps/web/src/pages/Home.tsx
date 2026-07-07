@@ -7,7 +7,6 @@ import { cld } from '../lib/cloudinary';
 import { readHeroCache, writeHeroCache } from '../lib/heroCache';
 import { useSeo } from '../lib/useSeo';
 import { ProductCard } from '../components/ProductCard';
-import { ProductImage } from '../components/ProductImage';
 import { Skeleton } from '../components/Skeleton';
 import { Reveal } from '../components/Reveal';
 import { ParallaxImage } from '../components/ParallaxImage';
@@ -100,11 +99,9 @@ export default function Home() {
           <ParallaxImage src="/essence.webp" alt="Herencia raw materials on gold silk" className="aspect-square rounded-2xl shadow-lux" />
           <div>
             <p className="eyebrow">The Essence of Heritage</p>
-            <h2 className="display mt-3 text-3xl text-content md:text-4xl">Composed from the rarest materials</h2>
-            <p className="mt-4 max-w-md font-body leading-relaxed text-muted">
-              Madagascar vanilla, star anise, aged sandalwood — every HERENCIA scent is a study in
-              patience, layered by hand in small batches and left to mature.
-            </p>
+            <h2 className="display mt-3 text-3xl text-content md:text-4xl">
+              Composed by hand. Matured for months. Bottled in small batches.
+            </h2>
             <Link to="/products" className="btn-outline mt-6">Explore the notes</Link>
           </div>
         </section>
@@ -141,30 +138,10 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-r from-espresso/90 via-espresso/55 to-transparent" />
           <div className="absolute inset-0 flex items-center">
             <div className="max-w-md px-7 md:px-12">
-              <p className="eyebrow text-gold-hi">Ready to gift</p>
-              <h2 className="display mt-3 text-3xl text-cream md:text-4xl">The art of gifting</h2>
-              <p className="mt-3 max-w-sm font-body text-cream/80">
-                Curated sets in our signature maroon box — an heirloom before it is even opened.
-              </p>
+              <h2 className="display text-3xl text-cream md:text-4xl">The art of gifting</h2>
               <Link to="/bundles" className="btn-lux mt-6">Shop bundles</Link>
             </div>
           </div>
-        </section>
-      </Reveal>
-    ),
-    craft: (
-      <Reveal>
-        <section className="grid items-center gap-8 md:grid-cols-2 md:gap-14">
-          <div className="order-2 md:order-1">
-            <p className="eyebrow">The Atelier</p>
-            <h2 className="display mt-3 text-3xl text-content md:text-4xl">Perfumery as inheritance</h2>
-            <p className="mt-4 max-w-md font-body leading-relaxed text-muted">
-              From the apothecary&apos;s bench to your dresser — blended, aged, and bottled by hand,
-              the way it has always been done.
-            </p>
-            <Link to="/blog" className="btn-outline mt-6">Read the journal</Link>
-          </div>
-          <ParallaxImage src="/apothecary.webp" alt="Herencia apothecary" className="order-1 aspect-square rounded-2xl shadow-lux md:order-2" />
         </section>
       </Reveal>
     ),
@@ -270,7 +247,15 @@ export default function Home() {
           {!heroKnown ? (
             <div className="h-[72vh] max-h-[760px] min-h-[440px] w-full" />
           ) : useCloudHero && heroPublicId ? (
-            <ProductImage publicId={heroPublicId} alt={hero?.title ?? 'HERENCIA'} w={1920} loading="eager" sizes="100vw" className="h-[72vh] max-h-[760px] min-h-[440px] w-full object-cover" />
+            // Plain <img> with the EXACT preloaded URL (heroCache/main.tsx preload
+            // w=1600) — a srcset would pick a different width and waste the preload.
+            <img
+              src={cld(heroPublicId, { w: 1600 })}
+              alt={hero?.title ?? 'HERENCIA'}
+              decoding="async"
+              {...({ fetchpriority: 'high' } as object)}
+              className="h-[72vh] max-h-[760px] min-h-[440px] w-full bg-espresso object-cover"
+            />
           ) : (
             <img src="/hero-swirl.webp" alt={hero?.title ?? 'HERENCIA'} className="h-[72vh] max-h-[760px] min-h-[440px] w-full bg-espresso object-cover" />
           )}

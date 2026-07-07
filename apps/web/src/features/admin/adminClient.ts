@@ -40,6 +40,8 @@ export const adminFetchOrders = (status?: OrderStatus) =>
   );
 export const adminUpdateOrderStatus = (id: string, status: OrderStatus) =>
   apiSend<OrderDTO>('PUT', `/api/admin/orders/${id}/status`, { status });
+export const adminDeleteOrder = (id: string) =>
+  apiSend<void>('DELETE', `/api/admin/orders/${id}`);
 
 export const adminFetchReviews = (status?: 'pending' | 'approved') =>
   apiGet<{ items: ReviewDTO[]; total: number; page: number; pages: number }>(`/api/admin/reviews${status ? `?status=${status}` : ''}`);

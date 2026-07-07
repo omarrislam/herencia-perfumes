@@ -1,14 +1,15 @@
 // apps/web/src/pages/admin/AdminOrders.tsx
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import type { OrderStatus } from '@herencia/shared';
+import type { OrderDTO, OrderStatus } from '@herencia/shared';
 import { ORDER_STATUS, ORDER_STATUS_TRANSITIONS } from '@herencia/shared';
-import { adminFetchOrders, adminUpdateOrderStatus } from '../../features/admin/adminClient';
+import { adminFetchOrders, adminUpdateOrderStatus, adminDeleteOrder } from '../../features/admin/adminClient';
 import { Price } from '../../components/Price';
 
 export default function AdminOrders() {
   const qc = useQueryClient();
   const [filter, setFilter] = useState<OrderStatus | undefined>(undefined);
+  const [openId, setOpenId] = useState<string | null>(null);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ['admin-orders', filter],
@@ -20,6 +21,20 @@ export default function AdminOrders() {
       adminUpdateOrderStatus(id, status),
     onSuccess: () => void qc.invalidateQueries({ queryKey: ['admin-orders'] }),
   });
+
+  const deleteMut = useMutation({
+    mutationFn: (id: string) => adminDeleteOrder(id),
+    onSuccess: () => {
+      setOpenId(null);
+      void qc.invalidateQueries({ queryKey: ['admin-orders'] });
+    },
+  });
+
+  const handleDelete = (order: OrderDTO) => {
+    if (window.confirm(`Delete order ${order.orderNumber} permanently? This cannot be undone.`)) {
+      deleteMut.mutate(order.id);
+    }
+  };
 
   return (
     <div>
@@ -67,9 +82,18 @@ export default function AdminOrders() {
               {data.items.map((order) => {
                 const transitions = ORDER_STATUS_TRANSITIONS[order.status];
                 const options: OrderStatus[] = [order.status, ...transitions];
-                return (
-                  <tr key={order.id} className="text-content">
-                    <td className="py-3 pr-4">{order.orderNumber}</td>
+                const open = openId === order.id;
+                return [
+                  <tr
+                    key={order.id}
+                    onClick={() => setOpenId(open ? null : order.id)}
+                    aria-expanded={open}
+                    className="cursor-pointer text-content transition-colors hover:bg-surface2"
+                  >
+                    <td className="py-3 pr-4">
+                      <span className={`mr-2 inline-block text-xs text-muted transition-transform ${open ? 'rotate-90' : ''}`}>▸</span>
+                      {order.orderNumber}
+                    </td>
                     <td className="py-3 pr-4 text-muted">
                       {new Date(order.createdAt).toLocaleDateString('en-GB')}
                     </td>
@@ -77,7 +101,7 @@ export default function AdminOrders() {
                     <td className="py-3 pr-4">
                       <Price value={order.total} />
                     </td>
-                    <td className="py-3 pr-4">
+                    <td className="py-3 pr-4" onClick={(e) => e.stopPropagation()}>
                       <select
                         value={order.status}
                         aria-label={`Order ${order.orderNumber} status`}
@@ -94,8 +118,19 @@ export default function AdminOrders() {
                         ))}
                       </select>
                     </td>
-                  </tr>
-                );
+                  </tr>,
+                  open ? (
+                    <tr key={`${order.id}-details`}>
+                      <td colSpan={5} className="bg-surface2 px-4 py-4">
+                        <OrderDetails
+                          order={order}
+                          onDelete={() => handleDelete(order)}
+                          deleting={deleteMut.isPending}
+                        />
+                      </td>
+                    </tr>
+                  ) : null,
+                ];
               })}
             </tbody>
           </table>
@@ -105,6 +140,83 @@ export default function AdminOrders() {
       {statusMut.isError && (
         <p className="mt-3 font-body text-sm text-danger">Status update failed.</p>
       )}
+      {deleteMut.isError && (
+        <p className="mt-3 font-body text-sm text-danger">Delete failed.</p>
+      )}
+    </div>
+  );
+}
+
+function OrderDetails({ order, onDelete, deleting }: { order: OrderDTO; onDelete: () => void; deleting: boolean }) {
+  const addr = order.shippingAddress;
+  return (
+    <div className="space-y-4 font-body text-sm">
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div>
+          <p className="mb-1 text-xs uppercase tracking-wide text-muted">Customer</p>
+          <p className="text-content">{order.customer.name}</p>
+          <p className="text-muted">{order.customer.phone}</p>
+          {order.customer.email && <p className="text-muted">{order.customer.email}</p>}
+        </div>
+        <div>
+          <p className="mb-1 text-xs uppercase tracking-wide text-muted">Shipping address</p>
+          <p className="text-content">{addr.line1}</p>
+          {addr.line2 && <p className="text-content">{addr.line2}</p>}
+          <p className="text-muted">{addr.city}, {addr.governorate}</p>
+          <p className="text-muted">{addr.phone}</p>
+        </div>
+        <div>
+          <p className="mb-1 text-xs uppercase tracking-wide text-muted">Payment</p>
+          <p className="capitalize text-content">{order.paymentMethod === 'instapay' ? 'InstaPay' : 'Cash on delivery'}</p>
+          <p className="text-muted">
+            Placed {new Date(order.createdAt).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })}
+          </p>
+        </div>
+      </div>
+
+      <div>
+        <p className="mb-1 text-xs uppercase tracking-wide text-muted">Items</p>
+        <ul className="divide-y divide-line rounded border border-line">
+          {order.items.map((item, i) => (
+            <li key={i} className="flex items-center justify-between gap-3 px-3 py-2">
+              <span className="min-w-0 truncate text-content">
+                {item.name} × {item.qty} <span className="text-muted">({item.sizeLabel})</span>
+              </span>
+              <Price value={item.unitPrice * item.qty} />
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="max-w-xs space-y-1">
+        <div className="flex justify-between text-muted"><span>Subtotal</span><Price value={order.subtotal} /></div>
+        <div className="flex justify-between text-muted"><span>Shipping</span><Price value={order.shipping} /></div>
+        {order.discount > 0 && (
+          <div className="flex justify-between text-success">
+            <span>Discount{order.discountCode ? ` (${order.discountCode})` : ''}</span>
+            <span>−<Price value={order.discount} /></span>
+          </div>
+        )}
+        <div className="flex justify-between font-medium text-content"><span>Total</span><Price value={order.total} /></div>
+      </div>
+
+      {order.notes && (
+        <div>
+          <p className="mb-1 text-xs uppercase tracking-wide text-muted">Notes</p>
+          <p className="whitespace-pre-line text-content">{order.notes}</p>
+        </div>
+      )}
+
+      <div className="border-t border-line pt-3">
+        <button
+          type="button"
+          onClick={onDelete}
+          disabled={deleting}
+          className="rounded border border-danger px-3 py-1.5 text-danger transition-colors hover:bg-danger hover:text-cream disabled:opacity-50"
+        >
+          {deleting ? 'Deleting…' : 'Delete order'}
+        </button>
+      </div>
     </div>
   );
 }

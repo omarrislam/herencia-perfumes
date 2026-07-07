@@ -14,7 +14,6 @@ const LABELS: Record<keyof HomeSections, { label: string; hint: string }> = {
   samples: { label: 'Samples — 3 steps', hint: '“3 Steps to Your Favorite Fragrance” + sample box CTA' },
   essence: { label: 'Essence', hint: '“Essence of Heritage” editorial split' },
   gifting: { label: 'Gifting band', hint: 'Gift-box banner → bundles' },
-  craft: { label: 'Atelier / craft', hint: '“Perfumery as inheritance” editorial' },
   time: { label: 'Time as an Ingredient', hint: '“Patience is our rarest material” statement' },
   testimonials: { label: 'Testimonials', hint: 'Customer quotes' },
   values: { label: 'Values strip', hint: 'Small-batch / COD / free shipping' },
@@ -27,7 +26,7 @@ export default function AdminHome() {
   const settings = useQuery({ queryKey: ['settings'], queryFn: fetchSettings });
 
   const [hero, setHero] = useState<HeroForm>({ title: '', subtitle: '', ctaText: '', ctaLink: '', image: '' });
-  const [sections, setSections] = useState<HomeSections>({ hero: true, featured: true, samples: true, essence: true, gifting: true, craft: true, time: true, testimonials: true, values: true, quiz: true, faq: true });
+  const [sections, setSections] = useState<HomeSections>({ hero: true, featured: true, samples: true, essence: true, gifting: true, time: true, testimonials: true, values: true, quiz: true, faq: true });
   const [order, setOrder] = useState<ReorderableSection[]>(DEFAULT_SECTION_ORDER);
   const [instapay, setInstapay] = useState<{ enabled: boolean; handle: string; payLink: string }>({ enabled: false, handle: '', payLink: '' });
   const [emailPopup, setEmailPopup] = useState<{ enabled: boolean; title: string; text: string; code: string; discountPercent: string }>({ enabled: false, title: '', text: '', code: '', discountPercent: '10' });

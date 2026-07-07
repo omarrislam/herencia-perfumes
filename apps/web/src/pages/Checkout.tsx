@@ -248,24 +248,30 @@ export default function Checkout() {
             <h2 className="font-display text-lg text-content">Payment</h2>
             {instapayOn ? (
               <div className="grid gap-3 sm:grid-cols-2">
-                <button
-                  type="button"
-                  onClick={() => setPayment('cod')}
-                  aria-pressed={payment === 'cod'}
-                  className={`rounded-xl border p-4 text-left transition-colors ${payment === 'cod' ? 'border-accent bg-accent/5' : 'border-line hover:border-accent'}`}
-                >
-                  <span className="block font-body text-sm font-medium text-content">Cash on delivery</span>
-                  <span className="mt-0.5 block font-body text-xs text-muted">Pay when your order arrives.</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPayment('instapay')}
-                  aria-pressed={payment === 'instapay'}
-                  className={`rounded-xl border p-4 text-left transition-colors ${payment === 'instapay' ? 'border-accent bg-accent/5' : 'border-line hover:border-accent'}`}
-                >
-                  <span className="block font-body text-sm font-medium text-content">InstaPay</span>
-                  <span className="mt-0.5 block font-body text-xs text-muted">Payment link shown after you place the order.</span>
-                </button>
+                {([
+                  ['cod', 'Cash on delivery', 'Pay when your order arrives.'],
+                  ['instapay', 'InstaPay', 'Payment link shown after you place the order.'],
+                ] as const).map(([method, title, hint]) => {
+                  const selected = payment === method;
+                  return (
+                    <button
+                      key={method}
+                      type="button"
+                      onClick={() => setPayment(method)}
+                      aria-pressed={selected}
+                      className={`relative rounded-xl border-2 p-4 text-left transition-colors ${selected ? 'border-success bg-success-soft' : 'border-line hover:border-accent'}`}
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={`absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full text-xs transition-opacity ${selected ? 'bg-success text-cream opacity-100' : 'opacity-0'}`}
+                      >
+                        ✓
+                      </span>
+                      <span className="block pr-7 font-body text-sm font-medium text-content">{title}</span>
+                      <span className="mt-0.5 block font-body text-xs text-muted">{hint}</span>
+                    </button>
+                  );
+                })}
               </div>
             ) : (
               <p className="rounded-xl border border-line p-4 font-body text-sm text-muted">

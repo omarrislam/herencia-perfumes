@@ -32,7 +32,6 @@ export function toSettingDTO(doc: AnyDoc): SettingDTO {
       samples: hs.samples ?? DEFAULT_HOME_SECTIONS.samples,
       essence: hs.essence ?? DEFAULT_HOME_SECTIONS.essence,
       gifting: hs.gifting ?? DEFAULT_HOME_SECTIONS.gifting,
-      craft: hs.craft ?? DEFAULT_HOME_SECTIONS.craft,
       time: hs.time ?? DEFAULT_HOME_SECTIONS.time,
       testimonials: hs.testimonials ?? DEFAULT_HOME_SECTIONS.testimonials,
       values: hs.values ?? DEFAULT_HOME_SECTIONS.values,

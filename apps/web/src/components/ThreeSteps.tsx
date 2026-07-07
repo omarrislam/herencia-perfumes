@@ -1,9 +1,9 @@
 import { useSamples } from '../features/samples/SampleContext';
 
 const STEPS = [
-  { n: '01', img: '/sample-choose.webp', title: 'Choose your fragrances', body: 'Order up to 5 samples — pick exactly the scents you want to try, from the full HERENCIA collection.' },
-  { n: '02', img: '/sample-try.webp', title: 'Try at home', body: 'Receive your 2ml samples at your door. Try them at your leisure and experience how they develop on your skin.' },
-  { n: '03', img: '/sample-buy.webp', title: 'Buy what you love', body: "We'll credit the full sample value toward your bottle. Testing without extra cost — guaranteed." },
+  { n: '01', img: '/sample-choose.webp', title: 'Choose your fragrances', body: 'Pick up to 5 scents · 2ml each' },
+  { n: '02', img: '/sample-try.webp', title: 'Try at home', body: 'Test them on your skin, at home' },
+  { n: '03', img: '/sample-buy.webp', title: 'Buy what you love', body: 'Full sample value credited to your bottle' },
 ];
 
 export function ThreeSteps() {

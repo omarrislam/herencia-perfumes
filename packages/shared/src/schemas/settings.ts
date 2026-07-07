@@ -15,7 +15,6 @@ export const homeSectionsSchema = z.object({
   samples: z.boolean(),
   essence: z.boolean(),
   gifting: z.boolean(),
-  craft: z.boolean(),
   time: z.boolean(),
   testimonials: z.boolean(),
   values: z.boolean(),
@@ -26,7 +25,7 @@ export type HomeSections = z.infer<typeof homeSectionsSchema>;
 
 // Order of the re-orderable (contained) home sections. Hero is fixed first.
 // Sales-first default: products, then the sample path, then the editorial story.
-export const REORDERABLE_SECTIONS = ['featured', 'samples', 'essence', 'gifting', 'craft', 'time', 'testimonials', 'values', 'quiz', 'faq'] as const;
+export const REORDERABLE_SECTIONS = ['featured', 'samples', 'essence', 'gifting', 'time', 'testimonials', 'values', 'quiz', 'faq'] as const;
 export type ReorderableSection = (typeof REORDERABLE_SECTIONS)[number];
 export const DEFAULT_SECTION_ORDER: ReorderableSection[] = [...REORDERABLE_SECTIONS];
 export const sectionOrderSchema = z.array(z.enum(REORDERABLE_SECTIONS));
@@ -103,7 +102,6 @@ export const DEFAULT_HOME_SECTIONS: HomeSections = {
   samples: true,
   essence: true,
   gifting: true,
-  craft: true,
   time: true,
   testimonials: true,
   values: true,

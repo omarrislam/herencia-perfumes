@@ -56,7 +56,7 @@ describe('admin settings (home CMS)', () => {
   it('defaults homeSections to all-true for a setting saved without them', async () => {
     await Setting.create(baseSetting);
     const pub = await request(app).get('/api/settings').expect(200);
-    expect(pub.body.homeSections).toEqual({ hero: true, featured: true, samples: true, essence: true, gifting: true, craft: true, time: true, testimonials: true, values: true, quiz: true, faq: true });
+    expect(pub.body.homeSections).toEqual({ hero: true, featured: true, samples: true, essence: true, gifting: true, time: true, testimonials: true, values: true, quiz: true, faq: true });
     expect(pub.body.instapay.enabled).toBe(false);
   });
 

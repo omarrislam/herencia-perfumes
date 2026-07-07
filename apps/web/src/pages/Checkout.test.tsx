@@ -13,8 +13,8 @@ function setup() {
   vi.spyOn(api, 'fetchSettings').mockResolvedValue({
     whatsappNumber: '+20', shippingFee: 50, socialLinks: {},
     hero: { title: 'h', subtitle: 's', ctaText: 'c', ctaLink: '/', image: 'x' },
-    homeSections: { hero: true, featured: true, samples: true, essence: true, gifting: true, craft: true, time: true, testimonials: true, values: true, quiz: true, faq: true },
-    sectionOrder: ['featured', 'samples', 'essence', 'gifting', 'craft', 'time', 'testimonials', 'values', 'quiz', 'faq'],
+    homeSections: { hero: true, featured: true, samples: true, essence: true, gifting: true, time: true, testimonials: true, values: true, quiz: true, faq: true },
+    sectionOrder: ['featured', 'samples', 'essence', 'gifting', 'time', 'testimonials', 'values', 'quiz', 'faq'],
     instapay: { enabled: false },
     promoBar: { enabled: false },
     emailPopup: { enabled: false },

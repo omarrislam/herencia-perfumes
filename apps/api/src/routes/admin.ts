@@ -204,6 +204,17 @@ export function adminRouter(): Router {
     }
   });
 
+  // Permanently removes an order. Does NOT restore stock (same as cancelling).
+  router.delete('/orders/:id', async (req, res, next) => {
+    try {
+      const order = await Order.findByIdAndDelete(req.params['id']);
+      if (!order) throw new HttpError(404, 'Order not found', 'not_found');
+      res.status(204).end();
+    } catch (err) {
+      next(err);
+    }
+  });
+
   // ---- Reviews ----
   router.get('/reviews', async (req, res, next) => {
     try {

@@ -65,3 +65,18 @@ describe('PUT /api/admin/orders/:id/status', () => {
     expect(res.body.status).toBe('pending');
   });
 });
+
+describe('DELETE /api/admin/orders/:id', () => {
+  it('403s for a customer', async () => {
+    const o = await seedOrder('pending');
+    expect((await request(app).delete(`/api/admin/orders/${o._id}`).set('Cookie', CUSTOMER)).status).toBe(403);
+  });
+  it('deletes an order and 404s on a second delete', async () => {
+    const o = await seedOrder('pending');
+    const res = await request(app).delete(`/api/admin/orders/${o._id}`).set('Cookie', ADMIN);
+    expect(res.status).toBe(204);
+    expect(await Order.findById(o._id)).toBeNull();
+    const again = await request(app).delete(`/api/admin/orders/${o._id}`).set('Cookie', ADMIN);
+    expect(again.status).toBe(404);
+  });
+});

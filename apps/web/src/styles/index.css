@@ -6,10 +6,10 @@
 /* Brand tokens — heritage luxury (cream · maroon · gold)              */
 /* ------------------------------------------------------------------ */
 :root[data-theme='light'] {
-  --bg: #e6d7ae;
-  --bg-deep: #dbc79a;
-  --surface: #fdf8ec;
-  --surface-2: #f6ecd3;
+  --bg: #f2e9d1;
+  --bg-deep: #e8dcbb;
+  --surface: #fefcf5;
+  --surface-2: #f5eeda;
   /* Primary buy-CTA (maroon) — theme-tuned so it pops on both backgrounds. */
   --cta: #4b1d1d;
   --cta-hover: #5e2626;

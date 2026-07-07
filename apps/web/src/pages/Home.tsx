@@ -1,9 +1,10 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useMemo, type ReactNode } from 'react';
 import { DEFAULT_SECTION_ORDER, type ReorderableSection } from '@herencia/shared';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { fetchProducts, fetchSettings } from '../lib/api';
 import { cld } from '../lib/cloudinary';
+import { readHeroCache, writeHeroCache } from '../lib/heroCache';
 import { useSeo } from '../lib/useSeo';
 import { ProductCard } from '../components/ProductCard';
 import { ProductImage } from '../components/ProductImage';
@@ -52,17 +53,33 @@ export default function Home() {
   const settings = useQuery({ queryKey: ['settings'], queryFn: fetchSettings });
   const featured = useQuery({ queryKey: ['products', 'featured'], queryFn: () => fetchProducts({ sort: 'rating', page: 1 }) });
   const featuredItems = (featured.data?.items ?? []).filter((p) => p.isFeatured).slice(0, 3);
-  const hero = settings.data?.hero;
+  // Render the last-known hero instantly (cached from the previous visit); the
+  // fresh settings replace it once loaded — same image → no swap for returning users.
+  const cachedHero = useMemo(() => readHeroCache(), []);
+  const hero = settings.data?.hero ?? cachedHero ?? undefined;
+  // Known once we have any hero (fresh or cached) or the fetch settled (error → swirl fallback).
+  const heroKnown = !!hero || !settings.isLoading;
   // Prefer an admin-uploaded Cloudinary hero; otherwise use the brand swirl.
   const heroPublicId = hero?.image;
   const useCloudHero = !!heroPublicId && /^https?:\/\//.test(cld(heroPublicId));
 
+  // Refresh the cache whenever fresh settings arrive.
+  useEffect(() => {
+    const h = settings.data?.hero;
+    if (!h) return;
+    const cloud = /^https?:\/\//.test(cld(h.image));
+    writeHeroCache({ ...h, imageUrl: cloud ? cld(h.image, { w: 1600 }) : undefined });
+  }, [settings.data?.hero]);
+
   useEffect(() => {
     if (!useCloudHero || !heroPublicId) return;
+    const href = cld(heroPublicId, { w: 1600 });
+    // main.tsx may have already preloaded the cached hero — don't duplicate.
+    if (document.querySelector(`link[rel="preload"][href="${CSS.escape(href)}"]`)) return;
     const link = document.createElement('link');
     link.rel = 'preload';
     link.as = 'image';
-    link.href = cld(heroPublicId, { w: 1600 });
+    link.href = href;
     document.head.appendChild(link);
     return () => { document.head.removeChild(link); };
   }, [heroPublicId, useCloudHero]);
@@ -248,9 +265,9 @@ export default function Home() {
       {/* Full-bleed hero */}
       {show('hero') && (
         <section className="relative overflow-hidden bg-espresso">
-          {/* Hold the espresso base until settings resolve so the fallback swirl never
-              flashes before an admin-uploaded hero. Same fixed height → no CLS. */}
-          {settings.isLoading ? (
+          {/* Cached hero renders instantly; a true first visit briefly holds the espresso
+              base until settings resolve (never flashes the wrong image). No CLS. */}
+          {!heroKnown ? (
             <div className="h-[72vh] max-h-[760px] min-h-[440px] w-full" />
           ) : useCloudHero && heroPublicId ? (
             <ProductImage publicId={heroPublicId} alt={hero?.title ?? 'HERENCIA'} w={1920} loading="eager" sizes="100vw" className="h-[72vh] max-h-[760px] min-h-[440px] w-full object-cover" />
@@ -259,7 +276,7 @@ export default function Home() {
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-espresso/90 via-espresso/45 to-espresso/15" />
           <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-espresso/55 to-transparent" />
-          {!settings.isLoading && (
+          {heroKnown && (
             <div className="absolute inset-0 flex items-center">
               <div className="mx-auto w-full max-w-6xl px-5 sm:px-6">
                 <div className="max-w-2xl space-y-6">

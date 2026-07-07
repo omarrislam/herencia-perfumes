@@ -2,6 +2,12 @@
 
 _Last updated: 2026-07-07_
 
+## Post-M4 round 10 (instant hero + lighter light palette, deployed, 2026-07-07)
+- ✅ **Instant hero** — `lib/heroCache.ts` caches the hero (content + resolved image URL) in `localStorage['herencia.hero']` on every settings load; `main.tsx` preloads the cached image before React mounts; Home renders the cached hero immediately (fresh settings replace it silently — same image, no swap). First-ever visit still holds the espresso base briefly (no SSR on Vercel static hosting). Verified by delaying /api/settings 5s — hero rendered instantly from cache.
+- ✅ **Lighter light-mode palette** — `--bg` #f2e9d1 (was #e6d7ae), `--bg-deep` #e8dcbb, `--surface` #fefcf5, `--surface-2` #f5eeda. Dark theme unchanged.
+- Deployed to production (web project only; API unchanged). Production DB is SHARED with local dev (same MONGODB_URI) — admin edits locally appear live.
+- Deploy notes: Vercel CLI installed + authed (`omarrislam`); projects `herencia` (root .vercel → herencia-one.vercel.app, rootDir apps/web) and `herencia-api` (apps/api/.vercel → herencia-api-pi.vercel.app, rootDir apps/api → must deploy **from repo root** with VERCEL_ORG_ID/VERCEL_PROJECT_ID env override).
+
 ## Post-M4 round 9 (conversion polish, on master, 2026-07-07)
 - ✅ **Maroon primary CTAs** — theme-tuned `--cta`/`--cta-hover` vars (light #4b1d1d, dark #5e2626) + Tailwind `cta`/`cta-hover`; applied to `.btn-lux`, Button primary, ProductCard add-to-cart, SampleModal footer, CartDrawer checkout. **Lighter light-mode surfaces** (`--surface` #fdf8ec, `--surface-2` #f6ecd3) for card separation.
 - ✅ **Free-shipping progress bar** in CartDrawer footer ("Add EGP X more…" gold bar → green "✓ unlocked") from `settings.freeShippingThreshold`.

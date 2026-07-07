@@ -10,6 +10,7 @@ import { CartProvider } from './features/cart/CartContext';
 import { PageLoader } from './components/PageLoader';
 import { ScrollToTop } from './components/ScrollToTop';
 import { SampleProvider } from './features/samples/SampleContext';
+import { preloadCachedHero } from './lib/heroCache';
 import '@fontsource/cinzel/400.css';
 import '@fontsource/cinzel/600.css';
 import '@fontsource/cinzel/700.css';
@@ -42,6 +43,9 @@ const app = (
 
 // Don't let the browser restore scroll on refresh — always start at the top.
 if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+
+// Start downloading the last-known hero image before React mounts.
+preloadCachedHero();
 
 const root = document.getElementById('root')!;
 if (root.hasChildNodes()) hydrateRoot(root, app);

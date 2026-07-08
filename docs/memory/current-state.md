@@ -1,6 +1,12 @@
 # Current State
 
-_Last updated: 2026-07-07_
+_Last updated: 2026-07-08_
+
+## Post-M4 round 13 (first-visit hero bake + favicon, COMMITTED `597fe95` + DEPLOYED web, 2026-07-08)
+- ✅ **Hero baked into index.html at build time** (`apps/web/scripts/bake-hero.mjs`, runs after `vite build`): fetches prod settings (`SETTINGS_URL` env, default herencia-api-pi) and injects `<link rel=preload as=image fetchpriority=high>` + `window.__HERO__` into `dist/index.html`. `readHeroCache()` falls back to `window.__HERO__` when localStorage is empty → **first-ever visit renders the hero with no JS/API wait** (Shopify/siwafragrances approach — their hero is SSR'd into HTML). Fails soft if API unreachable; reads cloud name from env or apps/web/.env.
+- ⚠️ **Hero change in Admin → first-time visitors get the stale baked hero until the next web deploy** (returning visitors self-correct via localStorage). Redeploy web after changing the hero (or add a Vercel deploy hook later).
+- ✅ **Favicon** — `/logo.png` (transparent brand logo) as `rel=icon` + `apple-touch-icon` (favicon.ico 404 gone).
+- ✅ Verified live first-visit (fresh context): preload + __HERO__ + favicon in raw HTML; hero image download starts ~0.6s (preload scanner) and completes ~1.5s alongside DOMContentLoaded. Web tests 42 (+4 heroCache).
 
 ## Post-M4 round 12 (homepage trim + payment highlight + admin order details/delete + hero preload fix, COMMITTED `dabdcb5` + DEPLOYED web+api, 2026-07-07)
 - ✅ **3-Steps copy trimmed** to one scannable line each ("Pick up to 5 scents · 2ml each" / "Test them on your skin, at home" / "Full sample value credited to your bottle"); photos + titles kept.

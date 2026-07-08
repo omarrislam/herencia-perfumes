@@ -12,13 +12,27 @@ export type CachedHero = {
 
 const KEY = 'herencia.hero';
 
+declare global {
+  interface Window {
+    // Hero baked into index.html at build time (scripts/bake-hero.mjs) so a
+    // first-ever visit renders it without waiting for /api/settings.
+    __HERO__?: CachedHero;
+  }
+}
+
+const isHero = (h: unknown): h is CachedHero =>
+  typeof (h as CachedHero)?.title === 'string' && typeof (h as CachedHero)?.image === 'string';
+
 export function readHeroCache(): CachedHero | null {
   try {
     if (typeof window === 'undefined') return null;
     const raw = localStorage.getItem(KEY);
-    if (!raw) return null;
-    const h = JSON.parse(raw) as CachedHero;
-    return typeof h?.title === 'string' && typeof h?.image === 'string' ? h : null;
+    if (raw) {
+      const h = JSON.parse(raw) as unknown;
+      if (isHero(h)) return h;
+    }
+    // First-ever visit: fall back to the build-time baked hero.
+    return isHero(window.__HERO__) ? window.__HERO__ : null;
   } catch {
     return null;
   }

@@ -2,7 +2,7 @@
 
 _Last updated: 2026-07-08_
 
-## NEW (2026-07-08, round 15): InstaPay pay-to-confirm emphasis, checkout address autofill, marquee promo bar, 2×2 mobile trust strip, **official WhatsApp Cloud API notifications** (`lib/waCloud.ts`, env-gated — user must do Meta setup per `docs/18_WHATSAPP_NOTIFICATIONS.md` and set WA_PHONE_NUMBER_ID/WA_ACCESS_TOKEN). Rounds 14+15 both **UNCOMMITTED**. Suggested homepage reorder (featured→values→samples→testimonials→essence→gifting→quiz→faq, time off) — still pending user decision.
+## NEW (2026-07-08, round 15): InstaPay pay-to-confirm emphasis, checkout address autofill, marquee promo bar, 2×2 mobile trust strip, **official WhatsApp Cloud API notifications** (`lib/waCloud.ts`, env-gated — user must do Meta setup per `docs/18_WHATSAPP_NOTIFICATIONS.md` and set WA_PHONE_NUMBER_ID/WA_ACCESS_TOKEN). Rounds 14+15 committed together as `159d60a` + deployed to production (web + api; smoke-checked). Suggested homepage reorder (featured→values→samples→testimonials→essence→gifting→quiz→faq, time off) — still pending user decision.
 
 ## NEW (2026-07-08, round 14): Admin order printing (shared OrderReceipt), Shipping card in Admin → Home (fee + free threshold), samples uncapped/de-boxed (SAMPLE_PRODUCT rename, slug unchanged). WhatsApp research superseded by round 15 implementation.
 

@@ -2,7 +2,7 @@
 
 _Last updated: 2026-07-08_
 
-## Post-M4 round 15 (InstaPay emphasis, address autofill, marquee promo, mobile trust strip, official WhatsApp API, UNCOMMITTED, 2026-07-08)
+## Post-M4 round 15 (InstaPay emphasis, address autofill, marquee promo, mobile trust strip, official WhatsApp API, COMMITTED `159d60a` + DEPLOYED web+api, 2026-07-08)
 - ✅ **InstaPay confirmation redesigned** — "!" warning icon, headline "One step left — pay to confirm", bordered warning card "PAYMENT REQUIRED" with numbered steps (transfer → screenshot on WhatsApp) + big pay-link button. COD unchanged.
 - ✅ **Checkout address autofill** — logged-in users get line1/city/governorate/phone prefilled from the default (or first) saved account address; never overwrites typed values.
 - ✅ **Promo bar is now a marquee** — seamless two-half loop (`.marquee*` CSS), pause on hover, static + single copy under reduced motion.

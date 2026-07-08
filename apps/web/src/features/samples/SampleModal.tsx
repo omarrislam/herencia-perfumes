@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SAMPLE_BOX } from '@herencia/shared';
+import { SAMPLE_PRODUCT } from '@herencia/shared';
 import { useSamples } from './SampleContext';
 import { fetchProducts, fetchProduct } from '../../lib/api';
 import { useCart } from '../cart/CartContext';
@@ -8,22 +8,22 @@ import { ProductImage } from '../../components/ProductImage';
 import { formatEGP } from '../../components/Price';
 
 export function SampleModal() {
-  const { isOpen, close, samples, add, remove, has, max, clear } = useSamples();
+  const { isOpen, close, samples, add, remove, has, clear } = useSamples();
   const { items, addItem, updateQty, setOpen } = useCart();
   const products = useQuery({ queryKey: ['products', 'sample-pick'], queryFn: () => fetchProducts({ limit: 24 }), enabled: isOpen });
-  const box = useQuery({ queryKey: ['product', SAMPLE_BOX.slug], queryFn: () => fetchProduct(SAMPLE_BOX.slug), enabled: isOpen, retry: false });
+  const sampleProduct = useQuery({ queryKey: ['product', SAMPLE_PRODUCT.slug], queryFn: () => fetchProduct(SAMPLE_PRODUCT.slug), enabled: isOpen, retry: false });
 
   const pool = (products.data?.items ?? []).filter((p) => p.type === 'perfume');
-  const full = samples.length >= max;
-  const unitPrice = box.data?.sizes.find((s) => s.label === SAMPLE_BOX.sizeLabel)?.price ?? SAMPLE_BOX.price;
-  const canAdd = samples.length > 0 && !!box.data;
+  const unitPrice = sampleProduct.data?.sizes.find((s) => s.label === SAMPLE_PRODUCT.sizeLabel)?.price ?? SAMPLE_PRODUCT.price;
+  const canAdd = samples.length > 0 && !!sampleProduct.data;
 
   const addSamplesToCart = () => {
-    if (!box.data || samples.length === 0) return;
+    if (!sampleProduct.data || samples.length === 0) return;
     // One cart line for the sample product; qty = number of picked samples.
-    const line = items.find((i) => i.productId === box.data!.id && i.sizeLabel === SAMPLE_BOX.sizeLabel);
-    if (line) updateQty(box.data.id, SAMPLE_BOX.sizeLabel, samples.length);
-    else addItem({ productId: box.data.id, sizeLabel: SAMPLE_BOX.sizeLabel, qty: samples.length });
+    const id = sampleProduct.data.id;
+    const line = items.find((i) => i.productId === id && i.sizeLabel === SAMPLE_PRODUCT.sizeLabel);
+    if (line) updateQty(id, SAMPLE_PRODUCT.sizeLabel, samples.length);
+    else addItem({ productId: id, sizeLabel: SAMPLE_PRODUCT.sizeLabel, qty: samples.length });
     close();
     setOpen(true);
   };
@@ -56,7 +56,7 @@ export function SampleModal() {
                 <p className="eyebrow">Try before you commit</p>
                 <h2 className="display mt-1 text-2xl text-content">Order samples</h2>
                 <p className="mt-1 font-body text-sm text-muted">
-                  Pick up to {max} · 2ml each · {formatEGP(unitPrice)} per sample. The value is credited when you buy the bottle.
+                  Pick as many as you like · 2ml each · {formatEGP(unitPrice)} per sample. The value is credited when you buy the bottle.
                 </p>
               </div>
               <button type="button" onClick={close} aria-label="Close" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-hairline text-content hover:border-accent hover:text-accent">✕</button>
@@ -66,7 +66,7 @@ export function SampleModal() {
               {/* selected */}
               <div className="mb-5 flex items-center justify-between">
                 <p className="font-body text-sm text-content">
-                  <span className="font-medium text-success">{samples.length}</span> of {max} selected
+                  <span className="font-medium text-success">{samples.length}</span> selected
                 </p>
                 {samples.length > 0 && <button type="button" onClick={clear} className="font-body text-xs text-muted hover:text-accent">Clear all</button>}
               </div>
@@ -79,7 +79,6 @@ export function SampleModal() {
                     <button
                       key={p.id}
                       type="button"
-                      disabled={!selected && full}
                       aria-pressed={selected}
                       onClick={() => (selected ? remove(p.id) : add({ id: p.id, name: p.name, slug: p.slug, image: p.images[0] ?? '' }))}
                       className={`group relative flex items-center gap-3 rounded-lg border p-2 text-left transition-colors disabled:opacity-40 ${

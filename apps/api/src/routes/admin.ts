@@ -13,6 +13,7 @@ import { HttpError } from '../middleware/error';
 import { requireAdmin } from '../middleware/requireAdmin';
 import { isCloudinaryConfigured, signUploadParams } from '../lib/cloudinary';
 import { toProductDTO, toScentFamilyDTO, toOrderDTO, toReviewDTO, toQuizQuestionAdminDTO, toBannerDTO, toBlogPostDTO, toSettingDTO, toNoteIconDTO } from '../lib/serialize';
+import { sendStatusUpdate } from '../lib/waCloud';
 import { recomputeProductRating } from '../modules/review/service';
 
 export function adminRouter(): Router {
@@ -198,6 +199,8 @@ export function adminRouter(): Router {
       }
       order.status = to;
       await order.save();
+      // WhatsApp status update via the official Cloud API (no-op unless configured).
+      if (from !== to) await sendStatusUpdate(order, to);
       res.json(toOrderDTO(order.toObject()));
     } catch (err) {
       next(err);

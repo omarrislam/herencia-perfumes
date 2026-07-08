@@ -10,6 +10,11 @@ const envSchema = z.object({
   CLOUDINARY_API_KEY: z.string().optional(),
   CLOUDINARY_API_SECRET: z.string().optional(),
   WHATSAPP_NUMBER: z.string().optional(),
+  // Official WhatsApp Business Cloud API (docs/18_WHATSAPP_NOTIFICATIONS.md).
+  // Notifications are disabled when these are unset.
+  WA_PHONE_NUMBER_ID: z.string().optional(),
+  WA_ACCESS_TOKEN: z.string().optional(),
+  WA_TEMPLATE_LANG: z.string().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

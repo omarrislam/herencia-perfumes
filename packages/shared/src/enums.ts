@@ -13,12 +13,11 @@ export type ProductType = (typeof PRODUCT_TYPE)[number];
 // The perfume sample — a real per-unit product (type 'sample', hidden from listings)
 // so it flows through the normal cart + checkout. Cart qty = number of samples picked.
 // Price lives on the product (admin-editable in Products); `price` here is only the
-// seed/migration default.
-export const SAMPLE_BOX = {
+// seed/migration default. The slug predates the per-unit shape — kept for DB compat.
+export const SAMPLE_PRODUCT = {
   slug: 'sample-box',
   sizeLabel: '2ml',
   price: 60,
-  count: 5,
 } as const;
 
 export const BANNER_PLACEMENT = ['home_hero', 'home_strip', 'global_top'] as const;

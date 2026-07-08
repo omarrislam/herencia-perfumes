@@ -1,10 +1,12 @@
 // apps/web/src/pages/admin/AdminOrders.tsx
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { OrderDTO, OrderStatus } from '@herencia/shared';
 import { ORDER_STATUS, ORDER_STATUS_TRANSITIONS } from '@herencia/shared';
 import { adminFetchOrders, adminUpdateOrderStatus, adminDeleteOrder } from '../../features/admin/adminClient';
 import { Price } from '../../components/Price';
+import { OrderReceipt } from '../../components/OrderReceipt';
 
 export default function AdminOrders() {
   const qc = useQueryClient();
@@ -207,7 +209,14 @@ function OrderDetails({ order, onDelete, deleting }: { order: OrderDTO; onDelete
         </div>
       )}
 
-      <div className="border-t border-line pt-3">
+      <div className="flex items-center gap-3 border-t border-line pt-3">
+        <button
+          type="button"
+          onClick={() => window.print()}
+          className="rounded border border-line px-3 py-1.5 text-content transition-colors hover:border-accent hover:text-accent"
+        >
+          Print order
+        </button>
         <button
           type="button"
           onClick={onDelete}
@@ -217,6 +226,9 @@ function OrderDetails({ order, onDelete, deleting }: { order: OrderDTO; onDelete
           {deleting ? 'Deleting…' : 'Delete order'}
         </button>
       </div>
+
+      {/* Only the expanded order renders a receipt, so printing targets it. */}
+      {createPortal(<OrderReceipt order={order} />, document.body)}
     </div>
   );
 }

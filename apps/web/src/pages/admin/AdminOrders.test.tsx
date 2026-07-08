@@ -39,9 +39,11 @@ describe('AdminOrders', () => {
     // details hidden until the row is clicked
     expect(screen.queryByText('1 St')).not.toBeInTheDocument();
     fireEvent.click(screen.getByText('HRC-1'));
-    expect(screen.getByText('1 St')).toBeInTheDocument();
-    expect(screen.getByText(/Royal Oud/)).toBeInTheDocument();
-    expect(screen.getByText('Cash on delivery')).toBeInTheDocument();
+    // details panel + the print-only receipt both render the order content
+    expect(screen.getAllByText('1 St').length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Royal Oud/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText('Cash on delivery').length).toBeGreaterThan(0);
+    expect(screen.getByRole('button', { name: /print order/i })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: /delete order/i }));
     await waitFor(() => expect(del).toHaveBeenCalledWith('1'));

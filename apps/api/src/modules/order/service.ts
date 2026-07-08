@@ -7,6 +7,7 @@ import { priceItems } from '../cart/service';
 import { buildWhatsAppUrl } from '../../lib/whatsapp';
 import { generateOrderNumber } from '../../lib/orderNumber';
 import { toOrderDTO } from '../../lib/serialize';
+import { sendOrderReceipt } from '../../lib/waCloud';
 
 export async function createOrder(
   input: CreateOrderInput,
@@ -85,6 +86,8 @@ export async function createOrder(
 
     const order = toOrderDTO(doc.toObject());
     const whatsappUrl = buildWhatsAppUrl(setting?.whatsappNumber ?? '', order);
+    // WhatsApp receipt via the official Cloud API (no-op unless configured).
+    await sendOrderReceipt(doc, setting?.instapay);
     return { order, whatsappUrl };
   } catch (err) {
     for (const d of decremented) {

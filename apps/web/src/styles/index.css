@@ -313,6 +313,24 @@
   .sparkle { display: none; }
 }
 
+/* Marquee announcement bar: two identical halves scroll -50% for a seamless loop. */
+.marquee { overflow: hidden; }
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 30s linear infinite;
+}
+.marquee:hover .marquee-track { animation-play-state: paused; }
+.marquee-half { display: flex; flex-shrink: 0; }
+.marquee-item { display: inline-flex; white-space: nowrap; }
+@keyframes marquee-scroll {
+  to { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation: none !important; }
+  .marquee-half:last-child { display: none; }
+}
+
 /* Printable receipt (order confirmation): hide the app, show only #receipt. */
 #receipt { display: none; }
 @media print {

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { SAMPLE_BOX } from '@herencia/shared';
+import { SAMPLE_PRODUCT } from '@herencia/shared';
 import { useCart } from '../features/cart/CartContext';
 import { useSamples } from '../features/samples/SampleContext';
 import { Price } from '../components/Price';
@@ -52,7 +52,7 @@ export default function Cart() {
                     <div>
                       <p className="font-body font-medium text-content">{line.name}</p>
                       <p className="font-body text-sm text-muted">{line.sizeLabel}</p>
-                      {line.slug === SAMPLE_BOX.slug && samples.length > 0 && (
+                      {line.slug === SAMPLE_PRODUCT.slug && samples.length > 0 && (
                         <p className="mt-0.5 font-body text-xs text-muted">
                           {samples.map((s) => s.name).join(' · ')}
                         </p>

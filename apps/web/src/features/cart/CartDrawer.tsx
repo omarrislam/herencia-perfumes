@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { SAMPLE_BOX } from '@herencia/shared';
+import { SAMPLE_PRODUCT } from '@herencia/shared';
 import { useQuery } from '@tanstack/react-query';
 import { useCart } from './CartContext';
 import { useSamples } from '../samples/SampleContext';
@@ -103,7 +103,7 @@ export function CartDrawer() {
                           <div>
                             <p className="font-body text-sm font-medium text-content">{line.name}</p>
                             <p className="font-body text-xs text-muted">{line.sizeLabel}</p>
-                            {line.slug === SAMPLE_BOX.slug && samples.length > 0 && (
+                            {line.slug === SAMPLE_PRODUCT.slug && samples.length > 0 && (
                               <p className="mt-0.5 font-body text-xs text-muted">
                                 {samples.map((s) => s.name).join(' · ')}
                               </p>

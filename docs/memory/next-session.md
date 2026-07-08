@@ -2,6 +2,10 @@
 
 _Last updated: 2026-07-08_
 
+## NEW (2026-07-08, round 15): InstaPay pay-to-confirm emphasis, checkout address autofill, marquee promo bar, 2×2 mobile trust strip, **official WhatsApp Cloud API notifications** (`lib/waCloud.ts`, env-gated — user must do Meta setup per `docs/18_WHATSAPP_NOTIFICATIONS.md` and set WA_PHONE_NUMBER_ID/WA_ACCESS_TOKEN). Rounds 14+15 both **UNCOMMITTED**. Suggested homepage reorder (featured→values→samples→testimonials→essence→gifting→quiz→faq, time off) — still pending user decision.
+
+## NEW (2026-07-08, round 14): Admin order printing (shared OrderReceipt), Shipping card in Admin → Home (fee + free threshold), samples uncapped/de-boxed (SAMPLE_PRODUCT rename, slug unchanged). WhatsApp research superseded by round 15 implementation.
+
 ## NEW (2026-07-08, round 13): first-visit hero fixed — `bake-hero.mjs` injects a hero preload + `window.__HERO__` into dist/index.html at build time (readHeroCache falls back to it); logo favicon added. Committed `597fe95`, web deployed. ⚠️ After changing the hero in Admin, redeploy the web project so first-time visitors get the new baked hero.
 
 ## NEW (2026-07-07, round 12): homepage trimmed (3-Steps one-liners, essence+craft merged — `craft` key removed app-wide, gifting headline-only), checkout payment cards get green selected state, Admin Orders rows expand to full details + Delete order (`DELETE /api/admin/orders/:id`), hero LCP fixed (hero `<img>` now uses the exact preloaded w=1600 URL + fetchpriority=high; splash 1100→400ms). Suites: shared 41 / api 135 / web 38. Committed `dabdcb5` on master + DEPLOYED to production (web + api).

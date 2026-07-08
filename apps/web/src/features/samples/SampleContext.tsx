@@ -1,13 +1,11 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 
 export type SampleItem = { id: string; name: string; slug: string; image: string };
-const MAX = 5;
 const LS = 'herencia.samples';
 
 type Ctx = {
   samples: SampleItem[];
   isOpen: boolean;
-  max: number;
   has: (id: string) => boolean;
   add: (item: SampleItem) => void;
   remove: (id: string) => void;
@@ -34,7 +32,7 @@ export function SampleProvider({ children }: { children: ReactNode }) {
 
   const has = useCallback((id: string) => samples.some((s) => s.id === id), [samples]);
   const add = useCallback(
-    (item: SampleItem) => setSamples((prev) => (prev.some((s) => s.id === item.id) || prev.length >= MAX ? prev : [...prev, item])),
+    (item: SampleItem) => setSamples((prev) => (prev.some((s) => s.id === item.id) ? prev : [...prev, item])),
     [],
   );
   const remove = useCallback((id: string) => setSamples((prev) => prev.filter((s) => s.id !== id)), []);
@@ -43,7 +41,7 @@ export function SampleProvider({ children }: { children: ReactNode }) {
   const close = useCallback(() => setIsOpen(false), []);
 
   return (
-    <SampleCtx.Provider value={{ samples, isOpen, max: MAX, has, add, remove, clear, open, close }}>
+    <SampleCtx.Provider value={{ samples, isOpen, has, add, remove, clear, open, close }}>
       {children}
     </SampleCtx.Provider>
   );

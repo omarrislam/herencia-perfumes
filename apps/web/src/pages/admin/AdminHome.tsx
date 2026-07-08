@@ -11,7 +11,7 @@ type HeroForm = { title: string; subtitle: string; ctaText: string; ctaLink: str
 const LABELS: Record<keyof HomeSections, { label: string; hint: string }> = {
   hero: { label: 'Hero', hint: 'Main banner at the top (always first)' },
   featured: { label: 'Featured scents', hint: 'Featured products (drawer on mobile)' },
-  samples: { label: 'Samples — 3 steps', hint: '“3 Steps to Your Favorite Fragrance” + sample box CTA' },
+  samples: { label: 'Samples — 3 steps', hint: '“3 Steps to Your Favorite Fragrance” + order-samples CTA' },
   essence: { label: 'Essence', hint: '“Essence of Heritage” editorial split' },
   gifting: { label: 'Gifting band', hint: 'Gift-box banner → bundles' },
   time: { label: 'Time as an Ingredient', hint: '“Patience is our rarest material” statement' },
@@ -28,6 +28,7 @@ export default function AdminHome() {
   const [hero, setHero] = useState<HeroForm>({ title: '', subtitle: '', ctaText: '', ctaLink: '', image: '' });
   const [sections, setSections] = useState<HomeSections>({ hero: true, featured: true, samples: true, essence: true, gifting: true, time: true, testimonials: true, values: true, quiz: true, faq: true });
   const [order, setOrder] = useState<ReorderableSection[]>(DEFAULT_SECTION_ORDER);
+  const [shipping, setShipping] = useState<{ fee: string; freeOver: string }>({ fee: '', freeOver: '' });
   const [instapay, setInstapay] = useState<{ enabled: boolean; handle: string; payLink: string }>({ enabled: false, handle: '', payLink: '' });
   const [emailPopup, setEmailPopup] = useState<{ enabled: boolean; title: string; text: string; code: string; discountPercent: string }>({ enabled: false, title: '', text: '', code: '', discountPercent: '10' });
   const [promoBar, setPromoBar] = useState<{ enabled: boolean; text: string; ctaText: string; ctaLink: string }>({ enabled: false, text: '', ctaText: '', ctaLink: '' });
@@ -42,6 +43,7 @@ export default function AdminHome() {
     setHero({ title: s.hero.title, subtitle: s.hero.subtitle, ctaText: s.hero.ctaText, ctaLink: s.hero.ctaLink, image: s.hero.image });
     setSections(s.homeSections);
     setOrder(s.sectionOrder);
+    setShipping({ fee: String(s.shippingFee), freeOver: s.freeShippingThreshold != null ? String(s.freeShippingThreshold) : '' });
     setInstapay({ enabled: s.instapay.enabled, handle: s.instapay.handle ?? '', payLink: s.instapay.payLink ?? '' });
     setEmailPopup({
       enabled: s.emailPopup.enabled,
@@ -92,6 +94,8 @@ export default function AdminHome() {
       hero,
       homeSections: sections,
       sectionOrder: order,
+      ...(shipping.fee.trim() !== '' && Number(shipping.fee) >= 0 ? { shippingFee: Number(shipping.fee) } : {}),
+      ...(shipping.freeOver.trim() !== '' && Number(shipping.freeOver) >= 0 ? { freeShippingThreshold: Number(shipping.freeOver) } : {}),
       instapay: {
         enabled: instapay.enabled,
         handle: instapay.handle || undefined,
@@ -226,6 +230,22 @@ export default function AdminHome() {
           <span className="mb-1 block font-body text-sm text-muted">TikTok URL</span>
           <input value={social.tiktok} onChange={(e) => setSocial({ ...social, tiktok: e.target.value })} placeholder="https://tiktok.com/@yourhandle" className="field-lux" />
         </label>
+      </section>
+
+      {/* Shipping */}
+      <section className="rounded-xl border border-hairline bg-surface p-5 space-y-4">
+        <h2 className="font-display text-lg text-content">Shipping</h2>
+        <p className="font-body text-sm text-muted">Applied to every order at checkout. The free-shipping bar in the cart uses the threshold.</p>
+        <div className="grid grid-cols-2 gap-3">
+          <label className="block">
+            <span className="mb-1 block font-body text-sm text-muted">Shipping fee (EGP)</span>
+            <input type="number" min="0" value={shipping.fee} onChange={(e) => setShipping({ ...shipping, fee: e.target.value })} className="field-lux" />
+          </label>
+          <label className="block">
+            <span className="mb-1 block font-body text-sm text-muted">Free shipping over (EGP)</span>
+            <input type="number" min="0" value={shipping.freeOver} onChange={(e) => setShipping({ ...shipping, freeOver: e.target.value })} className="field-lux" />
+          </label>
+        </div>
       </section>
 
       {/* InstaPay */}

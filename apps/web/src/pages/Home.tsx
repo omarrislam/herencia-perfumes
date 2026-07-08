@@ -178,20 +178,21 @@ export default function Home() {
       </Reveal>
     ),
     values: (
-      <div className="grid grid-cols-1 gap-8 border-y border-hairline py-10 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
+      // Compact 2×2 on mobile (fits one glance, no scrolling); roomier 4-up on lg.
+      <div className="grid grid-cols-2 gap-x-3 gap-y-6 border-y border-hairline py-7 lg:grid-cols-4 lg:gap-6 lg:py-10">
         {([
           ['batch', 'Small-batch', 'Composed in limited runs'],
           ['cod', 'Cash on delivery', 'Pay when it arrives'],
           ['ship', 'Free shipping', 'On orders over 2,000 EGP'],
           ['returns', '14-day returns', 'Unopened items, full refund'],
         ] as const).map(([icon, title, sub]) => (
-          <div key={title} className="flex flex-col items-center gap-3 text-center sm:flex-row sm:text-left">
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-accent/12 text-accent">
+          <div key={title} className="flex flex-col items-center gap-2 text-center lg:flex-row lg:gap-3 lg:text-left">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/12 text-accent lg:h-11 lg:w-11">
               {VALUE_ICONS[icon]}
             </span>
             <div>
-              <p className="font-display text-base text-content">{title}</p>
-              <p className="mt-0.5 font-body text-sm text-muted">{sub}</p>
+              <p className="font-display text-sm text-content lg:text-base">{title}</p>
+              <p className="mt-0.5 font-body text-xs text-muted lg:text-sm">{sub}</p>
             </div>
           </div>
         ))}

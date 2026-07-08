@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { createOrderSchema, type CreateOrderInput, type CreateOrderResultDTO, type PaymentMethod, SAMPLE_BOX } from '@herencia/shared';
+import { createOrderSchema, type CreateOrderInput, type CreateOrderResultDTO, type PaymentMethod, SAMPLE_PRODUCT } from '@herencia/shared';
 import { useCart } from '../features/cart/CartContext';
 import { useSamples } from '../features/samples/SampleContext';
 import { useAuth } from '../features/auth/AuthContext';
@@ -40,6 +40,21 @@ export default function Checkout() {
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const settings = useQuery({ queryKey: ['settings'], queryFn: api.fetchSettings });
+
+  // Prefill the delivery address from the account's saved addresses (default
+  // first) — only into fields the user hasn't typed in yet.
+  const addresses = useQuery({ queryKey: ['account', 'addresses'], queryFn: api.fetchAddresses, enabled: !!user });
+  useEffect(() => {
+    const addr = addresses.data?.find((a) => a.isDefault) ?? addresses.data?.[0];
+    if (!addr) return;
+    setForm((prev) => ({
+      ...prev,
+      line1: prev.line1 || addr.line1,
+      city: prev.city || addr.city,
+      governorate: prev.governorate || addr.governorate,
+      phone: prev.phone || addr.phone,
+    }));
+  }, [addresses.data]);
   const instapayOn = !!settings.data?.instapay?.enabled;
   const [payment, setPayment] = useState<PaymentMethod>('cod');
   const [discountCode, setDiscountCode] = useState<string>(() => {
@@ -89,7 +104,7 @@ export default function Checkout() {
       },
       ...((() => {
         const sampleNote =
-          priced?.items.some((i) => i.slug === SAMPLE_BOX.slug) && samples.length > 0
+          priced?.items.some((i) => i.slug === SAMPLE_PRODUCT.slug) && samples.length > 0
             ? `Samples (${samples.length} × 2ml): ${samples.map((s) => s.name).join(', ')}`
             : '';
         const notes = [sampleNote, form.notes].filter(Boolean).join('\n');

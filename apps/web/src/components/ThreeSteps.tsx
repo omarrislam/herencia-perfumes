@@ -1,7 +1,7 @@
 import { useSamples } from '../features/samples/SampleContext';
 
 const STEPS = [
-  { n: '01', img: '/sample-choose.webp', title: 'Choose your fragrances', body: 'Pick up to 5 scents · 2ml each' },
+  { n: '01', img: '/sample-choose.webp', title: 'Choose your fragrances', body: 'Pick the scents you want · 2ml each' },
   { n: '02', img: '/sample-try.webp', title: 'Try at home', body: 'Test them on your skin, at home' },
   { n: '03', img: '/sample-buy.webp', title: 'Buy what you love', body: 'Full sample value credited to your bottle' },
 ];

@@ -2,6 +2,22 @@
 
 _Last updated: 2026-07-08_
 
+## Post-M4 round 15 (InstaPay emphasis, address autofill, marquee promo, mobile trust strip, official WhatsApp API, UNCOMMITTED, 2026-07-08)
+- ✅ **InstaPay confirmation redesigned** — "!" warning icon, headline "One step left — pay to confirm", bordered warning card "PAYMENT REQUIRED" with numbered steps (transfer → screenshot on WhatsApp) + big pay-link button. COD unchanged.
+- ✅ **Checkout address autofill** — logged-in users get line1/city/governorate/phone prefilled from the default (or first) saved account address; never overwrites typed values.
+- ✅ **Promo bar is now a marquee** — seamless two-half loop (`.marquee*` CSS), pause on hover, static + single copy under reduced motion.
+- ✅ **Trust strip mobile** — compact 2×2 grid (smaller icons/type), 4-up on lg.
+- ✅ **WhatsApp notifications via the OFFICIAL Cloud API** (`apps/api/src/lib/waCloud.ts`) — user first asked for the unofficial (Baileys) way, I built it (queue + tools/wa-worker), then user pivoted mid-turn to official → unofficial fully removed. Direct Graph API template sends: receipt on order create, update on admin status change; env-gated (`WA_PHONE_NUMBER_ID`/`WA_ACCESS_TOKEN`/`WA_TEMPLATE_LANG`), fail-soft, Egyptian phone → E.164. **Templates `order_receipt` (5 vars) + `order_status` (3 vars) must be registered by the user in Meta — full setup guide in `docs/18_WHATSAPP_NOTIFICATIONS.md`.** Not active until the user completes Meta setup + sets envs (Vercel herencia-api + local .env).
+- ✅ Verified: typecheck/lint 0, tests shared 41 / api 141 (+6 waCloud) / web 42; Playwright QA (marquee animating, 2×2 strip, InstaPay confirmation via a real test order — then deleted, stock restored, WA row neutralized; autofill verified with a temp account address — deleted).
+- Suggested homepage reorder LAST round is still pending user decision.
+
+## Post-M4 round 14 (admin print + shipping fees + samples uncapped, UNCOMMITTED, 2026-07-08)
+- ✅ **Print order in Admin → Orders** — receipt extracted to shared `components/OrderReceipt.tsx` (OrderConfirmation now imports it); expanded order details render a print-only receipt portal + "Print order" button (`window.print()`; print CSS already hides `#root`).
+- ✅ **Shipping fees admin-editable** — Admin → Home "Shipping" card (fee + free-shipping threshold); save sends `shippingFee`/`freeShippingThreshold` (schema already supported them; cart/order pricing already read them).
+- ✅ **Samples uncapped + de-boxed** — SampleContext MAX removed (pick any number); modal copy "Pick as many as you like · 2ml each"; ThreeSteps step 1 "Pick the scents you want · 2ml each"; shared `SAMPLE_BOX` → `SAMPLE_PRODUCT` (slug stays 'sample-box' for DB compat), api `ensureSampleBox` → `ensureSampleProduct`.
+- ✅ Verified: typecheck/lint 0, tests shared 41 / api 135 / web 42; Playwright QA (modal copy+selection, admin Shipping card shows live 60/2000).
+- ⏭ User is considering WhatsApp order notifications (receipt + status changes) via WhatsApp Business Cloud API — advised: service window free, utility templates ≈ $0.0036/msg in Egypt, needs Meta business + dedicated number + approved templates; NOT implemented.
+
 ## Post-M4 round 13 (first-visit hero bake + favicon, COMMITTED `597fe95` + DEPLOYED web, 2026-07-08)
 - ✅ **Hero baked into index.html at build time** (`apps/web/scripts/bake-hero.mjs`, runs after `vite build`): fetches prod settings (`SETTINGS_URL` env, default herencia-api-pi) and injects `<link rel=preload as=image fetchpriority=high>` + `window.__HERO__` into `dist/index.html`. `readHeroCache()` falls back to `window.__HERO__` when localStorage is empty → **first-ever visit renders the hero with no JS/API wait** (Shopify/siwafragrances approach — their hero is SSR'd into HTML). Fails soft if API unreachable; reads cloud name from env or apps/web/.env.
 - ⚠️ **Hero change in Admin → first-time visitors get the stale baked hero until the next web deploy** (returning visitors self-correct via localStorage). Redeploy web after changing the hero (or add a Vercel deploy hook later).

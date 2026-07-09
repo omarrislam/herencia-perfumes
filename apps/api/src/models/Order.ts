@@ -35,7 +35,20 @@ const orderSchema = new Schema(
     discountCode: { type: String },
     total: { type: Number, required: true },
     status: { type: String, enum: [...ORDER_STATUS], default: 'pending', index: true },
+    statusHistory: {
+      type: [
+        new Schema(
+          {
+            status: { type: String, enum: [...ORDER_STATUS], required: true },
+            at: { type: Date, required: true },
+          },
+          { _id: false },
+        ),
+      ],
+      default: [],
+    },
     paymentMethod: { type: String, enum: [...PAYMENT_METHOD], default: 'cod' },
+    paidAt: { type: Date },
     notes: { type: String },
     user: { type: Schema.Types.ObjectId, ref: 'User', index: true },
   },

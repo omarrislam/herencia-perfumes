@@ -14,7 +14,9 @@ export function cldSrcSet(publicId: string): string {
   return [400, 800, 1200].map((w) => `${cld(publicId, { w })} ${w}w`).join(', ');
 }
 
+// w_64 + light blur reads as a soft-focus photo rather than mush — still ~2 kB.
+// ⚠ Must stay byte-identical to heroBlurUrl in scripts/bake-hero.mjs (preload).
 export function cldBlur(publicId: string): string {
   if (!publicId || /^https?:\/\//.test(publicId) || !CLOUD) return publicId;
-  return `https://res.cloudinary.com/${CLOUD}/image/upload/w_24,e_blur:400,q_auto,f_auto/${publicId}`;
+  return `https://res.cloudinary.com/${CLOUD}/image/upload/w_64,e_blur:100,q_auto,f_auto/${publicId}`;
 }

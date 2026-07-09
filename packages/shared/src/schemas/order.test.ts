@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createOrderSchema, ORDER_STATUS, ORDER_STATUS_TRANSITIONS, updateOrderStatusSchema } from './order';
+import { createOrderSchema, egyptianPhoneSchema, ORDER_STATUS, ORDER_STATUS_TRANSITIONS, updateOrderStatusSchema, updateOrderPaidSchema } from './order';
 
 describe('createOrderSchema', () => {
   const valid = {
@@ -19,6 +19,46 @@ describe('createOrderSchema', () => {
 
   it('rejects empty items', () => {
     expect(() => createOrderSchema.parse({ ...valid, items: [] })).toThrow();
+  });
+
+  it('gives each invalid field its own friendly message', () => {
+    const res = createOrderSchema.safeParse({
+      ...valid,
+      customer: { name: '', phone: '123' },
+      shippingAddress: { ...valid.shippingAddress, city: '' },
+    });
+    expect(res.success).toBe(false);
+    if (res.success) throw new Error('expected failure');
+    const byPath = Object.fromEntries(res.error.issues.map((i) => [i.path.join('.'), i.message]));
+    expect(byPath['customer.name']).toBe('Full name is required');
+    expect(byPath['customer.phone']).toMatch(/Egyptian mobile/);
+    expect(byPath['shippingAddress.city']).toBe('City is required');
+  });
+});
+
+describe('egyptianPhoneSchema', () => {
+  it('accepts local 11-digit mobiles for all carriers', () => {
+    for (const p of ['01012345678', '01112345678', '01212345678', '01512345678']) {
+      expect(egyptianPhoneSchema.parse(p)).toBe(p);
+    }
+  });
+  it('normalizes +20 / 20-prefixed and spaced variants to local form', () => {
+    expect(egyptianPhoneSchema.parse('+201012345678')).toBe('01012345678');
+    expect(egyptianPhoneSchema.parse('201012345678')).toBe('01012345678');
+    expect(egyptianPhoneSchema.parse('010 1234 5678')).toBe('01012345678');
+    expect(egyptianPhoneSchema.parse('010-1234-5678')).toBe('01012345678');
+  });
+  it('rejects landlines, short numbers, and non-Egyptian formats', () => {
+    for (const p of ['0221234567', '12345', '0100000000', '010123456789', 'not a phone']) {
+      expect(egyptianPhoneSchema.safeParse(p).success).toBe(false);
+    }
+  });
+});
+
+describe('updateOrderPaidSchema', () => {
+  it('accepts a boolean paid flag only', () => {
+    expect(updateOrderPaidSchema.safeParse({ paid: true }).success).toBe(true);
+    expect(updateOrderPaidSchema.safeParse({ paid: 'yes' }).success).toBe(false);
   });
 });
 

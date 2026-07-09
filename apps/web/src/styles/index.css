@@ -293,6 +293,13 @@
   .rise { animation: none; opacity: 1; }
 }
 
+/* Framer-free layout animations (route fade, mobile menu) — GPU-only.
+   Reduced motion is handled by the global 0.01ms animation-duration rule. */
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+.anim-fade-in { animation: fade-in 0.25s ease-out both; }
+.anim-fade-in-fast { animation: fade-in 0.2s ease-out both; }
+.anim-fade-up { opacity: 0; animation: rise-in 0.4s ease-out both; }
+
 /* Quiz band — twinkling gold dust (GPU-only: opacity + transform). */
 .sparkle {
   position: absolute;
@@ -307,10 +314,50 @@
   50% { opacity: 0.85; transform: translate3d(0, -10px, 0) scale(1); }
 }
 
+/* Hero "scent trail" — fragrance wisps rising and dissolving (GPU-only).
+   Meaning: the perfume itself, evaporating off skin. Slow, drifting, quiet. */
+.wisp {
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: wisp-rise 11s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+}
+@keyframes wisp-rise {
+  0%   { opacity: 0; transform: translate3d(0, 26px, 0); }
+  22%  { opacity: 0.55; }
+  58%  { opacity: 0.3; transform: translate3d(-6px, -22px, 0); }
+  100% { opacity: 0; transform: translate3d(8px, -64px, 0); }
+}
+
+/* Quiz band — the scent-family markers drift gently over the atelier photo. */
+.quiz-chip {
+  will-change: transform;
+  animation: chip-drift 7s ease-in-out infinite;
+}
+@keyframes chip-drift {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(0, -8px, 0); }
+}
+
+/* Gold motes — droplets of scent drifting upward through the hero. */
+.mote {
+  position: absolute;
+  border-radius: 9999px;
+  background: var(--gold-hi);
+  opacity: 0;
+  will-change: transform, opacity;
+  animation: mote-float 9s linear infinite;
+}
+@keyframes mote-float {
+  0%   { opacity: 0; transform: translate3d(0, 14px, 0) scale(0.6); }
+  25%  { opacity: 0.65; }
+  75%  { opacity: 0.35; }
+  100% { opacity: 0; transform: translate3d(10px, -90px, 0) scale(1); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
   html { scroll-behavior: auto; }
-  .sparkle { display: none; }
+  .sparkle, .wisp, .mote { display: none; }
 }
 
 /* Marquee announcement bar: two identical halves scroll -50% for a seamless loop. */

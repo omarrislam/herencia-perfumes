@@ -1,14 +1,16 @@
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, lazy, useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useQuery } from '@tanstack/react-query';
 import { useTheme } from './ThemeProvider';
 import { useAuth } from '../features/auth/AuthContext';
 import { useCart } from '../features/cart/CartContext';
-import { CartDrawer } from '../features/cart/CartDrawer';
-import { SampleModal } from '../features/samples/SampleModal';
-import { EmailPopup } from '../components/EmailPopup';
 import { fetchSettings } from '../lib/api';
+
+// Overlays are lazy so framer-motion (their animation lib) stays out of the
+// entry chunk — none of them is visible at first paint.
+const CartDrawer = lazy(() => import('../features/cart/CartDrawer').then((m) => ({ default: m.CartDrawer })));
+const SampleModal = lazy(() => import('../features/samples/SampleModal').then((m) => ({ default: m.SampleModal })));
+const EmailPopup = lazy(() => import('../components/EmailPopup').then((m) => ({ default: m.EmailPopup })));
 
 const NAV = [
   { to: '/products', label: 'Perfumes' },
@@ -146,15 +148,10 @@ export function StorefrontLayout() {
           </div>
         </nav>
 
-        <AnimatePresence>
-          {menuOpen && (
-            <motion.div
+        {menuOpen && (
+            <div
               key="mobile-menu"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.25 }}
-              className="fixed left-0 top-0 z-[60] flex h-[100dvh] w-screen flex-col bg-espresso md:hidden"
+              className="anim-fade-in fixed left-0 top-0 z-[60] flex h-[100dvh] w-screen flex-col bg-espresso md:hidden"
             >
               <div className="flex items-center justify-between px-5 py-4">
                 <span className="font-display text-xl tracking-[0.2em] text-cream">HERENCIA</span>
@@ -170,11 +167,10 @@ export function StorefrontLayout() {
 
               <nav className="flex flex-1 flex-col justify-center px-7">
                 {NAV.map((n, i) => (
-                  <motion.div
+                  <div
                     key={n.to}
-                    initial={{ opacity: 0, y: 18 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.06 + i * 0.06, duration: 0.4, ease: 'easeOut' }}
+                    className="anim-fade-up"
+                    style={{ animationDelay: `${0.06 + i * 0.06}s` }}
                   >
                     <NavLink
                       to={n.to}
@@ -184,7 +180,7 @@ export function StorefrontLayout() {
                       <span className="font-body text-xs tracking-[0.25em] text-[#d8b878]">0{i + 1}</span>
                       <span className="font-display text-3xl text-cream transition-colors group-hover:text-gold-hi">{n.label}</span>
                     </NavLink>
-                  </motion.div>
+                  </div>
                 ))}
               </nav>
 
@@ -202,17 +198,19 @@ export function StorefrontLayout() {
                 </div>
                 <p className="mt-4 font-body text-xs tracking-wide text-cream/40">Heritage perfumery · Crafted in Egypt</p>
               </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+            </div>
+        )}
       </header>
 
       <main className={isHome ? 'w-full flex-1' : 'mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-5'}>
-        <motion.div key={location.pathname} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}>
-          <Suspense fallback={null}>
+        <div key={location.pathname} className="anim-fade-in-fast">
+          {/* The fallback reserves a full viewport so the footer never paints
+              at the top and then gets shoved down when the route chunk lands
+              (that jump was a 0.86 CLS on slow connections). */}
+          <Suspense fallback={<div className="min-h-[100dvh]" aria-hidden="true" />}>
             <Outlet />
           </Suspense>
-        </motion.div>
+        </div>
       </main>
 
       <footer className="mt-24 border-t border-hairline bg-bg-deep">
@@ -264,9 +262,11 @@ export function StorefrontLayout() {
           <p className="mt-6 font-body text-xs tracking-wide text-muted">© {new Date().getFullYear()} HERENCIA. Crafted in Egypt.</p>
         </div>
       </footer>
-      <CartDrawer />
-      <SampleModal />
-      <EmailPopup />
+      <Suspense fallback={null}>
+        <CartDrawer />
+        <SampleModal />
+        <EmailPopup />
+      </Suspense>
     </div>
   );
 }

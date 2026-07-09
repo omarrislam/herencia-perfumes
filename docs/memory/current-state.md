@@ -1,6 +1,54 @@
 # Current State
 
-_Last updated: 2026-07-08_
+_Last updated: 2026-07-09_
+
+## Post-M4 round 19 (full storefront critique — REPORT ONLY, 2026-07-09)
+- Ran /critique (impeccable): browser walk of live prod (home/products/PDP/cart/checkout, light+dark) + deterministic scan (2 flags: Home.tsx:320 broken-image = false positive on dynamic src; index.css:265 logo-shimmer gradient-text = intentional brand foil, kept).
+- **Score 28/40.** P0 = CATALOG CONTENT (user's side): Heritage Trio uses a stock canyon photo, Cedar Smoke collage is watermarked "YSL Y" (trademark risk), only 2 buyable perfumes, flagship bundle sold out, static testimonial links to deleted product Royal Oud (dead link). Code-fixable findings + user's picks logged in next-session.md (samples redesign + checkout ergonomics + floating socials chosen; everything else parked).
+- User chose scope "report only, commit current work first" → rounds 16–18 committed this round.
+
+## Post-M4 round 18 (quiz band redesign, DEPLOYED web, 2026-07-09)
+- ✅ **Quiz section redesigned** ("looks poor" → editorial): centered sparkle box → asymmetric split card "The Scent Consultation" — copy left (eyebrow, "Which scent were you born to wear?", gold pill CTA `bg-accent` "Begin the consultation →", "Under a minute · no account needed"), right side = **apothecary.webp** (finally used again) via ParallaxImage + espresso gradient blend (`max-md:` top-down when stacked) + four decorative scent-family chips (✦ Woody/Floral/Amber/Fresh, `.quiz-chip` drift keyframes in index.css). Sparkles kept but only left-half positions. Verified desktop + mobile via screenshots; no overflow; tests 45 green; DEPLOYED to herencia-one.
+- NOTE: family chips are decorative/hardcoded (not the DB ScentFamily list) — aria-hidden.
+
+## Post-M4 round 17d (hero blur-up regression fixed, DEPLOYED web, 2026-07-09)
+- User: "hero rendering is worse after the perf passes" — CONFIRMED by measurement. On Fast 4G cold load the 17c blur-up cost ~1s on decent connections: mushy w_24 preview + sharp gated on full download + 700ms fade → fully visible ~2.25s (progressive paint used to show most of the photo by ~1s).
+- ✅ Fixes (deployed): blur preview **w_24,e_blur:400 → w_64,e_blur:100** (soft-focus photo, not mush; changed in BOTH cldBlur and bake-hero heroBlurUrl — must stay identical); hero fade **700 → 300ms**; injected modulepreloads get **fetchpriority="low"** so the hero image wins bandwidth.
+- 📏 Warm re-measure (Fast 4G, cold cache): blur ready 0.47s, hero bytes 1.2s, sharp fully visible ~2.07s with a good-looking preview from React mount (~1.3s). Remaining gap to "sharp at 1.3s" is React mount (SPA) → M5 prerender item.
+- ℹ Caveat: the first-ever request to a NEW Cloudinary transform URL (e.g. after changing cldBlur params or the hero image) generates on-demand (~1s slower for that one visitor), then it's CDN-cached.
+
+## Post-M4 round 17c (hero blur-up, DEPLOYED web, 2026-07-09)
+- ✅ **Hero loads as one piece now** (user: "not half the photo then the other half… like siwafragrances") — blur-up: tiny blurred preview (`cldBlur`, w_24,e_blur:400, ~1–2 kB) paints instantly as an absolute layer under the hero; the sharp `motion.img` is held at opacity-0 until `onLoad`/`complete`, then fades in over 700ms. Blur layer stays mounted during the fade (unmounting early flashed the dark base). `bake-hero.mjs` bakes a second `<link rel=preload>` for the blur URL (mirrored `heroBlurUrl`, must stay byte-identical to `cldBlur`). Cached-image visits skip the fade via a `ref` callback checking `el.complete`.
+- ✅ **ParallaxImage** (essence/giftbox/time) gets the same one-piece fade-in on load.
+- ✅ Verified LIVE on Slow 3G: probe showed blur painted + img opacity 0 for the whole ~6s download, then complete→opacity 1. Tests 45 green, deployed to herencia-one.
+
+## Post-M4 round 17b (DEPLOYED web+api + live Lighthouse, 2026-07-09)
+- ✅ **Deployed to production** (herencia-api-pi + herencia-one, both aliased OK; smoke-checked: 13 modulepreloads + baked hero live, /api/settings 200). Deployed from the UNCOMMITTED tree (user asked to deploy, not commit).
+- ✅ **CLS bug found & fixed via live Lighthouse**: StorefrontLayout's route `Suspense fallback={null}` painted an empty main → footer at top → Home chunk lands → footer shoved down = **CLS 0.862**. Fallback now reserves `min-h-[100dvh]` → CLS 0.005.
+- ✅ **logo.png 178 kB → 28.5 kB** (500px→192px, PIL; original safe in identity/) — it competed with the hero for 4G bandwidth on every page.
+- 📊 **Live Lighthouse mobile (npx lighthouse, PSI quota was exhausted): 29 → 56/49/61 across runs (median ~56)**. FCP 2.2s, LCP 5.8→4.8s (trending down as CDN warms), TBT ~620-650ms (1199 outlier), CLS 0.005. Reports in the session scratchpad (lh-mobile*.json).
+- ⏭ **Path to ≥90 (M5): LCP is gated on React mount** (hero bytes arrive at 2.6s but paint waits ~3s of JS on a 4x-throttled phone). Levers, in order: (1) prerender/SSR of the home shell — the M4 attempt was reverted for hydration errors (#419), needs a proper retry; (2) responsive hero srcset (w_800/w_1200/w_1600 with byte-identical preload imagesrcset — 3 places: bake-hero.mjs, heroCache preload, Home img); (3) replace picsum seed product images with real Cloudinary ones (71 kB third-party fetch on home).
+
+## Post-M4 round 17 (performance pass + scroll/perfume animations, UNCOMMITTED, 2026-07-09)
+- ✅ **Entry bundle −45%** (gzip 134.6 → 73.9 kB): StorefrontLayout no longer imports framer-motion (route fade + mobile menu now CSS `.anim-fade-in`/`.anim-fade-up` in index.css); CartDrawer/SampleModal/EmailPopup are React.lazy behind one Suspense; `packages/shared` has `"sideEffects": false` so zod tree-shakes out of constant-only imports. framer → lazy `proxy-*.js` (40.9 kB gzip), zod → lazy `types-*.js` (12.3 kB gzip).
+- ✅ **Landing-route modulepreload** — `build.manifest: true` + `apps/web/scripts/preload-home.mjs` (runs after bake-hero in the web build script): walks the Vite manifest from Home.tsx and injects `<link rel="modulepreload">` (13 links) into dist/index.html so the lazy Home route downloads in parallel with the entry instead of a serial waterfall. Fail-soft like bake-hero.
+- ✅ **Signature perfume animation** — `components/ScentTrail.tsx` in the hero: 3 SVG vapor wisps (serpentine paths, `wisp-rise` keyframes, right side, `hidden sm:block`) + 8 gold `mote` dots drifting up. Pure CSS, transforms/opacity, `display:none` under reduced motion (same rule as `.sparkle`).
+- ✅ **Scroll motion** — hero scroll-away parallax (framer useScroll in Home: image y 0→28 @ scale 1.1, text lifts −32 and fades to 0 by 420px; zeroed under reduced motion); featured cards stagger (Reveal delay i*0.1), values strip items stagger (i*0.07), CTA + ✦ dividers reveal. `.impeccable.md` design-context file created (brand/motion principles).
+- ✅ Verified: typecheck/lint 0; web 45 / shared 46 (api untouched); browser QA on the local prod build (wisps/motes animating, parallax values confirmed at scroll 500: img y=23px/text opacity 0, mobile menu CSS stagger works, lazy cart drawer opens, no horizontal overflow, console clean). Perf trace (4x CPU + Fast 4G, localhost express): CLS 0.00; LCP lab number is pessimistic on localhost (no CDN/h2/brotli, real Cloudinary fetch) — **validate with live Lighthouse after next deploy** (also an M5 item).
+- ⚠️ QA session-limit note: a QA subagent died to the account session limit mid-round; QA was finished inline by the controller (per the M4 playbook).
+- ⏭ Perf follow-up idea (not done): responsive hero preload (imagesrcset w=800/1600 on the baked preload + matching srcset on the hero img) to cut hero bytes on mobile.
+
+## Post-M4 round 16 (fulfillment flow hardening, UNCOMMITTED, 2026-07-09)
+Business pass over checkout→fulfillment; user approved all fixes EXCEPT owner WhatsApp new-order alert (deferred until his Meta business number is ready — waCloud.ts is the reuse point when he is).
+- ✅ **Egyptian phone validation** — shared `egyptianPhoneSchema` (normalizes +20/20/spaces → `01[0125]XXXXXXXX`) on customer + shipping phone; friendly per-field messages on `createOrderSchema`.
+- ✅ **Checkout per-field errors** — zod issues mapped to inputs (red border + message under field, aria-invalid/describedby, focus first invalid, typing clears); generic error only for unmapped issues.
+- ✅ **Receipt fixed for fulfillment** — `OrderReceipt` now prints `order.notes` (samples list + delivery notes) and a bold payment banner: "COLLECT ON DELIVERY: EGP X" / "PAID VIA INSTAPAY — DO NOT COLLECT" / "INSTAPAY — PAYMENT PENDING". Notes cap 500→2000 (uncapped samples overflow bug).
+- ✅ **InstaPay tracking** — `Order.paidAt` + `PUT /api/admin/orders/:id/paid`; Payment badge column; confirm-dialog guard when advancing unpaid InstaPay.
+- ✅ **Cancel restores stock** (decision #45, revises #42); DELETE still doesn't.
+- ✅ **statusHistory [{status,at}]** on Order (seeded pending, appended per transition) + Timeline in admin details; pending >24h rows get `waiting Xh/Xd` badge + warning tint.
+- ✅ **Admin Orders: `?q=` search** (order no./name/phone) **+ pagination UI** (list silently capped at 20 before); Placed column shows date+time; `adminFetchOrders` now takes `{status,q,page}` (AdminApp/AdminDashboard callers updated).
+- ✅ Verified: typecheck/lint 0; tests shared 46 (+5) / api 146 (+5) / web 45 (+3); browser QA via chrome-devtools subagent (checkout errors, badges, aging, search, timeline, receipt banners/notes in DOM) — read-only, no test orders placed (shared prod DB). Decisions #44–47 logged.
+- ⏭ Deferred by user: owner WhatsApp new-order notification (waiting on Meta business number). Also still optional: bulk "print all confirmed", public /track page (order no. + phone) for guests.
 
 ## Post-M4 round 15 (InstaPay emphasis, address autofill, marquee promo, mobile trust strip, official WhatsApp API, COMMITTED `159d60a` + DEPLOYED web+api, 2026-07-08)
 - ✅ **InstaPay confirmation redesigned** — "!" warning icon, headline "One step left — pay to confirm", bordered warning card "PAYMENT REQUIRED" with numbered steps (transfer → screenshot on WhatsApp) + big pay-link button. COD unchanged.

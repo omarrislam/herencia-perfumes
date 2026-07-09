@@ -9,13 +9,15 @@ function wrap(ui: React.ReactNode) {
   return <QueryClientProvider client={new QueryClient()}><MemoryRouter>{ui}</MemoryRouter></QueryClientProvider>;
 }
 
-function mockOrders() {
+function mockOrders(overrides: Record<string, unknown> = {}) {
   vi.spyOn(client, 'adminFetchOrders').mockResolvedValue({
     items: [{ id: '1', orderNumber: 'HRC-1',
       items: [{ product: 'p1', name: 'Royal Oud', sizeLabel: '50ml', unitPrice: 800, qty: 1, image: '' }],
-      customer: { name: 'Mai', phone: '0100000000' },
-      shippingAddress: { line1: '1 St', city: 'Cairo', governorate: 'Cairo', phone: '0100000000' },
-      subtotal: 800, shipping: 50, discount: 0, total: 850, status: 'pending', paymentMethod: 'cod', createdAt: '2026-06-30T00:00:00Z' }],
+      customer: { name: 'Mai', phone: '01000000000' },
+      shippingAddress: { line1: '1 St', city: 'Cairo', governorate: 'Cairo', phone: '01000000000' },
+      subtotal: 800, shipping: 50, discount: 0, total: 850, status: 'pending', paymentMethod: 'cod',
+      statusHistory: [{ status: 'pending', at: '2026-06-30T00:00:00Z' }],
+      createdAt: '2026-06-30T00:00:00Z', ...overrides }],
     total: 1, page: 1, pages: 1,
   });
 }
@@ -47,5 +49,24 @@ describe('AdminOrders', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /delete order/i }));
     await waitFor(() => expect(del).toHaveBeenCalledWith('1'));
+  });
+
+  it('shows an unpaid InstaPay badge and marks the payment received', async () => {
+    mockOrders({ paymentMethod: 'instapay' });
+    const paid = vi.spyOn(client, 'adminMarkOrderPaid').mockResolvedValue({} as never);
+    render(wrap(<AdminOrders />));
+    await waitFor(() => expect(screen.getByText('HRC-1')).toBeInTheDocument());
+    expect(screen.getByText('InstaPay · unpaid')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByText('HRC-1'));
+    fireEvent.click(screen.getByRole('button', { name: /mark payment received/i }));
+    await waitFor(() => expect(paid).toHaveBeenCalledWith('1', true));
+  });
+
+  it('shows a COD badge for cash orders', async () => {
+    mockOrders();
+    render(wrap(<AdminOrders />));
+    await waitFor(() => expect(screen.getByText('HRC-1')).toBeInTheDocument());
+    expect(screen.getByText('COD')).toBeInTheDocument();
   });
 });

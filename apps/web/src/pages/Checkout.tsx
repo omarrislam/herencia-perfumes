@@ -22,6 +22,21 @@ type FormState = {
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
+// Maps zod issue paths from createOrderSchema onto checkout form fields.
+const PATH_TO_FIELD: Record<string, keyof FormState> = {
+  'customer.name': 'name',
+  'customer.phone': 'phone',
+  'customer.email': 'email',
+  'shippingAddress.line1': 'line1',
+  'shippingAddress.city': 'city',
+  'shippingAddress.governorate': 'governorate',
+  'shippingAddress.phone': 'phone',
+  notes: 'notes',
+};
+
+// Focus order when several fields are invalid at once.
+const FIELD_ORDER: (keyof FormState)[] = ['name', 'phone', 'email', 'line1', 'city', 'governorate', 'notes'];
+
 export default function Checkout() {
   const { items, priced, clear } = useCart();
   const { samples, clear: clearSamples } = useSamples();
@@ -38,6 +53,7 @@ export default function Checkout() {
     notes: '',
   }));
   const [formError, setFormError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Partial<Record<keyof FormState, string>>>({});
   const [submitting, setSubmitting] = useState(false);
   const settings = useQuery({ queryKey: ['settings'], queryFn: api.fetchSettings });
 
@@ -72,8 +88,11 @@ export default function Checkout() {
 
   const update =
     (field: keyof FormState) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       setForm((prev) => ({ ...prev, [field]: e.target.value }));
+      // Typing in a field clears its error so the message never goes stale.
+      setFieldErrors((prev) => (prev[field] ? { ...prev, [field]: undefined } : prev));
+    };
 
   if (items.length === 0) {
     return (
@@ -88,6 +107,7 @@ export default function Checkout() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setFormError(null);
+    setFieldErrors({});
 
     const input: CreateOrderInput = {
       items,
@@ -116,7 +136,19 @@ export default function Checkout() {
 
     const parsed = createOrderSchema.safeParse(input);
     if (!parsed.success) {
-      setFormError(parsed.error.issues[0]?.message ?? 'Invalid input');
+      // Attach each issue to its form field; anything unmapped becomes the
+      // generic form-level message.
+      const errors: Partial<Record<keyof FormState, string>> = {};
+      let generic: string | null = null;
+      for (const issue of parsed.error.issues) {
+        const field = PATH_TO_FIELD[issue.path.join('.')];
+        if (field) errors[field] ??= issue.message;
+        else generic ??= issue.message;
+      }
+      setFieldErrors(errors);
+      setFormError(generic);
+      const first = FIELD_ORDER.find((f) => errors[f]);
+      if (first) document.getElementById(`checkout-${first}`)?.focus();
       return;
     }
 
@@ -212,8 +244,8 @@ export default function Checkout() {
           <section className="space-y-3">
             <h2 className="font-display text-lg text-content">Your details</h2>
             <div className="grid gap-3 sm:grid-cols-2">
-              <InputField id="checkout-name" label="Full name" autoComplete="name" value={form.name} onChange={update('name')} required />
-              <InputField id="checkout-phone" label="Phone" type="tel" autoComplete="tel" value={form.phone} onChange={update('phone')} required />
+              <InputField id="checkout-name" label="Full name" autoComplete="name" value={form.name} onChange={update('name')} required error={fieldErrors.name} />
+              <InputField id="checkout-phone" label="Phone" type="tel" autoComplete="tel" value={form.phone} onChange={update('phone')} required error={fieldErrors.phone} />
             </div>
             <InputField
               id="checkout-email"
@@ -222,6 +254,7 @@ export default function Checkout() {
               autoComplete="email"
               value={form.email}
               onChange={update('email')}
+              error={fieldErrors.email}
             />
           </section>
 
@@ -234,15 +267,17 @@ export default function Checkout() {
               value={form.line1}
               onChange={update('line1')}
               required
+              error={fieldErrors.line1}
             />
             <div className="grid gap-3 sm:grid-cols-2">
-              <InputField id="checkout-city" label="City" autoComplete="address-level2" value={form.city} onChange={update('city')} required />
+              <InputField id="checkout-city" label="City" autoComplete="address-level2" value={form.city} onChange={update('city')} required error={fieldErrors.city} />
               <InputField
                 id="checkout-governorate"
                 label="Governorate"
                 value={form.governorate}
                 onChange={update('governorate')}
                 required
+                error={fieldErrors.governorate}
               />
             </div>
             <div>
@@ -254,8 +289,10 @@ export default function Checkout() {
                 value={form.notes}
                 onChange={update('notes')}
                 rows={2}
-                className="field-lux text-sm"
+                aria-invalid={!!fieldErrors.notes}
+                className={`field-lux text-sm ${fieldErrors.notes ? 'border-danger' : ''}`}
               />
+              {fieldErrors.notes && <p className="mt-1 font-body text-xs text-danger">{fieldErrors.notes}</p>}
             </div>
           </section>
 
@@ -319,6 +356,7 @@ function InputField({
   type = 'text',
   autoComplete,
   required,
+  error,
 }: {
   id: string;
   label: string;
@@ -327,6 +365,7 @@ function InputField({
   type?: string;
   autoComplete?: string;
   required?: boolean;
+  error?: string;
 }) {
   return (
     <div className="space-y-1">
@@ -340,8 +379,15 @@ function InputField({
         onChange={onChange}
         autoComplete={autoComplete}
         required={required}
-        className="field-lux text-sm"
+        aria-invalid={!!error}
+        aria-describedby={error ? `${id}-error` : undefined}
+        className={`field-lux text-sm ${error ? 'border-danger' : ''}`}
       />
+      {error && (
+        <p id={`${id}-error`} className="font-body text-xs text-danger">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

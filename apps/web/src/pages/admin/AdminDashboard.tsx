@@ -29,7 +29,7 @@ function StatCard({ label, value, hint, to }: { label: string; value: string; hi
 
 export default function AdminDashboard() {
   const orders = useQuery({ queryKey: ['admin-orders'], queryFn: () => adminFetchOrders() });
-  const pending = useQuery({ queryKey: ['admin-orders', 'pending'], queryFn: () => adminFetchOrders('pending') });
+  const pending = useQuery({ queryKey: ['admin-orders', 'pending'], queryFn: () => adminFetchOrders({ status: 'pending' }) });
   const products = useQuery({ queryKey: ['admin-products'], queryFn: () => fetchProducts({ limit: 48 }) });
 
   const orderItems = orders.data?.items ?? [];

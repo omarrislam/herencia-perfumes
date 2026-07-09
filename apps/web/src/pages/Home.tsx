@@ -1,15 +1,18 @@
-import { useEffect, useMemo, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { DEFAULT_SECTION_ORDER, type ReorderableSection } from '@herencia/shared';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import { motion, useScroll, useTransform } from 'framer-motion';
 import { fetchProducts, fetchSettings } from '../lib/api';
-import { cld } from '../lib/cloudinary';
+import { cld, cldBlur } from '../lib/cloudinary';
 import { readHeroCache, writeHeroCache } from '../lib/heroCache';
 import { useSeo } from '../lib/useSeo';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 import { ProductCard } from '../components/ProductCard';
 import { Skeleton } from '../components/Skeleton';
 import { Reveal } from '../components/Reveal';
 import { ParallaxImage } from '../components/ParallaxImage';
+import { ScentTrail } from '../components/ScentTrail';
 import { ThreeSteps } from '../components/ThreeSteps';
 import { TestimonialCarousel } from '../components/TestimonialCarousel';
 
@@ -49,7 +52,20 @@ const SPARKLES: { top: string; left: string; size: number; delay: string }[] = [
 
 export default function Home() {
   useSeo({ title: 'HERENCIA — Luxury in every drop', description: 'Heritage luxury perfumery.' });
+  const reduced = useReducedMotion();
+  // Scroll-away hero parallax: the image drifts slower than the page while the
+  // copy lifts and dissolves. Transforms/opacity only — no layout, no CLS.
+  const { scrollY } = useScroll();
+  const heroImgY = useTransform(scrollY, [0, 600], [0, reduced ? 0 : 28]);
+  const heroTextY = useTransform(scrollY, [0, 420], [0, reduced ? 0 : -32]);
+  const heroTextOpacity = useTransform(scrollY, [0, 420], [1, reduced ? 1 : 0]);
   const settings = useQuery({ queryKey: ['settings'], queryFn: fetchSettings });
+  // Blur-up: the sharp hero fades in as ONE piece once fully decoded (never a
+  // half-painted progressive scan); a tiny blurred preview shows underneath.
+  const [heroLoaded, setHeroLoaded] = useState(false);
+  const heroImgRef = useCallback((el: HTMLImageElement | null) => {
+    if (el?.complete) setHeroLoaded(true); // already cached — skip the fade
+  }, []);
   const featured = useQuery({ queryKey: ['products', 'featured'], queryFn: () => fetchProducts({ sort: 'rating', page: 1 }) });
   const featuredItems = (featured.data?.items ?? []).filter((p) => p.isFeatured).slice(0, 3);
   // Render the last-known hero instantly (cached from the previous visit); the
@@ -108,28 +124,32 @@ export default function Home() {
       </Reveal>
     ),
     featured: (
-      <Reveal>
-        <section>
+      <section>
+        <Reveal>
           <div className="mb-10 text-center">
             <p className="eyebrow">The Collection</p>
             <h2 className="display mt-2 text-3xl text-content md:text-4xl">Featured scents</h2>
             <div className="rule-gold mx-auto mt-4 w-24" />
           </div>
-          <div className="-mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-3 sm:mx-0 sm:gap-5 sm:px-0 md:mx-auto md:grid md:max-w-4xl md:grid-cols-3 md:gap-6 md:overflow-visible md:pb-0">
-            {featured.isLoading
-              ? Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="w-[46%] shrink-0 snap-start sm:w-[31%] md:w-full"><Skeleton className="aspect-square rounded-xl" /></div>
-                ))
-              : featuredItems.map((p) => (
-                  <div key={p.id} className="w-[46%] shrink-0 snap-start sm:w-[31%] md:w-full"><ProductCard product={p} /></div>
-                ))}
-          </div>
-          {!featured.isLoading && featuredItems.length === 0 && (
-            <p className="text-center font-body text-muted">No featured products yet.</p>
-          )}
+        </Reveal>
+        <div className="-mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-3 sm:mx-0 sm:gap-5 sm:px-0 md:mx-auto md:grid md:max-w-4xl md:grid-cols-3 md:gap-6 md:overflow-visible md:pb-0">
+          {featured.isLoading
+            ? Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="w-[46%] shrink-0 snap-start sm:w-[31%] md:w-full"><Skeleton className="aspect-square rounded-xl" /></div>
+              ))
+            : featuredItems.map((p, i) => (
+                <Reveal key={p.id} delay={i * 0.1} className="w-[46%] shrink-0 snap-start sm:w-[31%] md:w-full">
+                  <ProductCard product={p} />
+                </Reveal>
+              ))}
+        </div>
+        {!featured.isLoading && featuredItems.length === 0 && (
+          <p className="text-center font-body text-muted">No featured products yet.</p>
+        )}
+        <Reveal delay={0.25}>
           <div className="mt-10 text-center"><Link to="/products" className="btn-outline">View all perfumes</Link></div>
-        </section>
-      </Reveal>
+        </Reveal>
+      </section>
     ),
     gifting: (
       <Reveal>
@@ -185,8 +205,8 @@ export default function Home() {
           ['cod', 'Cash on delivery', 'Pay when it arrives'],
           ['ship', 'Free shipping', 'On orders over 2,000 EGP'],
           ['returns', '14-day returns', 'Unopened items, full refund'],
-        ] as const).map(([icon, title, sub]) => (
-          <div key={title} className="flex flex-col items-center gap-2 text-center lg:flex-row lg:gap-3 lg:text-left">
+        ] as const).map(([icon, title, sub], i) => (
+          <Reveal key={title} delay={i * 0.07} className="flex flex-col items-center gap-2 text-center lg:flex-row lg:gap-3 lg:text-left">
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/12 text-accent lg:h-11 lg:w-11">
               {VALUE_ICONS[icon]}
             </span>
@@ -194,23 +214,63 @@ export default function Home() {
               <p className="font-display text-sm text-content lg:text-base">{title}</p>
               <p className="mt-0.5 font-body text-xs text-muted lg:text-sm">{sub}</p>
             </div>
-          </div>
+          </Reveal>
         ))}
       </div>
     ),
     quiz: (
       <Reveal>
-        <section className="relative overflow-hidden rounded-2xl bg-espresso px-6 py-16 text-center shadow-lux md:py-20">
-          {/* Twinkling gold dust */}
-          <div className="pointer-events-none absolute inset-0" aria-hidden="true">
-            {SPARKLES.map((s, i) => (
-              <span key={i} className="sparkle" style={{ top: s.top, left: s.left, width: s.size, height: s.size, animationDelay: s.delay }} />
-            ))}
+        <section className="relative overflow-hidden rounded-2xl bg-espresso shadow-lux">
+          <div className="grid md:grid-cols-[1.05fr_1fr]">
+            {/* Copy — the consultation invitation */}
+            <div className="relative z-10 px-7 py-14 md:px-12 md:py-20">
+              {/* Gold dust drifts on the copy side only */}
+              <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+                {SPARKLES.filter((s) => parseFloat(s.left) < 50).map((s, i) => (
+                  <span key={i} className="sparkle" style={{ top: s.top, left: s.left, width: s.size, height: s.size, animationDelay: s.delay }} />
+                ))}
+              </div>
+              <p className="eyebrow text-gold-hi">The Scent Consultation</p>
+              <h2 className="display mt-3 max-w-md text-3xl text-cream md:text-4xl">
+                Which scent were you born to wear?
+              </h2>
+              <p className="mt-4 max-w-sm font-body leading-relaxed text-cream/70">
+                Answer a few questions and we'll name your scent family — and the bottle to begin with.
+              </p>
+              <div className="mt-8 flex flex-wrap items-center gap-4">
+                <Link
+                  to="/find-your-scent"
+                  className="inline-flex items-center gap-2 rounded-full bg-accent px-7 py-3 font-body text-sm font-medium tracking-wide text-espresso transition-colors hover:bg-gold-hi motion-safe:active:scale-[0.98]"
+                >
+                  Begin the consultation <span aria-hidden="true">→</span>
+                </Link>
+                <span className="font-body text-xs tracking-wide text-cream/50">Under a minute · no account needed</span>
+              </div>
+            </div>
+
+            {/* Imagery — the atelier, with the four families drifting over it */}
+            <div className="relative min-h-[280px] md:min-h-0">
+              <ParallaxImage src="/apothecary.webp" alt="The Herencia apothecary wall" className="absolute inset-0" />
+              <div className="absolute inset-0 bg-gradient-to-r from-espresso via-espresso/35 to-espresso/10 max-md:bg-gradient-to-b" aria-hidden="true" />
+              <div className="pointer-events-none absolute inset-0" aria-hidden="true">
+                {([
+                  ['Woody', '14%', '52%', '0s'],
+                  ['Floral', '34%', '20%', '1.8s'],
+                  ['Amber', '58%', '58%', '3.6s'],
+                  ['Fresh', '76%', '26%', '5.4s'],
+                ] as const).map(([name, top, left, delay]) => (
+                  <span
+                    key={name}
+                    className="quiz-chip absolute inline-flex items-center gap-2 rounded-full border border-gold-hi/40 bg-espresso/75 px-3.5 py-1.5"
+                    style={{ top, left, animationDelay: delay }}
+                  >
+                    <span className="text-[10px] leading-none text-gold-hi">✦</span>
+                    <span className="font-body text-xs tracking-wide text-cream/85">{name}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
           </div>
-          <p className="eyebrow text-gold-hi">Not sure where to start?</p>
-          <h2 className="display mx-auto mt-3 max-w-2xl text-3xl text-cream md:text-4xl">Find your signature scent</h2>
-          <p className="mx-auto mt-4 max-w-md font-body text-cream/70">A few questions reveal the family that suits you — and the bottle to match.</p>
-          <Link to="/find-your-scent" className="btn-outline mt-8 border-cream/40 text-cream hover:bg-cream hover:text-espresso">Take the quiz</Link>
         </section>
       </Reveal>
     ),
@@ -248,24 +308,46 @@ export default function Home() {
           {!heroKnown ? (
             <div className="h-[72vh] max-h-[760px] min-h-[440px] w-full" />
           ) : useCloudHero && heroPublicId ? (
-            // Plain <img> with the EXACT preloaded URL (heroCache/main.tsx preload
-            // w=1600) — a srcset would pick a different width and waste the preload.
-            <img
-              src={cld(heroPublicId, { w: 1600 })}
-              alt={hero?.title ?? 'HERENCIA'}
-              decoding="async"
-              {...({ fetchpriority: 'high' } as object)}
-              className="h-[72vh] max-h-[760px] min-h-[440px] w-full bg-espresso object-cover"
-            />
+            <>
+              {/* Blurred preview (~1–2 kB, preloaded from the baked HTML) paints
+                  instantly while the sharp image downloads. Stays mounted so the
+                  sharp image fades in over it, never over the dark base. */}
+              <div
+                aria-hidden="true"
+                className="absolute inset-0"
+                style={{ backgroundImage: `url(${cldBlur(heroPublicId)})`, backgroundSize: 'cover', backgroundPosition: 'center' }}
+              />
+              {/* Plain <img> with the EXACT preloaded URL (heroCache/main.tsx preload
+                  w=1600) — a srcset would pick a different width and waste the preload.
+                  Slight scale gives the scroll parallax drift room without exposing edges. */}
+              <motion.img
+                ref={heroImgRef}
+                src={cld(heroPublicId, { w: 1600 })}
+                alt={hero?.title ?? 'HERENCIA'}
+                decoding="async"
+                onLoad={() => setHeroLoaded(true)}
+                {...({ fetchpriority: 'high' } as object)}
+                style={{ y: heroImgY, scale: reduced ? 1 : 1.1 }}
+                className={`h-[72vh] max-h-[760px] min-h-[440px] w-full object-cover transition-opacity duration-300 ease-out ${heroLoaded ? 'opacity-100' : 'opacity-0'}`}
+              />
+            </>
           ) : (
-            <img src="/hero-swirl.webp" alt={hero?.title ?? 'HERENCIA'} className="h-[72vh] max-h-[760px] min-h-[440px] w-full bg-espresso object-cover" />
+            <motion.img
+              ref={heroImgRef}
+              src="/hero-swirl.webp"
+              alt={hero?.title ?? 'HERENCIA'}
+              onLoad={() => setHeroLoaded(true)}
+              style={{ y: heroImgY, scale: reduced ? 1 : 1.1 }}
+              className={`h-[72vh] max-h-[760px] min-h-[440px] w-full bg-espresso object-cover transition-opacity duration-300 ease-out ${heroLoaded ? 'opacity-100' : 'opacity-0'}`}
+            />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-espresso/90 via-espresso/45 to-espresso/15" />
           <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-espresso/55 to-transparent" />
+          <ScentTrail />
           {heroKnown && (
             <div className="absolute inset-0 flex items-center">
               <div className="mx-auto w-full max-w-6xl px-5 sm:px-6">
-                <div className="max-w-2xl space-y-6">
+                <motion.div style={{ y: heroTextY, opacity: heroTextOpacity }} className="max-w-2xl space-y-6">
                   <p className="eyebrow rise text-gold-hi" style={{ animationDelay: '0.05s' }}>Heritage Perfumery</p>
                   <h1 className="display rise text-5xl leading-[1.02] text-cream sm:text-6xl md:text-7xl" style={{ animationDelay: '0.15s' }}>{hero?.title ?? 'Luxury in every drop'}</h1>
                   <p className="rise max-w-md font-body text-base leading-relaxed text-cream/85 md:text-lg" style={{ animationDelay: '0.28s' }}>{hero?.subtitle ?? 'Composed in small batches, worn like an heirloom.'}</p>
@@ -273,7 +355,7 @@ export default function Home() {
                     <Link to={hero?.ctaLink ?? '/products'} className="btn-lux">{hero?.ctaText ?? 'Shop the collection'}</Link>
                     <Link to="/find-your-scent" className="btn-outline border-cream/40 text-cream hover:bg-cream hover:text-espresso">Find your scent</Link>
                   </div>
-                </div>
+                </motion.div>
               </div>
             </div>
           )}
@@ -289,11 +371,13 @@ export default function Home() {
           i === 0
             ? [el]
             : [
-                <div key={`div-${i}`} className="flex items-center justify-center gap-3" aria-hidden="true">
-                  <span className="h-px w-10 bg-hairline" />
-                  <span className="text-xs text-accent/60">✦</span>
-                  <span className="h-px w-10 bg-hairline" />
-                </div>,
+                <Reveal key={`div-${i}`}>
+                  <div className="flex items-center justify-center gap-3" aria-hidden="true">
+                    <span className="h-px w-10 bg-hairline" />
+                    <span className="text-xs text-accent/60">✦</span>
+                    <span className="h-px w-10 bg-hairline" />
+                  </div>
+                </Reveal>,
                 el,
               ],
         )}

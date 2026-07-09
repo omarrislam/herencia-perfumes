@@ -1,6 +1,17 @@
 # Next Session — START HERE
 
-_Last updated: 2026-07-08_
+_Last updated: 2026-07-09_
+
+## ⭐ NEXT UP (user-approved backlog from the round-19 critique, 2026-07-09)
+User reviewed the full critique and picked these to build next (scope was "report only" this round — NOT built yet):
+1. **Samples section redesign** — user: "very long and misleading to its meaning, I can barely notice it talks about samples; use a marketing typography." Make SAMPLES the unmistakable subject (big marketing-led headline, e.g. price-led "Try any scent · 2ml · EGP 60"), and shorter overall.
+2. **Checkout ergonomics** — phone placeholder/example (01X…), governorate `<select>` (27 governorates), WhatsApp-us link near buy buttons.
+3. **Floating WhatsApp + Instagram icons** — small, unobtrusive while scrolling, "hidden in a smart way" (e.g. shrink/fade on scroll-down, reappear on scroll-up/idle; respect reduced motion).
+Full critique findings (28/40 Nielsen, P0 = placeholder catalog imagery incl. YSL-watermarked collage + dead Royal Oud testimonial link — CONTENT, user's side): see current-state round 19. Other code fixables parked: section dead-air rhythm (~330px voids, divider doubles gap), sold-out card alignment + notify-me, PDP content thinness, reveal opacity-0 robustness, no search/reorder, 3-Steps double numbering, cart-drawer dim.
+
+## NEW (2026-07-09, round 17): Performance + animations, DEPLOYED (still UNCOMMITTED, together with round 16 — ask user to commit!) — entry gzip 134.6→73.9 kB (framer/zod out of entry; CSS route-fade + mobile menu; lazy CartDrawer/SampleModal/EmailPopup; shared sideEffects:false), Home-route modulepreload injection (`preload-home.mjs`, needs `build.manifest`), ScentTrail hero animation (wisps + gold motes), hero scroll-away parallax, staggered reveals. **Live Lighthouse mobile 29 → ~56-61** (CLS 0.862→0.005 — root cause was Suspense fallback null painting the footer at top; logo.png 178→28.5 kB). **≥90 needs: home prerender/SSR retry (hydration #419 was why M4 reverted it), responsive hero srcset, real product images instead of picsum seeds.**
+
+## NEW (2026-07-09, round 16): Fulfillment hardening, UNCOMMITTED — Egyptian phone validation (shared `egyptianPhoneSchema`, normalizes to 01X…), checkout per-field errors, receipt prints notes/samples + COLLECT/PAID banner (notes cap → 2000), InstaPay `paidAt` + mark-paid route/badges/guard, cancel restores stock (decision #45), `statusHistory` + admin Timeline + >24h waiting badges, admin orders search (`?q=`) + pagination UI. Suites: shared 46 / api 146 / web 45; QA'd in-browser. **User deferred the owner WhatsApp new-order alert until his Meta business number is ready** — implement in `createOrder` via `waCloud.ts` when he gives the go. Commit not yet requested.
 
 ## NEW (2026-07-08, round 15): InstaPay pay-to-confirm emphasis, checkout address autofill, marquee promo bar, 2×2 mobile trust strip, **official WhatsApp Cloud API notifications** (`lib/waCloud.ts`, env-gated — user must do Meta setup per `docs/18_WHATSAPP_NOTIFICATIONS.md` and set WA_PHONE_NUMBER_ID/WA_ACCESS_TOKEN). Rounds 14+15 committed together as `159d60a` + deployed to production (web + api; smoke-checked). Suggested homepage reorder (featured→values→samples→testimonials→essence→gifting→quiz→faq, time off) — still pending user decision.
 

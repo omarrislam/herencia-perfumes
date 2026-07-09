@@ -43,20 +43,41 @@ describe('Checkout', () => {
   beforeEach(() => { localStorage.clear(); vi.restoreAllMocks(); });
   it('submits a COD order and navigates to confirmation', async () => {
     const create = vi.spyOn(api, 'createOrder').mockResolvedValue({
-      order: { id: '1', orderNumber: 'HRC-1', items: [], customer: { name: 'Mai', phone: '0100000000' },
-        shippingAddress: { line1: '1 St', city: 'Cairo', governorate: 'Cairo', phone: '0100000000' },
-        subtotal: 800, shipping: 50, discount: 0, total: 850, status: 'pending', paymentMethod: 'cod', createdAt: '2026-06-30T00:00:00Z' },
+      order: { id: '1', orderNumber: 'HRC-1', items: [], customer: { name: 'Mai', phone: '01000000000' },
+        shippingAddress: { line1: '1 St', city: 'Cairo', governorate: 'Cairo', phone: '01000000000' },
+        subtotal: 800, shipping: 50, discount: 0, total: 850, status: 'pending', paymentMethod: 'cod',
+        statusHistory: [{ status: 'pending', at: '2026-06-30T00:00:00Z' }], createdAt: '2026-06-30T00:00:00Z' },
       whatsappUrl: 'https://wa.me/201000000000?text=hi',
     });
     setup();
     await waitFor(() => expect(screen.getByText(/Royal Oud/)).toBeInTheDocument());
     fireEvent.change(screen.getByLabelText('Full name'), { target: { value: 'Mai' } });
-    fireEvent.change(screen.getByLabelText('Phone'), { target: { value: '0100000000' } });
+    fireEvent.change(screen.getByLabelText('Phone'), { target: { value: '01000000000' } });
     fireEvent.change(screen.getByLabelText('Address'), { target: { value: '1 St' } });
     fireEvent.change(screen.getByLabelText('City'), { target: { value: 'Cairo' } });
     fireEvent.change(screen.getByLabelText('Governorate'), { target: { value: 'Cairo' } });
     fireEvent.click(screen.getByRole('button', { name: /place order/i }));
     await waitFor(() => expect(create).toHaveBeenCalled());
     await waitFor(() => expect(screen.getByText('Thank you')).toBeInTheDocument());
+  });
+
+  it('shows per-field errors and blocks submission on invalid input', async () => {
+    const create = vi.spyOn(api, 'createOrder').mockResolvedValue({} as never);
+    setup();
+    await waitFor(() => expect(screen.getByText(/Royal Oud/)).toBeInTheDocument());
+    // Invalid Egyptian phone + missing required fields
+    fireEvent.change(screen.getByLabelText('Phone'), { target: { value: '12345' } });
+    fireEvent.click(screen.getByRole('button', { name: /place order/i }));
+
+    expect(await screen.findByText('Full name is required')).toBeInTheDocument();
+    expect(screen.getByText(/valid Egyptian mobile number/)).toBeInTheDocument();
+    expect(screen.getByText('Address is required')).toBeInTheDocument();
+    expect(screen.getByText('City is required')).toBeInTheDocument();
+    expect(screen.getByText('Governorate is required')).toBeInTheDocument();
+    expect(create).not.toHaveBeenCalled();
+
+    // Typing in a field clears its error
+    fireEvent.change(screen.getByLabelText('Full name'), { target: { value: 'Mai' } });
+    expect(screen.queryByText('Full name is required')).not.toBeInTheDocument();
   });
 });

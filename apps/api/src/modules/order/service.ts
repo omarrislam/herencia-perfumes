@@ -79,6 +79,7 @@ export async function createOrder(
       discountCode: codeValid ? popup!.code : undefined,
       total: Math.round((priced.total - discount) * 100) / 100,
       status: 'pending',
+      statusHistory: [{ status: 'pending', at: new Date() }],
       paymentMethod: input.paymentMethod ?? 'cod',
       notes: input.notes,
       user: userId,

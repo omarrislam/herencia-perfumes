@@ -26,8 +26,8 @@ beforeEach(async () => {
 
 const input = (qty: number) => ({
   items: [{ productId, sizeLabel: '50ml', qty }],
-  customer: { name: 'Mai', phone: '0100000000' },
-  shippingAddress: { line1: '1 St', city: 'Cairo', governorate: 'Cairo', phone: '0100000000' },
+  customer: { name: 'Mai', phone: '01000000000' },
+  shippingAddress: { line1: '1 St', city: 'Cairo', governorate: 'Cairo', phone: '01000000000' },
 });
 
 describe('createOrder', () => {

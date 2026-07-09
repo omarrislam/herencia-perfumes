@@ -30,7 +30,7 @@ export default function AdminApp() {
   const { logout } = useAuth();
   const pending = useQuery({
     queryKey: ['admin-orders', 'pending'],
-    queryFn: () => adminFetchOrders('pending'),
+    queryFn: () => adminFetchOrders({ status: 'pending' }),
     refetchInterval: 60_000,
   });
   const pendingCount = pending.data?.total ?? 0;

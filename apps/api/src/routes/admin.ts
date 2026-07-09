@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { adminProductSchema, scentFamilySchema, slugify, updateOrderStatusSchema, updateReviewSchema, quizQuestionSchema, bannerSchema, blogPostSchema, updateSettingsSchema, noteIconSchema, ORDER_STATUS, ORDER_STATUS_TRANSITIONS, type OrderStatus } from '@herencia/shared';
+import { adminProductSchema, scentFamilySchema, slugify, updateOrderStatusSchema, updateOrderPaidSchema, updateReviewSchema, quizQuestionSchema, bannerSchema, blogPostSchema, updateSettingsSchema, noteIconSchema, ORDER_STATUS, ORDER_STATUS_TRANSITIONS, type OrderStatus } from '@herencia/shared';
 import { Product } from '../models/Product';
 import { ScentFamily } from '../models/ScentFamily';
 import { Order } from '../models/Order';
@@ -174,6 +174,17 @@ export function adminRouter(): Router {
         if (!ORDER_STATUS.includes(status as OrderStatus)) throw new HttpError(400, 'Invalid status', 'invalid');
         filter['status'] = status;
       }
+      // Free-text search: order number, customer name, or phone.
+      const q = typeof req.query['q'] === 'string' ? req.query['q'].trim() : '';
+      if (q) {
+        const rx = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+        filter['$or'] = [
+          { orderNumber: rx },
+          { 'customer.name': rx },
+          { 'customer.phone': rx },
+          { 'shippingAddress.phone': rx },
+        ];
+      }
       const page = Math.max(1, Number(req.query['page'] ?? 1) || 1);
       const limit = Math.min(50, Math.max(1, Number(req.query['limit'] ?? 20) || 20));
       const [docs, total] = await Promise.all([
@@ -198,7 +209,18 @@ export function adminRouter(): Router {
         throw new HttpError(422, `Cannot move an order from ${from} to ${to}`, 'invalid_transition');
       }
       order.status = to;
+      if (from !== to) order.statusHistory.push({ status: to, at: new Date() });
       await order.save();
+      // Cancelling puts the reserved units back on the shelf (fail-soft if a
+      // product or size has since been deleted).
+      if (from !== to && to === 'cancelled') {
+        for (const item of order.items) {
+          await Product.updateOne(
+            { _id: item.product, 'sizes.label': item.sizeLabel },
+            { $inc: { 'sizes.$.stock': item.qty } },
+          );
+        }
+      }
       // WhatsApp status update via the official Cloud API (no-op unless configured).
       if (from !== to) await sendStatusUpdate(order, to);
       res.json(toOrderDTO(order.toObject()));
@@ -207,7 +229,25 @@ export function adminRouter(): Router {
     }
   });
 
-  // Permanently removes an order. Does NOT restore stock (same as cancelling).
+  // Marks an InstaPay transfer as received (or clears a mistaken mark).
+  router.put('/orders/:id/paid', async (req, res, next) => {
+    try {
+      const parsed = updateOrderPaidSchema.safeParse(req.body);
+      if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? 'Invalid', 'invalid');
+      const order = await Order.findByIdAndUpdate(
+        req.params['id'],
+        parsed.data.paid ? { paidAt: new Date() } : { $unset: { paidAt: 1 } },
+        { new: true },
+      ).lean();
+      if (!order) throw new HttpError(404, 'Order not found', 'not_found');
+      res.json(toOrderDTO(order));
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // Permanently removes an order. Does NOT restore stock (cancel first if the
+  // units should go back on the shelf).
   router.delete('/orders/:id', async (req, res, next) => {
     try {
       const order = await Order.findByIdAndDelete(req.params['id']);

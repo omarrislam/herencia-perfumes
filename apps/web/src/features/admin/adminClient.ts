@@ -34,12 +34,20 @@ export async function uploadImage(file: File): Promise<string> {
   return body.public_id;
 }
 
-export const adminFetchOrders = (status?: OrderStatus) =>
-  apiGet<{ items: OrderDTO[]; total: number; page: number; pages: number }>(
-    `/api/admin/orders${status ? `?status=${status}` : ''}`,
+export const adminFetchOrders = (opts: { status?: OrderStatus; q?: string; page?: number } = {}) => {
+  const params = new URLSearchParams();
+  if (opts.status) params.set('status', opts.status);
+  if (opts.q) params.set('q', opts.q);
+  if (opts.page && opts.page > 1) params.set('page', String(opts.page));
+  const qs = params.toString();
+  return apiGet<{ items: OrderDTO[]; total: number; page: number; pages: number }>(
+    `/api/admin/orders${qs ? `?${qs}` : ''}`,
   );
+};
 export const adminUpdateOrderStatus = (id: string, status: OrderStatus) =>
   apiSend<OrderDTO>('PUT', `/api/admin/orders/${id}/status`, { status });
+export const adminMarkOrderPaid = (id: string, paid: boolean) =>
+  apiSend<OrderDTO>('PUT', `/api/admin/orders/${id}/paid`, { paid });
 export const adminDeleteOrder = (id: string) =>
   apiSend<void>('DELETE', `/api/admin/orders/${id}`);
 

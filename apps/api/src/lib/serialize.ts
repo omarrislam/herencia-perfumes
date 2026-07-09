@@ -223,6 +223,11 @@ export function toOrderDTO(doc: AnyDoc): OrderDTO {
     total: doc.total,
     status: doc.status,
     paymentMethod: doc.paymentMethod ?? 'cod',
+    paidAt: doc.paidAt ? new Date(doc.paidAt).toISOString() : undefined,
+    statusHistory: (doc.statusHistory ?? []).map((h: AnyDoc) => ({
+      status: h.status,
+      at: new Date(h.at).toISOString(),
+    })),
     notes: doc.notes ?? undefined,
     createdAt: (doc.createdAt instanceof Date
       ? doc.createdAt

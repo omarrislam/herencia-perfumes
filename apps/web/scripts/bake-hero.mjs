@@ -31,6 +31,15 @@ function heroUrl(image) {
   return `https://res.cloudinary.com/${CLOUD}/image/upload/f_auto,q_auto,w_1600/${image}`;
 }
 
+// Mirror of cldBlur() — the tiny blur-up preview the hero shows while the
+// sharp image downloads. ~1–2 kB, so preloading it makes the blurred hero
+// paint the moment React mounts.
+function heroBlurUrl(image) {
+  if (!image) return undefined;
+  if (/^https?:\/\//.test(image) || image.startsWith('/') || !CLOUD) return undefined;
+  return `https://res.cloudinary.com/${CLOUD}/image/upload/w_64,e_blur:100,q_auto,f_auto/${image}`;
+}
+
 try {
   const res = await fetch(SETTINGS_URL, { signal: AbortSignal.timeout(10_000) });
   if (!res.ok) throw new Error(`settings fetch ${res.status}`);
@@ -47,8 +56,10 @@ try {
     ...(imageUrl ? { imageUrl } : {}),
   };
 
+  const blurUrl = heroBlurUrl(hero.image);
   const inject = [
     imageUrl ? `<link rel="preload" as="image" href="${imageUrl}" fetchpriority="high" />` : '',
+    blurUrl ? `<link rel="preload" as="image" href="${blurUrl}" fetchpriority="high" />` : '',
     // </script> can't appear inside JSON string values after JSON.stringify escaping
     // of user content is applied below, but guard the sequence anyway.
     `<script>window.__HERO__=${JSON.stringify(baked).replace(/</g, '\\u003c')}</script>`,

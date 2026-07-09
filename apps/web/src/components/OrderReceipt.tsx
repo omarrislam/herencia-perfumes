@@ -6,6 +6,13 @@ import { formatEGP } from './Price';
 // window.print()). Used by OrderConfirmation and Admin → Orders.
 export function OrderReceipt({ order, instapayHandle }: { order: OrderDTO; instapayHandle?: string }) {
   const date = new Date(order.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+  const isInstapay = order.paymentMethod === 'instapay';
+  // The courier-facing line: exactly what to collect (or not collect) at the door.
+  const collect = isInstapay
+    ? order.paidAt
+      ? { text: 'PAID VIA INSTAPAY — DO NOT COLLECT', color: '#1d5e2f', bg: '#eaf4ec' }
+      : { text: 'INSTAPAY — PAYMENT PENDING', color: '#8a5a00', bg: '#fdf3e0' }
+    : { text: `COLLECT ON DELIVERY: ${formatEGP(order.total)}`, color: '#4b1d1d', bg: '#f7ecec' };
   return (
     <div id="receipt" aria-hidden="true">
       <div style={{ fontFamily: 'Jost, sans-serif', color: '#241111', maxWidth: 640, margin: '0 auto', padding: 24 }}>
@@ -13,6 +20,23 @@ export function OrderReceipt({ order, instapayHandle }: { order: OrderDTO; insta
           <img src="/logo.png" alt="" style={{ width: 48, height: 48, objectFit: 'contain' }} />
           <div style={{ fontFamily: 'Cinzel, serif', fontSize: 20, letterSpacing: '0.25em' }}>HERENCIA</div>
           <div style={{ fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#77634d' }}>Heritage Perfumery · Receipt</div>
+        </div>
+
+        <div
+          style={{
+            marginTop: 16,
+            padding: '10px 12px',
+            textAlign: 'center',
+            fontSize: 14,
+            fontWeight: 700,
+            letterSpacing: '0.06em',
+            color: collect.color,
+            backgroundColor: collect.bg,
+            border: `2px solid ${collect.color}`,
+            borderRadius: 6,
+          }}
+        >
+          {collect.text}
         </div>
 
         <table style={{ width: '100%', fontSize: 12, marginTop: 16 }}>
@@ -69,6 +93,15 @@ export function OrderReceipt({ order, instapayHandle }: { order: OrderDTO; insta
             </tr>
           </tbody>
         </table>
+
+        {order.notes && (
+          <div style={{ marginTop: 16, padding: '10px 12px', fontSize: 12, border: '1px solid #d8ccae', borderRadius: 6 }}>
+            <div style={{ fontSize: 10, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#77634d', marginBottom: 4 }}>
+              Notes
+            </div>
+            <div style={{ whiteSpace: 'pre-line' }}>{order.notes}</div>
+          </div>
+        )}
 
         <p style={{ marginTop: 28, textAlign: 'center', fontSize: 11, color: '#77634d' }}>
           Thank you for choosing HERENCIA — luxury in every drop.<br />

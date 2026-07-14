@@ -23,6 +23,7 @@ function toFormDefaults(p?: ProductDTO): AdminProductInput {
       gender: 'unisex',
       concentration: 'EDP',
       isFeatured: false,
+      sampleStock: 0,
       isActive: true,
       seo: {},
     };
@@ -44,6 +45,7 @@ function toFormDefaults(p?: ProductDTO): AdminProductInput {
     gender: p.gender,
     concentration: p.concentration,
     isFeatured: p.isFeatured,
+    sampleStock: p.sampleStock,
     isActive: p.isActive,
     seo: p.seo,
     bundleItems: p.bundleItems?.map((b) => ({
@@ -287,6 +289,13 @@ export function ProductForm({
         <input type="checkbox" {...register('isActive')} />
         Active
       </label>
+
+      {watch('type') === 'perfume' && (
+        <label className="block">
+          <span className="mb-1 block font-body text-sm text-muted">Sample stock (0 = samples not offered)</span>
+          <input type="number" min="0" step="1" {...register('sampleStock', { valueAsNumber: true })} className="field-lux" />
+        </label>
+      )}
 
       <button
         type="submit"

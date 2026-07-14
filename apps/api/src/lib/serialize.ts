@@ -1,5 +1,5 @@
 import type { ProductDTO, ScentFamilyDTO, UserDTO, OrderDTO, AddressDTO, ReviewDTO, QuizQuestionPublicDTO, QuizQuestionAdminDTO, BannerDTO, BlogPostDTO, BlogPostListItemDTO, SettingDTO, ReorderableSection, SubscriberDTO, DiscountCodeDTO } from '@herencia/shared';
-import { DEFAULT_HOME_SECTIONS, DEFAULT_SECTION_ORDER, REORDERABLE_SECTIONS } from '@herencia/shared';
+import { DEFAULT_HOME_SECTIONS, DEFAULT_SECTION_ORDER, REORDERABLE_SECTIONS, DEFAULT_SAMPLES_SETTINGS } from '@herencia/shared';
 
 function normalizeSectionOrder(raw: unknown): ReorderableSection[] {
   // Orders saved before the 'samples' section existed predate the sales-first
@@ -58,6 +58,22 @@ export function toSettingDTO(doc: AnyDoc): SettingDTO {
       ctaText: doc.promoBar?.ctaText ?? undefined,
       ctaLink: doc.promoBar?.ctaLink ?? undefined,
     },
+    samples: {
+      price: doc.samples?.price ?? DEFAULT_SAMPLES_SETTINGS.price,
+      sizeLabel: doc.samples?.sizeLabel ?? DEFAULT_SAMPLES_SETTINGS.sizeLabel,
+      eyebrow: doc.samples?.eyebrow ?? DEFAULT_SAMPLES_SETTINGS.eyebrow,
+      heading: doc.samples?.heading ?? DEFAULT_SAMPLES_SETTINGS.heading,
+      strapline: doc.samples?.strapline ?? DEFAULT_SAMPLES_SETTINGS.strapline,
+      steps:
+        Array.isArray(doc.samples?.steps) && doc.samples.steps.length === 3
+          ? (doc.samples.steps as [string, string, string])
+          : DEFAULT_SAMPLES_SETTINGS.steps,
+      ctaText: doc.samples?.ctaText ?? DEFAULT_SAMPLES_SETTINGS.ctaText,
+      stickerTop: doc.samples?.stickerTop ?? DEFAULT_SAMPLES_SETTINGS.stickerTop,
+      stickerBottom: doc.samples?.stickerBottom ?? DEFAULT_SAMPLES_SETTINGS.stickerBottom,
+      modalTitle: doc.samples?.modalTitle ?? DEFAULT_SAMPLES_SETTINGS.modalTitle,
+      modalText: doc.samples?.modalText ?? DEFAULT_SAMPLES_SETTINGS.modalText,
+    },
     contactEmail: doc.contactEmail ?? undefined,
   };
 }
@@ -96,6 +112,7 @@ export function toProductDTO(doc: AnyDoc, opts: { populateBundle?: boolean } = {
       stock: s.stock,
     })),
     basePrice: doc.basePrice,
+    sampleStock: doc.sampleStock ?? 0,
     scentFamily: fam,
     notes: { top: doc.notes?.top ?? [], heart: doc.notes?.heart ?? [], base: doc.notes?.base ?? [] },
     gender: doc.gender,
@@ -203,6 +220,7 @@ export function toOrderDTO(doc: AnyDoc): OrderDTO {
       unitPrice: i.unitPrice,
       qty: i.qty,
       image: i.image ?? '',
+      isSample: i.isSample ? true : undefined,
     })),
     customer: {
       name: doc.customer.name,

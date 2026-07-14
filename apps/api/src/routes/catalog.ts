@@ -35,6 +35,10 @@ catalogRouter.get('/products', async (req, res, next) => {
     }
     if (q.q) filter.$text = { $search: q.q };
     if (q.featured) filter.isFeatured = true;
+    if (q.samples) {
+      filter.type = 'perfume';
+      filter.sampleStock = { $gt: 0 };
+    }
 
     const sortMap: Record<typeof q.sort, Record<string, 1 | -1>> = {
       newest: { createdAt: -1 },

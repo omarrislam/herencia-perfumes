@@ -27,4 +27,16 @@ describe('GET /api/settings', () => {
     const res = await request(app).get('/api/settings');
     expect(res.status).toBe(404);
   });
+  it('exposes samples settings with defaults when the doc has none', async () => {
+    await Setting.create({
+      whatsappNumber: '+201234567890',
+      shippingFee: 60,
+      hero: { title: 'H', subtitle: 'S', ctaText: 'Shop', ctaLink: '/products', image: 'herencia/hero' },
+    });
+    const res = await request(app).get('/api/settings');
+    expect(res.status).toBe(200);
+    expect(res.body.samples.price).toBe(60);
+    expect(res.body.samples.sizeLabel).toBe('5ml');
+    expect(res.body.samples.steps).toHaveLength(3);
+  });
 });

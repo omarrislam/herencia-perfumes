@@ -104,6 +104,27 @@ describe('PUT /api/admin/orders/:id/status', () => {
     const after = await Product.findById(p._id).lean();
     expect(after!.sizes[0]!.stock).toBe(4); // 2 on shelf + 2 restored
   });
+
+  it('cancelling restores sampleStock for sample items', async () => {
+    const p = await Product.create({
+      name: 'Amber', type: 'perfume', shortDesc: 's', description: 'd', images: ['i'],
+      sizes: [{ label: '50ml', price: 800, stock: 2 }],
+      scentFamily: '000000000000000000000010',
+      notes: { top: [], heart: [], base: [] }, gender: 'unisex', concentration: 'EDP',
+      sampleStock: 3,
+    });
+    const o = await Order.create({
+      orderNumber: 'HRC-CANCEL-2',
+      items: [{ product: p._id, name: 'Amber', sizeLabel: 'Sample · 5ml', unitPrice: 60, qty: 2, image: '', isSample: true }],
+      customer: { name: 'Mai', phone: '01000000000' },
+      shippingAddress: { line1: '1 St', city: 'Cairo', governorate: 'Cairo', phone: '01000000000' },
+      subtotal: 120, shipping: 50, total: 170, status: 'pending', paymentMethod: 'cod',
+    });
+    const res = await request(app).put(`/api/admin/orders/${o._id}/status`).set('Cookie', ADMIN).send({ status: 'cancelled' });
+    expect(res.status).toBe(200);
+    const after = await Product.findById(p._id).lean();
+    expect(after!.sampleStock).toBe(5); // 3 on shelf + 2 restored
+  });
 });
 
 describe('PUT /api/admin/orders/:id/paid', () => {

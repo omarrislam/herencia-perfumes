@@ -221,10 +221,14 @@ export function adminRouter(): Router {
       // product or size has since been deleted).
       if (from !== to && to === 'cancelled') {
         for (const item of order.items) {
-          await Product.updateOne(
-            { _id: item.product, 'sizes.label': item.sizeLabel },
-            { $inc: { 'sizes.$.stock': item.qty } },
-          );
+          if (item.isSample) {
+            await Product.updateOne({ _id: item.product }, { $inc: { sampleStock: item.qty } });
+          } else {
+            await Product.updateOne(
+              { _id: item.product, 'sizes.label': item.sizeLabel },
+              { $inc: { 'sizes.$.stock': item.qty } },
+            );
+          }
         }
       }
       // WhatsApp status update via the official Cloud API (no-op unless configured).

@@ -1,4 +1,5 @@
 import type { CreateOrderInput, CreateOrderResultDTO } from '@herencia/shared';
+import { SAMPLE_SIZE_LABEL, DEFAULT_SAMPLES_SETTINGS } from '@herencia/shared';
 import { Product } from '../../models/Product';
 import { Setting } from '../../models/Setting';
 import { Order } from '../../models/Order';
@@ -22,35 +23,37 @@ export async function createOrder(
     });
   }
 
+  const setting = await Setting.findOne().lean();
+  const sampleSizeLabel = setting?.samples?.sizeLabel ?? DEFAULT_SAMPLES_SETTINGS.sizeLabel;
+
   // Atomically decrement stock; roll back on any failure to avoid oversell.
-  const decremented: { id: string; label: string; qty: number }[] = [];
+  const decremented: { id: string; label: string; qty: number; isSample: boolean }[] = [];
   for (const line of priced.items) {
-    const r = await Product.updateOne(
-      {
-        _id: line.productId,
-        sizes: { $elemMatch: { label: line.sizeLabel, stock: { $gte: line.qty } } },
-      },
-      { $inc: { 'sizes.$.stock': -line.qty } },
-    );
-    if (r.modifiedCount !== 1) {
-      for (const d of decremented) {
-        await Product.updateOne(
-          { _id: d.id, 'sizes.label': d.label },
-          { $inc: { 'sizes.$.stock': d.qty } },
+    const isSample = line.sizeLabel === SAMPLE_SIZE_LABEL;
+    const r = isSample
+      ? await Product.updateOne(
+          { _id: line.productId, sampleStock: { $gte: line.qty } },
+          { $inc: { sampleStock: -line.qty } },
+        )
+      : await Product.updateOne(
+          {
+            _id: line.productId,
+            sizes: { $elemMatch: { label: line.sizeLabel, stock: { $gte: line.qty } } },
+          },
+          { $inc: { 'sizes.$.stock': -line.qty } },
         );
-      }
+    if (r.modifiedCount !== 1) {
+      await rollback(decremented);
       throw new HttpError(
         409,
         'Stock changed during checkout, please review your cart',
         'stock_conflict',
       );
     }
-    decremented.push({ id: line.productId, label: line.sizeLabel, qty: line.qty });
+    decremented.push({ id: line.productId, label: line.sizeLabel, qty: line.qty, isSample });
   }
 
   try {
-    const setting = await Setting.findOne().lean();
-
     // Discounts are always computed server-side, never trusted from the client.
     // The email-popup code (settings) wins; otherwise look up admin-managed codes.
     const popup = setting?.emailPopup;
@@ -82,10 +85,11 @@ export async function createOrder(
       items: priced.items.map((l) => ({
         product: l.productId,
         name: l.name,
-        sizeLabel: l.sizeLabel,
+        sizeLabel: l.sizeLabel === SAMPLE_SIZE_LABEL ? `Sample · ${sampleSizeLabel}` : l.sizeLabel,
         unitPrice: l.unitPrice,
         qty: l.qty,
         image: l.image,
+        isSample: l.sizeLabel === SAMPLE_SIZE_LABEL || undefined,
       })),
       customer: input.customer,
       shippingAddress: input.shippingAddress,
@@ -113,12 +117,22 @@ export async function createOrder(
     await sendNewOrderAlert(doc);
     return { order, whatsappUrl };
   } catch (err) {
-    for (const d of decremented) {
+    await rollback(decremented);
+    throw err;
+  }
+}
+
+async function rollback(
+  decremented: { id: string; label: string; qty: number; isSample: boolean }[],
+): Promise<void> {
+  for (const d of decremented) {
+    if (d.isSample) {
+      await Product.updateOne({ _id: d.id }, { $inc: { sampleStock: d.qty } });
+    } else {
       await Product.updateOne(
         { _id: d.id, 'sizes.label': d.label },
         { $inc: { 'sizes.$.stock': d.qty } },
       );
     }
-    throw err;
   }
 }

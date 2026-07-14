@@ -1,6 +1,14 @@
 # Current State
 
-_Last updated: 2026-07-14_
+_Last updated: 2026-07-15_
+
+## Post-M4 round 32 (SAMPLES REDESIGN — per-perfume stock + CMS copy, MERGED d7f1d22 + DEPLOYED + MIGRATED, 2026-07-15)
+- ✅ **Full samples system redesign shipped** (spec `docs/superpowers/specs/2026-07-14-samples-redesign-design.md`, plan `docs/superpowers/plans/2026-07-14-samples-redesign.md`, executed via subagent-driven development — 9 tasks, per-task reviews, final whole-branch review on opus = Ready to merge). Branch `feat/samples-redesign` merged to master as `d7f1d22`, branch deleted. **Pre-flight: rounds 16–31 were committed first as `c199be5`** (user approved commit+branch).
+- Architecture: cart line `{productId: <perfume>, sizeLabel: 'sample'}` (shared `SAMPLE_SIZE_LABEL`); price global from `Setting.samples.price`; stock per perfume `Product.sampleStock` (admin-set in Products, perfume-only field); ALL copy (eyebrow/heading/strapline/3 steps/ctaText/stickerTop/stickerBottom/modalTitle/modalText + price + sizeLabel, `{price}`/`{size}` tokens) in `Setting.samples`, editable in Admin → Home "Samples" card, defaults in shared `DEFAULT_SAMPLES_SETTINGS`; order items snapshot `sizeLabel: 'Sample · 5ml'` + `isSample: true`; cancel restores sampleStock; `GET /api/products?samples=true`; Inventory shows Sample rows. **`SAMPLE_PRODUCT` constant, `ensureSampleProduct` seeder, and the global sample product are GONE** (grep-clean).
+- ✅ Suites: shared 54 / api 169 / web 48; typecheck/lint/build clean. Final-review fix: ProductCard sample CTA gated on `sampleStock > 0` (`a7dd61a`).
+- ✅ **Prod migration done**: legacy `sample-box` product deleted; amber-noir + cedar-smoke `sampleStock: 50` (user's choice). Live E2E verified on production: sample order HRC-MRL8E9EO-LFI7 (created→stock 49→cancelled→stock 50→deleted); browser QA on herencia-eg.com (home section, modal pool = 2 perfumes no bundles, add-to-cart line "Amber Noir / Sample · 5ml", admin Samples card, inventory rows).
+- ⚠ Old carts holding legacy `sample-box` lines show them "Unavailable" (customers remove them) — expected.
+- 📋 Accepted minors (final-review triage, all deferred): Cart.tsx uses default sizeLabel w/o settings fetch; modal re-pick silently no-ops; `?samples=true` overrides `type` uncommented; priceItems branch duplication; `decremented[]` no type alias; notifier-throw rollback hardening (unreachable today).
 
 ## Post-M4 round 31 (duplicate sample product — PUT slug-regeneration bug, DEPLOYED api, 2026-07-14)
 - 🐛 User: after editing the sample product (2ml→5ml), TWO "Perfume Sample" rows appeared in admin, samples couldn't be added to cart, and home still showed 2ml. Root cause chain: `PUT /api/admin/products/:id` did `slug: data.slug ?? slugify(data.name)` and the form NEVER sends slug → his edit silently renamed the original's slug `sample-box` → `perfume-sample` → storefront lookups (ThreeSteps/SampleModal fetch by `SAMPLE_PRODUCT.slug`) missed it → next serverless cold boot `ensureSampleProduct` found no `sample-box` and SEEDED A DUPLICATE with 2ml defaults. (Round 30's fix ENABLED sample edits, which exposed this.)

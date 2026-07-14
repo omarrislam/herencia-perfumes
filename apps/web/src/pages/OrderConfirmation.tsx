@@ -5,8 +5,10 @@ import type { CreateOrderResultDTO } from '@herencia/shared';
 import { Price, formatEGP } from '../components/Price';
 import { OrderReceipt } from '../components/OrderReceipt';
 import { fetchSettings } from '../lib/api';
+import { useSeo } from '../lib/useSeo';
 
 export default function OrderConfirmation() {
+  useSeo({ title: 'Order Confirmation — HERENCIA' });
   const { state } = useLocation();
   const result = state as CreateOrderResultDTO | null;
   const settings = useQuery({ queryKey: ['settings'], queryFn: fetchSettings });

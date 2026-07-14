@@ -15,7 +15,8 @@ function ensureDb(): Promise<unknown> {
   return ready;
 }
 
-const app = createApp({ clientOrigin: env.CLIENT_ORIGIN, origin: env.CLIENT_ORIGIN });
+// SEO/canonical origin = the FIRST entry in CLIENT_ORIGIN (the custom domain).
+const app = createApp({ clientOrigin: env.CLIENT_ORIGIN, origin: env.CLIENT_ORIGIN.split(',')[0]!.trim() });
 
 export default async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
   // Don't let a DB outage crash the function — otherwise Express never runs and

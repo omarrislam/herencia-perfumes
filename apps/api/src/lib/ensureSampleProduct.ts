@@ -7,16 +7,16 @@ import { Product } from '../models/Product';
 export async function ensureSampleProduct(): Promise<void> {
   try {
     const existing = await Product.findOne({ slug: SAMPLE_PRODUCT.slug });
-    if (existing) {
-      // Migrate the old fixed "5 × 2ml" box to the per-unit shape once.
-      if (!existing.sizes.some((s) => s.label === SAMPLE_PRODUCT.sizeLabel)) {
-        existing.name = 'Perfume Sample';
-        existing.shortDesc = 'A 2ml sample — try before you commit.';
-        existing.description =
-          'Hand-decanted 2ml samples from the HERENCIA collection. Pick the scents you want to try — the sample value is credited toward your full bottle when you buy.';
-        existing.set('sizes', [{ label: SAMPLE_PRODUCT.sizeLabel, price: SAMPLE_PRODUCT.price, stock: 999999 }]);
-        await existing.save();
-      }
+    // If it exists, leave it alone — size label, price, and copy are the
+    // admin's to edit in Products. (The one-time legacy "5 × 2ml box"
+    // migration already ran; re-checking the label here used to RESET
+    // admin edits on every boot.)
+    if (existing) return;
+    // Slug drifted (e.g. an explicit rename)? Re-attach the existing sample
+    // instead of seeding a duplicate — the storefront looks it up by this slug.
+    const drifted = await Product.findOne({ type: 'sample' });
+    if (drifted) {
+      await Product.updateOne({ _id: drifted._id }, { slug: SAMPLE_PRODUCT.slug });
       return;
     }
     await Product.create({

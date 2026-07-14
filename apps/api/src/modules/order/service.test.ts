@@ -3,6 +3,7 @@ import { connectMemory, disconnectMemory, clearDb } from '../../test/db';
 import { ScentFamily } from '../../models/ScentFamily';
 import { Product } from '../../models/Product';
 import { Setting } from '../../models/Setting';
+import { DiscountCode } from '../../models/DiscountCode';
 import { createOrder } from './service';
 
 beforeAll(connectMemory);
@@ -31,9 +32,10 @@ const input = (qty: number) => ({
 });
 
 describe('createOrder', () => {
-  it('creates a pending COD order, snapshots items, decrements stock, returns a whatsapp url', async () => {
+  it('creates a CONFIRMED COD order, snapshots items, decrements stock, returns a whatsapp url', async () => {
     const { order, whatsappUrl } = await createOrder(input(2));
-    expect(order.status).toBe('pending');
+    expect(order.status).toBe('confirmed'); // COD has no payment step
+    expect(order.statusHistory[0]).toMatchObject({ status: 'confirmed' });
     expect(order.paymentMethod).toBe('cod');
     expect(order.subtotal).toBe(1600);
     expect(order.total).toBe(1650);
@@ -65,6 +67,30 @@ describe('createOrder', () => {
     expect(order2.discount).toBe(0);
     expect(order2.total).toBe(850);
   });
+  it('applies an admin-managed discount code (case-insensitive) and increments uses', async () => {
+    await DiscountCode.create({ code: 'SAVE20', percent: 20, isActive: true });
+    const { order } = await createOrder({ ...input(2), discountCode: 'save20' });
+    expect(order.discount).toBe(320); // 20% of 1600
+    expect(order.discountCode).toBe('SAVE20');
+    expect(order.total).toBe(1330); // 1600 + 50 − 320
+    const dc = await DiscountCode.findOne({ code: 'SAVE20' }).lean();
+    expect(dc!.uses).toBe(1);
+  });
+
+  it('ignores paused or expired admin codes', async () => {
+    await DiscountCode.create({ code: 'PAUSED', percent: 20, isActive: false });
+    await DiscountCode.create({ code: 'GONE', percent: 20, isActive: true, expiresAt: new Date(Date.now() - 1000) });
+    const { order } = await createOrder({ ...input(1), discountCode: 'PAUSED' });
+    expect(order.discount).toBe(0);
+    const { order: order2 } = await createOrder({ ...input(1), discountCode: 'GONE' });
+    expect(order2.discount).toBe(0);
+  });
+
+  it('InstaPay orders stay pending until payment is marked received', async () => {
+    const { order } = await createOrder({ ...input(1), paymentMethod: 'instapay' });
+    expect(order.status).toBe('pending');
+  });
+
   it('409 cart_unavailable carries details.items listing the unavailable lines', async () => {
     let caught: unknown;
     try {

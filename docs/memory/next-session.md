@@ -1,13 +1,13 @@
 # Next Session — START HERE
 
-_Last updated: 2026-07-09_
+_Last updated: 2026-07-12_
 
-## ⭐ NEXT UP (user-approved backlog from the round-19 critique, 2026-07-09)
-User reviewed the full critique and picked these to build next (scope was "report only" this round — NOT built yet):
-1. **Samples section redesign** — user: "very long and misleading to its meaning, I can barely notice it talks about samples; use a marketing typography." Make SAMPLES the unmistakable subject (big marketing-led headline, e.g. price-led "Try any scent · 2ml · EGP 60"), and shorter overall.
-2. **Checkout ergonomics** — phone placeholder/example (01X…), governorate `<select>` (27 governorates), WhatsApp-us link near buy buttons.
-3. **Floating WhatsApp + Instagram icons** — small, unobtrusive while scrolling, "hidden in a smart way" (e.g. shrink/fade on scroll-down, reappear on scroll-up/idle; respect reduced motion).
-Full critique findings (28/40 Nielsen, P0 = placeholder catalog imagery incl. YSL-watermarked collage + dead Royal Oud testimonial link — CONTENT, user's side): see current-state round 19. Other code fixables parked: section dead-air rhythm (~330px voids, divider doubles gap), sold-out card alignment + notify-me, PDP content thinness, reveal opacity-0 robustness, no search/reorder, 3-Steps double numbering, cart-drawer dim.
+## NEW (2026-07-12, round 27): ntfy owner purchase alerts, DEPLOYED api, UNCOMMITTED
+Push notification to the owner's phone via ntfy.sh on every new order (`apps/api/src/lib/ntfy.ts`, wired into `createOrder`). **Two real production bugs found+fixed after the first deploy sent zero notifications** — full root-cause writeup in round 27 of current-state.md: (1) header-based ntfy API rejected the em-dash title (Fetch header values must be ByteString/Latin-1) → switched to ntfy's JSON publish API; (2) `NTFY_TOPIC` on Vercel had a trailing `\n` from `echo | vercel env add` → re-set via `printf '%s' | vercel env add`. Verified end-to-end against live production (real order → real ntfy.sh poll confirms the exact message). `NTFY_TOPIC=herencia-orders-x2026` (clean) is set in local `.env` + Vercel `herencia-api` (Production+Development; Preview skipped, no connected Git repo). api suite 160 green, deployed twice + verified live. **Ask the user whether to commit this round** (rounds 20–26b are also still uncommitted from before).
+
+## ⭐ Round-19 critique backlog — items 1–3 DONE in round 20 (deployed, uncommitted)
+✅ Built: samples redesign, checkout ergonomics (phone hint / governorate select / WhatsApp links), floating WhatsApp+Instagram with smart hide. **Ask the user to commit round 20.**
+Still parked from the critique: **P0 catalog content is the user's side** (real product photos — Cedar Smoke image is YSL-watermarked!, restock/hide sold-out bundle, fix stale Royal Oud testimonial). Code fixables remaining: section dead-air rhythm (~330px voids, divider doubles gap), sold-out card alignment + notify-me, PDP content thinness, reveal opacity-0 robustness (print/no-JS), no search/reorder, cart-drawer dim, admin-editable testimonials.
 
 ## NEW (2026-07-09, round 17): Performance + animations, DEPLOYED (still UNCOMMITTED, together with round 16 — ask user to commit!) — entry gzip 134.6→73.9 kB (framer/zod out of entry; CSS route-fade + mobile menu; lazy CartDrawer/SampleModal/EmailPopup; shared sideEffects:false), Home-route modulepreload injection (`preload-home.mjs`, needs `build.manifest`), ScentTrail hero animation (wisps + gold motes), hero scroll-away parallax, staggered reveals. **Live Lighthouse mobile 29 → ~56-61** (CLS 0.862→0.005 — root cause was Suspense fallback null painting the footer at top; logo.png 178→28.5 kB). **≥90 needs: home prerender/SSR retry (hydration #419 was why M4 reverted it), responsive hero srcset, real product images instead of picsum seeds.**
 

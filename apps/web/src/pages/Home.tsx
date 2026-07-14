@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { DEFAULT_SECTION_ORDER, type ReorderableSection } from '@herencia/shared';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
@@ -6,6 +6,7 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 import { fetchProducts, fetchSettings } from '../lib/api';
 import { cld, cldBlur } from '../lib/cloudinary';
 import { readHeroCache, writeHeroCache } from '../lib/heroCache';
+import { readListCache, writeListCache } from '../lib/listCache';
 import { useSeo } from '../lib/useSeo';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import { ProductCard } from '../components/ProductCard';
@@ -66,8 +67,45 @@ export default function Home() {
   const heroImgRef = useCallback((el: HTMLImageElement | null) => {
     if (el?.complete) setHeroLoaded(true); // already cached — skip the fade
   }, []);
-  const featured = useQuery({ queryKey: ['products', 'featured'], queryFn: () => fetchProducts({ sort: 'rating', page: 1 }) });
-  const featuredItems = (featured.data?.items ?? []).filter((p) => p.isFeatured).slice(0, 3);
+  // Server-side featured filter — the old page-1 fetch + client slice(0,3)
+  // capped the section at 3 and missed featured products beyond page 1.
+  // Last-known list renders instantly from localStorage; fresh data replaces it.
+  const featured = useQuery({
+    queryKey: ['products', 'featured'],
+    queryFn: async () => {
+      const data = await fetchProducts({ featured: true, sort: 'rating', limit: 12 });
+      writeListCache('featured', data);
+      return data;
+    },
+    placeholderData: () => readListCache<import('@herencia/shared').ProductListDTO>('featured'),
+  });
+  const featuredItems = featured.data?.items ?? [];
+  // With 3 or fewer the desktop shows a static 3-up grid; more become a
+  // snap carousel with arrows (mobile always swipes).
+  const featuredCarousel = featuredItems.length > 3;
+  const featuredScroller = useRef<HTMLDivElement>(null);
+  const scrollFeatured = (dir: 1 | -1) => {
+    const el = featuredScroller.current;
+    if (!el) return;
+    const step = (el.firstElementChild?.getBoundingClientRect().width ?? el.clientWidth / 3) + 24;
+    const max = el.scrollWidth - el.clientWidth;
+    const target = Math.max(0, Math.min(max, el.scrollLeft + dir * step));
+    // Native smooth scrollTo gets cancelled by Chrome in this handler context —
+    // tween scrollLeft manually instead (instant under reduced motion).
+    if (reduced) {
+      el.scrollLeft = target;
+      return;
+    }
+    const from = el.scrollLeft;
+    const t0 = performance.now();
+    const D = 350;
+    const tick = (now: number) => {
+      const p = Math.min(1, (now - t0) / D);
+      el.scrollLeft = from + (target - from) * (1 - Math.pow(1 - p, 3));
+      if (p < 1) requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  };
   // Render the last-known hero instantly (cached from the previous visit); the
   // fresh settings replace it once loaded — same image → no swap for returning users.
   const cachedHero = useMemo(() => readHeroCache(), []);
@@ -132,16 +170,49 @@ export default function Home() {
             <div className="rule-gold mx-auto mt-4 w-24" />
           </div>
         </Reveal>
-        <div className="-mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-3 sm:mx-0 sm:gap-5 sm:px-0 md:mx-auto md:grid md:max-w-4xl md:grid-cols-3 md:gap-6 md:overflow-visible md:pb-0">
-          {featured.isLoading
-            ? Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="w-[46%] shrink-0 snap-start sm:w-[31%] md:w-full"><Skeleton className="aspect-square rounded-xl" /></div>
-              ))
-            : featuredItems.map((p, i) => (
-                <Reveal key={p.id} delay={i * 0.1} className="w-[46%] shrink-0 snap-start sm:w-[31%] md:w-full">
-                  <ProductCard product={p} />
-                </Reveal>
-              ))}
+        <div className="relative md:mx-auto md:max-w-4xl">
+          <div
+            ref={featuredScroller}
+            className={`no-scrollbar -mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto overflow-y-hidden overscroll-x-contain px-5 pb-3 sm:gap-5 ${
+              featuredCarousel
+                ? 'md:mx-0 md:snap-none md:gap-6 md:px-0 md:pb-0'
+                : 'sm:mx-0 sm:px-0 md:grid md:grid-cols-3 md:gap-6 md:overflow-visible md:pb-0'
+            }`}
+          >
+            {featured.isLoading
+              ? Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="w-[46%] shrink-0 snap-start sm:w-[31%] md:w-full"><Skeleton className="aspect-[5/6] rounded-xl" /></div>
+                ))
+              : featuredItems.map((p, i) => (
+                  <Reveal
+                    key={p.id}
+                    delay={Math.min(i, 2) * 0.1}
+                    className={`w-[46%] shrink-0 snap-start sm:w-[31%] ${featuredCarousel ? 'md:w-[31.5%]' : 'md:w-full'}`}
+                  >
+                    <ProductCard product={p} />
+                  </Reveal>
+                ))}
+          </div>
+          {featuredCarousel && (
+            <>
+              <button
+                type="button"
+                aria-label="Previous products"
+                onClick={() => scrollFeatured(-1)}
+                className="absolute -left-6 top-[38%] hidden h-10 w-10 items-center justify-center rounded-full border border-hairline bg-surface font-body text-content shadow-lux transition-colors hover:border-accent hover:text-accent md:flex lg:-left-14"
+              >
+                ←
+              </button>
+              <button
+                type="button"
+                aria-label="Next products"
+                onClick={() => scrollFeatured(1)}
+                className="absolute -right-6 top-[38%] hidden h-10 w-10 items-center justify-center rounded-full border border-hairline bg-surface font-body text-content shadow-lux transition-colors hover:border-accent hover:text-accent md:flex lg:-right-14"
+              >
+                →
+              </button>
+            </>
+          )}
         </div>
         {!featured.isLoading && featuredItems.length === 0 && (
           <p className="text-center font-body text-muted">No featured products yet.</p>
@@ -235,7 +306,7 @@ export default function Home() {
                 Which scent were you born to wear?
               </h2>
               <p className="mt-4 max-w-sm font-body leading-relaxed text-cream/70">
-                Answer a few questions and we'll name your scent family — and the bottle to begin with.
+                Answer a few questions and we&rsquo;ll name your scent family — and the bottle to begin with.
               </p>
               <div className="mt-8 flex flex-wrap items-center gap-4">
                 <Link

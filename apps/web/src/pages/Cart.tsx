@@ -4,8 +4,10 @@ import { useCart } from '../features/cart/CartContext';
 import { useSamples } from '../features/samples/SampleContext';
 import { Price } from '../components/Price';
 import { cld } from '../lib/cloudinary';
+import { useSeo } from '../lib/useSeo';
 
 export default function Cart() {
+  useSeo({ title: 'Your Cart — HERENCIA' });
   const { priced, updateQty, removeItem } = useCart();
   const { samples } = useSamples();
 
@@ -116,9 +118,18 @@ export default function Cart() {
               <span>Total</span>
               <Price value={priced.total} />
             </div>
-            <Link to="/checkout" className="btn-lux mt-2 w-full">
-              Proceed to checkout
-            </Link>
+            {priced.hasUnavailable ? (
+              <div className="mt-2 space-y-1.5">
+                <button type="button" disabled className="btn-lux w-full cursor-not-allowed opacity-50">
+                  Proceed to checkout
+                </button>
+                <p className="text-center font-body text-xs text-danger">Remove the unavailable items to continue.</p>
+              </div>
+            ) : (
+              <Link to="/checkout" className="btn-lux mt-2 w-full">
+                Proceed to checkout
+              </Link>
+            )}
           </div>
         </>
       )}

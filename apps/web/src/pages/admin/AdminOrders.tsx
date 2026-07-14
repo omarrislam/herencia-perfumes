@@ -9,15 +9,16 @@ import {
   adminUpdateOrderStatus,
   adminMarkOrderPaid,
   adminDeleteOrder,
+  adminDownloadOrdersCsv,
 } from '../../features/admin/adminClient';
 import { Price } from '../../components/Price';
 import { OrderReceipt } from '../../components/OrderReceipt';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/** Hours an order has been pending; 0 when not pending. */
+/** Hours an order has been awaiting fulfilment (pending or confirmed). */
 function pendingAgeHours(order: OrderDTO): number {
-  if (order.status !== 'pending') return 0;
+  if (order.status !== 'pending' && order.status !== 'confirmed') return 0;
   return Math.floor((Date.now() - new Date(order.createdAt).getTime()) / 3_600_000);
 }
 
@@ -156,6 +157,14 @@ export default function AdminOrders() {
               Clear
             </button>
           )}
+          <button
+            type="button"
+            onClick={() => void adminDownloadOrdersCsv({ status: filter, q })}
+            title="Download the current view as CSV"
+            className="rounded border border-line px-3 py-1 text-muted hover:text-accent"
+          >
+            Export CSV
+          </button>
         </form>
       </div>
 

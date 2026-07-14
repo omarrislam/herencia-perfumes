@@ -1,6 +1,35 @@
 // apps/web/src/features/admin/adminClient.ts
-import type { AdminProductInput, ProductDTO, ScentFamilyDTO, OrderDTO, OrderStatus, ReviewDTO, QuizQuestionAdminDTO, QuizQuestionInput, BannerDTO, BannerInput, BlogPostDTO, BlogPostInput } from '@herencia/shared';
-import { apiSend, apiGet } from '../../lib/api';
+import type { AdminProductInput, ProductDTO, ScentFamilyDTO, OrderDTO, OrderStatus, ReviewDTO, QuizQuestionAdminDTO, QuizQuestionInput, BannerDTO, BannerInput, BlogPostDTO, BlogPostInput, SubscriberDTO, CustomerDTO, AdminStatsDTO, DiscountCodeDTO, DiscountCodeInput } from '@herencia/shared';
+import { apiSend, apiGet, apiGetBlob } from '../../lib/api';
+
+type Paged<T> = { items: T[]; total: number; page: number; pages: number };
+
+export const adminFetchSubscribers = (page = 1) =>
+  apiGet<Paged<SubscriberDTO>>(`/api/admin/subscribers?page=${page}`);
+export const adminFetchCustomers = (page = 1) =>
+  apiGet<Paged<CustomerDTO>>(`/api/admin/customers?page=${page}`);
+export const adminFetchStats = () => apiGet<AdminStatsDTO>('/api/admin/stats');
+export const adminFetchDiscounts = () => apiGet<DiscountCodeDTO[]>('/api/admin/discounts');
+export const adminCreateDiscount = (data: DiscountCodeInput) =>
+  apiSend<DiscountCodeDTO>('POST', '/api/admin/discounts', data);
+export const adminUpdateDiscount = (id: string, data: DiscountCodeInput) =>
+  apiSend<DiscountCodeDTO>('PUT', `/api/admin/discounts/${id}`, data);
+export const adminDeleteDiscount = (id: string) =>
+  apiSend<void>('DELETE', `/api/admin/discounts/${id}`);
+
+// Triggers a browser download of the orders CSV (honors status/q filters).
+export async function adminDownloadOrdersCsv(opts: { status?: OrderStatus; q?: string } = {}): Promise<void> {
+  const params = new URLSearchParams();
+  if (opts.status) params.set('status', opts.status);
+  if (opts.q) params.set('q', opts.q);
+  const qs = params.toString();
+  const blob = await apiGetBlob(`/api/admin/orders-export${qs ? `?${qs}` : ''}`);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `herencia-orders${opts.status ? `-${opts.status}` : ''}.csv`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
 
 export const adminCreateProduct = (data: AdminProductInput) =>
   apiSend<ProductDTO>('POST', '/api/admin/products', data);

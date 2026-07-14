@@ -18,7 +18,7 @@ export default function Bundles() {
       </div>
       {bundles.isLoading ? (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 sm:gap-5">
-          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="aspect-square rounded-xl" />)}
+          {Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="aspect-[5/6] rounded-xl" />)}
         </div>
       ) : bundles.data && bundles.data.items.length === 0 ? (
         <p className="py-16 text-center font-body text-muted">No bundles available yet.</p>

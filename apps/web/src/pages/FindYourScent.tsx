@@ -3,10 +3,12 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import type { QuizQuestionPublicDTO, QuizResultDTO, QuizResultInput } from '@herencia/shared';
 import { fetchQuiz, submitQuizResult } from '../lib/api';
 import { ProductCard } from '../components/ProductCard';
+import { useSeo } from '../lib/useSeo';
 
 type Selection = { questionId: string; answerIndex: number };
 
 export default function FindYourScent() {
+  useSeo({ title: 'Find Your Scent — HERENCIA' });
   const [selections, setSelections] = useState<Selection[]>([]);
   const [result, setResult] = useState<QuizResultDTO | null>(null);
 

@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTheme } from './ThemeProvider';
 import { useAuth } from '../features/auth/AuthContext';
 import { useCart } from '../features/cart/CartContext';
+import { FloatingSocials } from '../components/FloatingSocials';
 import { fetchSettings } from '../lib/api';
 
 // Overlays are lazy so framer-motion (their animation lib) stays out of the
@@ -254,7 +255,7 @@ export function StorefrontLayout() {
                 <li><Link to="/blog" className="link-underline transition-colors hover:text-accent">Journal</Link></li>
                 <li><Link to="/returns" className="link-underline transition-colors hover:text-accent">Returns &amp; refunds</Link></li>
                 <li><Link to={user ? '/account' : '/login'} className="link-underline transition-colors hover:text-accent">{user ? 'Account' : 'Sign in'}</Link></li>
-                <li><a href="mailto:hello@herencia.example" className="link-underline transition-colors hover:text-accent">Contact</a></li>
+                <li><a href={`mailto:${settingsData?.contactEmail || 'hello@herencia.example'}`} className="link-underline transition-colors hover:text-accent">Contact</a></li>
               </ul>
             </div>
           </div>
@@ -262,6 +263,7 @@ export function StorefrontLayout() {
           <p className="mt-6 font-body text-xs tracking-wide text-muted">© {new Date().getFullYear()} HERENCIA. Crafted in Egypt.</p>
         </div>
       </footer>
+      <FloatingSocials />
       <Suspense fallback={null}>
         <CartDrawer />
         <SampleModal />

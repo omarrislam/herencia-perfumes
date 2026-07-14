@@ -1,4 +1,4 @@
-import type { ProductDTO, ScentFamilyDTO, UserDTO, OrderDTO, AddressDTO, ReviewDTO, QuizQuestionPublicDTO, QuizQuestionAdminDTO, BannerDTO, BlogPostDTO, BlogPostListItemDTO, SettingDTO, ReorderableSection } from '@herencia/shared';
+import type { ProductDTO, ScentFamilyDTO, UserDTO, OrderDTO, AddressDTO, ReviewDTO, QuizQuestionPublicDTO, QuizQuestionAdminDTO, BannerDTO, BlogPostDTO, BlogPostListItemDTO, SettingDTO, ReorderableSection, SubscriberDTO, DiscountCodeDTO } from '@herencia/shared';
 import { DEFAULT_HOME_SECTIONS, DEFAULT_SECTION_ORDER, REORDERABLE_SECTIONS } from '@herencia/shared';
 
 function normalizeSectionOrder(raw: unknown): ReorderableSection[] {
@@ -257,4 +257,25 @@ export function toBlogListItemDTO(doc: AnyDoc): BlogPostListItemDTO {
   const { body, ...rest } = toBlogPostDTO(doc);
   void body;
   return rest;
+}
+
+export function toSubscriberDTO(doc: AnyDoc): SubscriberDTO {
+  return {
+    id: String(doc._id),
+    email: doc.email,
+    source: doc.source ?? 'popup',
+    createdAt: (doc.createdAt instanceof Date ? doc.createdAt : new Date(doc.createdAt)).toISOString(),
+  };
+}
+
+export function toDiscountCodeDTO(doc: AnyDoc): DiscountCodeDTO {
+  return {
+    id: String(doc._id),
+    code: doc.code,
+    percent: doc.percent,
+    isActive: !!doc.isActive,
+    expiresAt: doc.expiresAt ? new Date(doc.expiresAt).toISOString() : undefined,
+    uses: doc.uses ?? 0,
+    createdAt: (doc.createdAt instanceof Date ? doc.createdAt : new Date(doc.createdAt)).toISOString(),
+  };
 }

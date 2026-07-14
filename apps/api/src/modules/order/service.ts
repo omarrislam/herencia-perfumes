@@ -2,12 +2,14 @@ import type { CreateOrderInput, CreateOrderResultDTO } from '@herencia/shared';
 import { Product } from '../../models/Product';
 import { Setting } from '../../models/Setting';
 import { Order } from '../../models/Order';
+import { DiscountCode } from '../../models/DiscountCode';
 import { HttpError } from '../../middleware/error';
 import { priceItems } from '../cart/service';
 import { buildWhatsAppUrl } from '../../lib/whatsapp';
 import { generateOrderNumber } from '../../lib/orderNumber';
 import { toOrderDTO } from '../../lib/serialize';
 import { sendOrderReceipt } from '../../lib/waCloud';
+import { sendNewOrderAlert } from '../../lib/ntfy';
 
 export async function createOrder(
   input: CreateOrderInput,
@@ -49,7 +51,8 @@ export async function createOrder(
   try {
     const setting = await Setting.findOne().lean();
 
-    // Email-popup discount — validated against settings, never the client amount.
+    // Discounts are always computed server-side, never trusted from the client.
+    // The email-popup code (settings) wins; otherwise look up admin-managed codes.
     const popup = setting?.emailPopup;
     const codeValid =
       !!input.discountCode &&
@@ -57,9 +60,22 @@ export async function createOrder(
       !!popup.code &&
       !!popup.discountPercent &&
       input.discountCode.trim().toUpperCase() === popup.code.trim().toUpperCase();
-    const discount = codeValid
-      ? Math.round(priced.subtotal * (popup!.discountPercent! / 100) * 100) / 100
-      : 0;
+    let discount = 0;
+    let appliedCode: string | undefined;
+    if (codeValid) {
+      discount = Math.round(priced.subtotal * (popup!.discountPercent! / 100) * 100) / 100;
+      appliedCode = popup!.code ?? undefined;
+    } else if (input.discountCode) {
+      const dc = await DiscountCode.findOne({
+        code: input.discountCode.trim().toUpperCase(),
+        isActive: true,
+      }).lean();
+      if (dc && (!dc.expiresAt || new Date(dc.expiresAt) > new Date())) {
+        discount = Math.round(priced.subtotal * (dc.percent / 100) * 100) / 100;
+        appliedCode = dc.code;
+        await DiscountCode.updateOne({ _id: dc._id }, { $inc: { uses: 1 } });
+      }
+    }
 
     const doc = await Order.create({
       orderNumber: generateOrderNumber(),
@@ -76,10 +92,14 @@ export async function createOrder(
       subtotal: priced.subtotal,
       shipping: priced.shipping,
       discount,
-      discountCode: codeValid ? popup!.code : undefined,
+      discountCode: appliedCode,
       total: Math.round((priced.total - discount) * 100) / 100,
-      status: 'pending',
-      statusHistory: [{ status: 'pending', at: new Date() }],
+      // COD has no payment step — it's confirmed the moment it's placed.
+      // InstaPay stays pending until the transfer is marked received.
+      status: (input.paymentMethod ?? 'cod') === 'instapay' ? 'pending' : 'confirmed',
+      statusHistory: [
+        { status: (input.paymentMethod ?? 'cod') === 'instapay' ? 'pending' : 'confirmed', at: new Date() },
+      ],
       paymentMethod: input.paymentMethod ?? 'cod',
       notes: input.notes,
       user: userId,
@@ -89,6 +109,8 @@ export async function createOrder(
     const whatsappUrl = buildWhatsAppUrl(setting?.whatsappNumber ?? '', order);
     // WhatsApp receipt via the official Cloud API (no-op unless configured).
     await sendOrderReceipt(doc, setting?.instapay);
+    // Owner push notification via ntfy.sh (no-op unless configured).
+    await sendNewOrderAlert(doc);
     return { order, whatsappUrl };
   } catch (err) {
     for (const d of decremented) {

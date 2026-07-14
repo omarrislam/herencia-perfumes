@@ -33,6 +33,7 @@ export default function AdminHome() {
   const [emailPopup, setEmailPopup] = useState<{ enabled: boolean; title: string; text: string; code: string; discountPercent: string }>({ enabled: false, title: '', text: '', code: '', discountPercent: '10' });
   const [promoBar, setPromoBar] = useState<{ enabled: boolean; text: string; ctaText: string; ctaLink: string }>({ enabled: false, text: '', ctaText: '', ctaLink: '' });
   const [social, setSocial] = useState<{ instagram: string; facebook: string; tiktok: string }>({ instagram: '', facebook: '', tiktok: '' });
+  const [contactEmail, setContactEmail] = useState('');
   const [uploading, setUploading] = useState<'hero' | null>(null);
   const [uploadErr, setUploadErr] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
@@ -54,6 +55,7 @@ export default function AdminHome() {
     });
     setPromoBar({ enabled: s.promoBar.enabled, text: s.promoBar.text ?? '', ctaText: s.promoBar.ctaText ?? '', ctaLink: s.promoBar.ctaLink ?? '' });
     setSocial({ instagram: s.socialLinks?.instagram ?? '', facebook: s.socialLinks?.facebook ?? '', tiktok: s.socialLinks?.tiktok ?? '' });
+    setContactEmail(s.contactEmail ?? '');
   }, [settings.data]);
 
   const move = (i: number, dir: -1 | 1) => {
@@ -119,6 +121,7 @@ export default function AdminHome() {
         facebook: social.facebook || undefined,
         tiktok: social.tiktok || undefined,
       },
+      contactEmail: contactEmail.trim() || undefined,
     });
   };
 
@@ -229,6 +232,10 @@ export default function AdminHome() {
         <label className="block">
           <span className="mb-1 block font-body text-sm text-muted">TikTok URL</span>
           <input value={social.tiktok} onChange={(e) => setSocial({ ...social, tiktok: e.target.value })} placeholder="https://tiktok.com/@yourhandle" className="field-lux" />
+        </label>
+        <label className="block">
+          <span className="mb-1 block font-body text-sm text-muted">Contact email (footer &ldquo;Contact&rdquo; link)</span>
+          <input type="email" value={contactEmail} onChange={(e) => setContactEmail(e.target.value)} placeholder="hello@yourdomain.com" className="field-lux" />
         </label>
       </section>
 

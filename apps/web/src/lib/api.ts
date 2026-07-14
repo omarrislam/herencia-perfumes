@@ -29,6 +29,13 @@ export async function apiGet<T>(path: string): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+// Authenticated file download (e.g. the admin orders CSV export).
+export async function apiGetBlob(path: string): Promise<Blob> {
+  const res = await fetch(url(path), { credentials: 'include' });
+  if (!res.ok) return parseError(res);
+  return res.blob();
+}
+
 export async function apiSend<T>(
   method: 'POST' | 'PUT' | 'DELETE',
   path: string,
@@ -54,6 +61,7 @@ export type ProductFilters = {
   concentration?: string;
   minPrice?: number;
   maxPrice?: number;
+  featured?: boolean;
   sort?: string;
   page?: number;
   limit?: number;
@@ -80,6 +88,8 @@ export const fetchScentFamilies = () => apiGet<ScentFamilyDTO[]>('/api/scent-fam
 
 export type PublicSettings = import('@herencia/shared').SettingDTO;
 export const fetchSettings = () => apiGet<PublicSettings>('/api/settings');
+export const checkDiscountCode = (code: string) =>
+  apiGet<import('@herencia/shared').DiscountPreviewDTO>(`/api/discounts/${encodeURIComponent(code)}`);
 
 export const login = (input: LoginInput) => apiSend<UserDTO>('POST', '/api/auth/login', input);
 export const register = (input: RegisterInput) => apiSend<UserDTO>('POST', '/api/auth/register', input);

@@ -1,44 +1,76 @@
+import { useQuery } from '@tanstack/react-query';
+import { SAMPLE_PRODUCT } from '@herencia/shared';
 import { useSamples } from '../features/samples/SampleContext';
+import { fetchProduct } from '../lib/api';
+import { formatEGP } from './Price';
 
-const STEPS = [
-  { n: '01', img: '/sample-choose.webp', title: 'Choose your fragrances', body: 'Pick the scents you want · 2ml each' },
-  { n: '02', img: '/sample-try.webp', title: 'Try at home', body: 'Test them on your skin, at home' },
-  { n: '03', img: '/sample-buy.webp', title: 'Buy what you love', body: 'Full sample value credited to your bottle' },
+// The samples pitch — compact, marketing-led, and unmistakably about SAMPLES
+// (the old three-card "3 Steps" band buried the subject and ran a full screen).
+const STEPS: [string, string][] = [
+  ['1', 'Pick any scents from the collection'],
+  ['2', 'Wear each one for a full day'],
+  ['3', 'Sample price credited to your bottle'],
 ];
 
 export function ThreeSteps() {
   const { open } = useSamples();
+  // Live sample price (admin-editable); falls back to the seed default.
+  const sample = useQuery({
+    queryKey: ['product', SAMPLE_PRODUCT.slug],
+    queryFn: () => fetchProduct(SAMPLE_PRODUCT.slug),
+    retry: false,
+    staleTime: 60_000,
+  });
+  // Label AND price come from the sample product's (admin-edited) first size.
+  const size = sample.data?.sizes[0];
+  const label = size?.label ?? SAMPLE_PRODUCT.sizeLabel;
+  const price = size?.price ?? SAMPLE_PRODUCT.price;
+
   return (
-    <section>
-      <div className="mb-10 text-center">
-        <h2 className="display text-3xl text-content md:text-4xl">3 Steps to Your Favorite Fragrance</h2>
-        <div className="rule-gold mx-auto mt-4 w-24" />
-        <p className="mt-4 font-body text-muted">The easiest way to find your perfect fragrance.</p>
+    <section className="grid items-center gap-10 md:grid-cols-[1.1fr_1fr] md:gap-14">
+      <div>
+        <p className="eyebrow">Try before you commit</p>
+        <h2 className="display mt-3 text-4xl leading-[1.05] text-content md:text-5xl">
+          Samples first.
+          <br />
+          Bottles later.
+        </h2>
+        <p className="mt-4 max-w-md font-body text-lg text-accent-strong">
+          Any scent · {label} vial · {formatEGP(price)} each — credited back when you buy the bottle.
+        </p>
+
+        <ul className="mt-6 space-y-2.5">
+          {STEPS.map(([n, text]) => (
+            <li key={n} className="flex items-center gap-3 font-body text-sm text-muted">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-accent/12 font-display text-xs text-accent">
+                {n}
+              </span>
+              {text}
+            </li>
+          ))}
+        </ul>
+
+        <button type="button" onClick={() => open()} className="btn-lux mt-8">
+          Order samples · {formatEGP(price)} each
+        </button>
       </div>
-      <div className="grid gap-8 md:grid-cols-3">
-        {STEPS.map((s) => (
-          <div key={s.n} className="group">
-            <div className="relative overflow-hidden rounded-xl shadow-lux">
-              <img
-                src={s.img}
-                alt={s.title}
-                loading="lazy"
-                className="aspect-[4/3] w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.07] motion-reduce:transform-none motion-reduce:transition-none"
-              />
-              <div className="absolute inset-0 bg-espresso/0 transition-colors duration-500 group-hover:bg-espresso/15" />
-              <span className="absolute left-4 top-4 flex h-9 min-w-[3rem] items-center justify-center rounded bg-espresso px-2 font-display text-sm tracking-wider text-gold-hi">{s.n}</span>
-            </div>
-            <div className="mt-5 flex items-baseline gap-3">
-              <span className="font-display text-sm text-accent/70">{s.n}</span>
-              <h3 className="font-display text-xl uppercase tracking-wide text-accent-strong transition-colors group-hover:text-accent">{s.title}</h3>
-            </div>
-            <div className="mt-2 h-px w-10 bg-accent/40 transition-all duration-500 group-hover:w-16" />
-            <p className="mt-3 font-body text-sm leading-relaxed text-muted">{s.body}</p>
-          </div>
-        ))}
-      </div>
-      <div className="mt-10 text-center">
-        <button type="button" onClick={() => open()} className="btn-lux">Order your samples</button>
+
+      <div className="relative">
+        <img
+          src="/sample-choose.webp"
+          alt="A HERENCIA discovery box of sample vials"
+          loading="lazy"
+          className="aspect-[4/3] w-full rounded-2xl object-cover shadow-lux"
+        />
+        {/* Price sticker — the marketing anchor */}
+        <div
+          aria-hidden="true"
+          className="absolute -right-3 -top-5 flex h-24 w-24 -rotate-6 flex-col items-center justify-center rounded-full bg-accent text-espresso shadow-lux"
+        >
+          <span className="font-body text-[10px] uppercase tracking-wider">{label} from</span>
+          <span className="font-display text-lg font-semibold leading-tight">{formatEGP(price)}</span>
+          <span className="font-body text-[10px] uppercase tracking-wider">per sample</span>
+        </div>
       </div>
     </section>
   );

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { createOrderSchema, type CreateOrderInput, type CreateOrderResultDTO, type PaymentMethod, SAMPLE_PRODUCT } from '@herencia/shared';
 import { useCart } from '../features/cart/CartContext';
@@ -8,7 +8,9 @@ import { useAuth } from '../features/auth/AuthContext';
 import { DISCOUNT_KEY } from '../components/EmailPopup';
 import { Price } from '../components/Price';
 import { Button } from '../components/Button';
+import { WhatsAppAsk } from '../components/WhatsAppAsk';
 import * as api from '../lib/api';
+import { useSeo } from '../lib/useSeo';
 
 type FormState = {
   name: string;
@@ -37,7 +39,17 @@ const PATH_TO_FIELD: Record<string, keyof FormState> = {
 // Focus order when several fields are invalid at once.
 const FIELD_ORDER: (keyof FormState)[] = ['name', 'phone', 'email', 'line1', 'city', 'governorate', 'notes'];
 
+// All 27 Egyptian governorates — a select prevents the courier misroutes that
+// free-text spelling caused.
+const GOVERNORATES = [
+  'Cairo', 'Giza', 'Alexandria', 'Qalyubia', 'Sharqia', 'Dakahlia', 'Beheira',
+  'Kafr El Sheikh', 'Gharbia', 'Monufia', 'Damietta', 'Port Said', 'Ismailia',
+  'Suez', 'North Sinai', 'South Sinai', 'Beni Suef', 'Faiyum', 'Minya',
+  'Assiut', 'Sohag', 'Qena', 'Luxor', 'Aswan', 'Red Sea', 'New Valley', 'Matrouh',
+];
+
 export default function Checkout() {
+  useSeo({ title: 'Checkout — HERENCIA' });
   const { items, priced, clear } = useCart();
   const { samples, clear: clearSamples } = useSamples();
   const { user } = useAuth();
@@ -80,15 +92,25 @@ export default function Checkout() {
 
   // Client-side preview only — the server re-validates the code and recomputes the total.
   const popup = settings.data?.emailPopup;
-  const codeValid =
+  const popupValid =
     !!popup?.enabled && !!popup.code && !!popup.discountPercent &&
     discountCode.trim().toUpperCase() === popup.code.trim().toUpperCase();
-  const discount = codeValid && priced ? round2(priced.subtotal * (popup!.discountPercent! / 100)) : 0;
+  // Admin-managed codes: preview via the public lookup (popup code wins).
+  const codeQuery = useQuery({
+    queryKey: ['discount', discountCode.trim().toUpperCase()],
+    queryFn: () => api.checkDiscountCode(discountCode.trim()),
+    enabled: !popupValid && discountCode.trim().length >= 2,
+    retry: false,
+    staleTime: 60_000,
+  });
+  const percent = popupValid ? popup!.discountPercent! : codeQuery.data?.percent;
+  const codeValid = popupValid || !!codeQuery.data;
+  const discount = codeValid && percent && priced ? round2(priced.subtotal * (percent / 100)) : 0;
   const totalDue = priced ? round2(priced.total - discount) : 0;
 
   const update =
     (field: keyof FormState) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
       setForm((prev) => ({ ...prev, [field]: e.target.value }));
       // Typing in a field clears its error so the message never goes stale.
       setFieldErrors((prev) => (prev[field] ? { ...prev, [field]: undefined } : prev));
@@ -123,9 +145,10 @@ export default function Checkout() {
         phone: form.phone,
       },
       ...((() => {
+        const sampleLine = priced?.items.find((i) => i.slug === SAMPLE_PRODUCT.slug);
         const sampleNote =
-          priced?.items.some((i) => i.slug === SAMPLE_PRODUCT.slug) && samples.length > 0
-            ? `Samples (${samples.length} × 2ml): ${samples.map((s) => s.name).join(', ')}`
+          sampleLine && samples.length > 0
+            ? `Samples (${samples.length} × ${sampleLine.sizeLabel}): ${samples.map((s) => s.name).join(', ')}`
             : '';
         const notes = [sampleNote, form.notes].filter(Boolean).join('\n');
         return notes ? { notes } : {};
@@ -195,7 +218,7 @@ export default function Checkout() {
             </div>
             {discount > 0 && (
               <div className="flex justify-between text-success">
-                <span>Discount ({popup!.discountPercent}% · {popup!.code})</span>
+                <span>Discount ({percent}% · {discountCode.trim().toUpperCase()})</span>
                 <span>−<Price value={discount} /></span>
               </div>
             )}
@@ -216,7 +239,7 @@ export default function Checkout() {
                   placeholder="Discount code"
                   className="field-lux flex-1 text-sm uppercase"
                 />
-                {discountCode.trim() && (
+                {discountCode.trim().length >= 2 && codeQuery.isError && (
                   <span className="font-body text-xs text-danger">Invalid code</span>
                 )}
               </div>
@@ -245,7 +268,7 @@ export default function Checkout() {
             <h2 className="font-display text-lg text-content">Your details</h2>
             <div className="grid gap-3 sm:grid-cols-2">
               <InputField id="checkout-name" label="Full name" autoComplete="name" value={form.name} onChange={update('name')} required error={fieldErrors.name} />
-              <InputField id="checkout-phone" label="Phone" type="tel" autoComplete="tel" value={form.phone} onChange={update('phone')} required error={fieldErrors.phone} />
+              <InputField id="checkout-phone" label="Phone" type="tel" autoComplete="tel" placeholder="01012345678" value={form.phone} onChange={update('phone')} required error={fieldErrors.phone} />
             </div>
             <InputField
               id="checkout-email"
@@ -271,14 +294,34 @@ export default function Checkout() {
             />
             <div className="grid gap-3 sm:grid-cols-2">
               <InputField id="checkout-city" label="City" autoComplete="address-level2" value={form.city} onChange={update('city')} required error={fieldErrors.city} />
-              <InputField
-                id="checkout-governorate"
-                label="Governorate"
-                value={form.governorate}
-                onChange={update('governorate')}
-                required
-                error={fieldErrors.governorate}
-              />
+              <div className="space-y-1">
+                <label htmlFor="checkout-governorate" className="mb-1.5 block font-body text-sm text-muted">
+                  Governorate
+                </label>
+                <select
+                  id="checkout-governorate"
+                  value={form.governorate}
+                  onChange={update('governorate')}
+                  required
+                  aria-invalid={!!fieldErrors.governorate}
+                  aria-describedby={fieldErrors.governorate ? 'checkout-governorate-error' : undefined}
+                  className={`field-lux text-sm ${fieldErrors.governorate ? 'border-danger' : ''} ${form.governorate ? '' : 'text-muted'}`}
+                >
+                  <option value="" disabled>
+                    Select governorate
+                  </option>
+                  {GOVERNORATES.map((g) => (
+                    <option key={g} value={g}>
+                      {g}
+                    </option>
+                  ))}
+                </select>
+                {fieldErrors.governorate && (
+                  <p id="checkout-governorate-error" className="font-body text-xs text-danger">
+                    {fieldErrors.governorate}
+                  </p>
+                )}
+              </div>
             </div>
             <div>
               <label htmlFor="checkout-notes" className="mb-1.5 block font-body text-sm text-muted">
@@ -332,6 +375,12 @@ export default function Checkout() {
             )}
           </section>
 
+          {priced?.hasUnavailable && (
+            <p className="rounded-md border border-line bg-danger-soft px-4 py-2 font-body text-sm text-danger">
+              Some items in your cart are out of stock —{' '}
+              <Link to="/cart" className="underline underline-offset-2">update your cart</Link> to continue.
+            </p>
+          )}
           {formError && <p className="font-body text-sm text-danger">{formError}</p>}
 
           <Button type="submit" disabled={disabled} className="w-full py-3">
@@ -340,6 +389,7 @@ export default function Checkout() {
           <p className="text-center font-body text-xs text-muted">
             Delivery in 4–5 business days · Free returns on unopened items
           </p>
+          <WhatsAppAsk text="Hi HERENCIA! I have a question about my order." className="text-center" />
         </form>
 
         <div className="order-first lg:order-none lg:sticky lg:top-24">{summary}</div>
@@ -355,6 +405,7 @@ function InputField({
   onChange,
   type = 'text',
   autoComplete,
+  placeholder,
   required,
   error,
 }: {
@@ -364,6 +415,7 @@ function InputField({
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   type?: string;
   autoComplete?: string;
+  placeholder?: string;
   required?: boolean;
   error?: string;
 }) {
@@ -378,6 +430,7 @@ function InputField({
         value={value}
         onChange={onChange}
         autoComplete={autoComplete}
+        placeholder={placeholder}
         required={required}
         aria-invalid={!!error}
         aria-describedby={error ? `${id}-error` : undefined}

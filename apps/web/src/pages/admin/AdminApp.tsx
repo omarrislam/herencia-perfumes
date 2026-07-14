@@ -13,6 +13,9 @@ import AdminOrders from './AdminOrders';
 import AdminReviews from './AdminReviews';
 import AdminQuiz from './AdminQuiz';
 import AdminBlog from './AdminBlog';
+import AdminCustomers from './AdminCustomers';
+import AdminSubscribers from './AdminSubscribers';
+import AdminDiscounts from './AdminDiscounts';
 
 const NAV = [
   { to: '/admin/dashboard', label: 'Dashboard' },
@@ -21,6 +24,9 @@ const NAV = [
   { to: '/admin/inventory', label: 'Inventory' },
   { to: '/admin/scent-families', label: 'Scent families' },
   { to: '/admin/orders', label: 'Orders', badgeKey: 'orders' as const },
+  { to: '/admin/customers', label: 'Customers' },
+  { to: '/admin/subscribers', label: 'Subscribers' },
+  { to: '/admin/discounts', label: 'Discounts' },
   { to: '/admin/reviews', label: 'Reviews' },
   { to: '/admin/quiz', label: 'Quiz' },
   { to: '/admin/blog', label: 'Blog' },
@@ -28,12 +34,19 @@ const NAV = [
 
 export default function AdminApp() {
   const { logout } = useAuth();
+  // Actionable orders: pending (InstaPay awaiting payment) + confirmed (COD
+  // auto-confirms at checkout, still needs preparing/shipping).
   const pending = useQuery({
     queryKey: ['admin-orders', 'pending'],
     queryFn: () => adminFetchOrders({ status: 'pending' }),
     refetchInterval: 60_000,
   });
-  const pendingCount = pending.data?.total ?? 0;
+  const confirmed = useQuery({
+    queryKey: ['admin-orders', 'confirmed'],
+    queryFn: () => adminFetchOrders({ status: 'confirmed' }),
+    refetchInterval: 60_000,
+  });
+  const pendingCount = (pending.data?.total ?? 0) + (confirmed.data?.total ?? 0);
 
   const itemClass = ({ isActive }: { isActive: boolean }) =>
     `flex items-center justify-between rounded-lg px-3 py-2 font-body text-sm transition-colors ${
@@ -102,6 +115,9 @@ export default function AdminApp() {
               <Route path="/inventory" element={<AdminInventory />} />
               <Route path="/scent-families" element={<AdminScentFamilies />} />
               <Route path="/orders" element={<AdminOrders />} />
+              <Route path="/customers" element={<AdminCustomers />} />
+              <Route path="/subscribers" element={<AdminSubscribers />} />
+              <Route path="/discounts" element={<AdminDiscounts />} />
               <Route path="/reviews" element={<AdminReviews />} />
               <Route path="/quiz" element={<AdminQuiz />} />
               <Route path="/blog" element={<AdminBlog />} />

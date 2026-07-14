@@ -2,7 +2,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { fetchProducts } from '../../lib/api';
-import { adminFetchOrders } from '../../features/admin/adminClient';
+import { adminFetchOrders, adminFetchStats } from '../../features/admin/adminClient';
 
 const STATUS_COLORS: Record<string, string> = {
   pending: 'bg-warning-soft text-warning',
@@ -28,31 +28,54 @@ function StatCard({ label, value, hint, to }: { label: string; value: string; hi
 }
 
 export default function AdminDashboard() {
+  const stats = useQuery({ queryKey: ['admin-stats'], queryFn: adminFetchStats });
   const orders = useQuery({ queryKey: ['admin-orders'], queryFn: () => adminFetchOrders() });
-  const pending = useQuery({ queryKey: ['admin-orders', 'pending'], queryFn: () => adminFetchOrders({ status: 'pending' }) });
   const products = useQuery({ queryKey: ['admin-products'], queryFn: () => fetchProducts({ limit: 48 }) });
 
   const orderItems = orders.data?.items ?? [];
-  const revenue = orderItems.filter((o) => o.status !== 'cancelled').reduce((sum, o) => sum + o.total, 0);
   const productItems = products.data?.items ?? [];
   const lowStock = productItems.filter((p) => p.sizes.some((s) => s.stock > 0 && s.stock <= 5)).length;
   const outOfStock = productItems.filter((p) => p.sizes.every((s) => s.stock === 0)).length;
+  const s = stats.data;
 
   return (
     <div className="space-y-8">
       <h1 className="font-display text-2xl text-content">Dashboard</h1>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Orders" value={String(orders.data?.total ?? 0)} to="/admin/orders" />
-        <StatCard label="Pending" value={String(pending.data?.total ?? 0)} hint="Awaiting action" to="/admin/orders" />
-        <StatCard label="Revenue" value={egp(revenue)} hint="From recent orders" />
-        <StatCard label="Products" value={String(products.data?.total ?? 0)} to="/admin/products" />
+        <StatCard label="Revenue (all time)" value={egp(s?.revenue ?? 0)} hint="Cancelled excluded" />
+        <StatCard label="Revenue (30 days)" value={egp(s?.revenue30 ?? 0)} hint={`${s?.orders30 ?? 0} orders`} />
+        <StatCard label="Orders" value={String(s?.orders ?? 0)} to="/admin/orders" />
+        <StatCard label="To fulfil" value={String(s?.pending ?? 0)} hint="Pending + confirmed" to="/admin/orders" />
       </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <StatCard label="Products" value={String(products.data?.total ?? 0)} to="/admin/products" />
         <StatCard label="Low stock" value={String(lowStock)} hint="≤ 5 left" to="/admin/inventory" />
         <StatCard label="Out of stock" value={String(outOfStock)} to="/admin/inventory" />
       </div>
+
+      {/* Best sellers (by units, cancelled orders excluded) */}
+      {!!s?.bestSellers.length && (
+        <section className="rounded-xl border border-hairline bg-surface">
+          <div className="border-b border-hairline px-5 py-4">
+            <h2 className="font-display text-lg text-content">Best sellers</h2>
+          </div>
+          <div className="divide-y divide-hairline">
+            {s.bestSellers.map((b, i) => (
+              <div key={b.name} className="flex items-center justify-between gap-4 px-5 py-3">
+                <p className="min-w-0 truncate font-body text-sm text-content">
+                  <span className="mr-2 font-display text-muted">{i + 1}.</span>
+                  {b.name}
+                </p>
+                <p className="shrink-0 font-body text-sm text-muted">
+                  {b.qty} sold · <span className="text-content">{egp(b.revenue)}</span>
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Recent orders */}
       <section className="rounded-xl border border-hairline bg-surface">

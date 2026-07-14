@@ -36,7 +36,9 @@ export const adminProductSchema = z
     description: z.string().min(1),
     images: z.array(z.string().min(1)).min(1),
     sizes: z.array(productSizeSchema).min(1),
-    scentFamily: objectId,
+    // Optional so the utility "sample" product (seeded without a family) stays
+    // editable; the form sends '' for "none". Perfumes/bundles require one (refine).
+    scentFamily: z.preprocess((v) => (v === '' ? undefined : v), objectId.optional()),
     notes: z.object({
       top: z.array(z.string().min(1)).default([]),
       heart: z.array(z.string().min(1)).default([]),
@@ -52,6 +54,10 @@ export const adminProductSchema = z
   .refine((p) => p.type !== 'bundle' || (p.bundleItems && p.bundleItems.length > 0), {
     message: 'bundle requires at least one bundleItem',
     path: ['bundleItems'],
+  })
+  .refine((p) => p.type === 'sample' || !!p.scentFamily, {
+    message: 'Scent family is required',
+    path: ['scentFamily'],
   });
 export type AdminProductInput = z.infer<typeof adminProductSchema>;
 
@@ -63,6 +69,11 @@ export const productQuerySchema = z.object({
   concentration: z.enum(CONCENTRATION).optional(),
   minPrice: z.coerce.number().nonnegative().optional(),
   maxPrice: z.coerce.number().nonnegative().optional(),
+  // z.coerce.boolean would turn the string "false" into true — parse explicitly.
+  featured: z
+    .enum(['true', 'false'])
+    .optional()
+    .transform((v) => v === 'true'),
   sort: z.enum(PRODUCT_SORT).default('newest'),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(48).default(12),

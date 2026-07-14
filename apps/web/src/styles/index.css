@@ -293,6 +293,10 @@
   .rise { animation: none; opacity: 1; }
 }
 
+/* Hide horizontal scrollbars on carousels (arrows + swipe do the scrolling). */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
 /* Framer-free layout animations (route fade, mobile menu) — GPU-only.
    Reduced motion is handled by the global 0.01ms animation-duration rule. */
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }

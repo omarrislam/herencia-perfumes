@@ -3,8 +3,10 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useAuth } from '../features/auth/AuthContext';
 import { ApiError } from '../lib/api';
 import { Button } from '../components/Button';
+import { useSeo } from '../lib/useSeo';
 
 export default function Login() {
+  useSeo({ title: 'Sign In — HERENCIA' });
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation() as { state?: { from?: string } };

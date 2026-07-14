@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchProducts, fetchScentFamilies } from '../lib/api';
+import { readListCache, writeListCache } from '../lib/listCache';
 import { useSeo } from '../lib/useSeo';
 import { useProductFilters } from '../features/products/useProductFilters';
 import { FilterBar } from '../features/products/FilterBar';
@@ -11,9 +12,19 @@ export default function Products() {
   useSeo({ title: 'Shop Perfumes — HERENCIA', description: 'Browse the HERENCIA perfume collection.' });
   const { filters, setFilter, reset, resetKey } = useProductFilters();
   const families = useQuery({ queryKey: ['scent-families'], queryFn: fetchScentFamilies });
+  // The default (unfiltered) view renders instantly from the last visit's
+  // cached list; filtered views fetch normally.
+  const isDefaultView = Object.keys(filters).length === 0;
   const products = useQuery({
     queryKey: ['products', filters],
-    queryFn: () => fetchProducts({ ...filters, type: 'perfume' }),
+    queryFn: async () => {
+      const data = await fetchProducts({ ...filters, type: 'perfume' });
+      if (isDefaultView) writeListCache('shop', data);
+      return data;
+    },
+    placeholderData: isDefaultView
+      ? () => readListCache<import('@herencia/shared').ProductListDTO>('shop')
+      : undefined,
   });
 
   const data = products.data;
@@ -28,7 +39,7 @@ export default function Products() {
 
       {products.isLoading ? (
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 sm:gap-5">
-          {Array.from({ length: 8 }).map((_, i) => <Skeleton key={i} className="aspect-square rounded-xl" />)}
+          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="aspect-[5/6] rounded-xl" />)}
         </div>
       ) : products.isError ? (
         <p className="font-body text-muted">Could not load products. Please try again.</p>

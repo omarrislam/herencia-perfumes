@@ -26,7 +26,7 @@ export function ProductCard({ product }: { product: ProductDTO }) {
   return (
     <div className="group card-lux relative flex h-full flex-col overflow-hidden rounded-xl">
       <Link to={href} className="block focus-visible:outline-none">
-        <div className="relative aspect-square overflow-hidden bg-surface2">
+        <div className="relative aspect-[5/4] overflow-hidden bg-surface2">
           <ProductImage
             publicId={product.images[0] ?? ''}
             alt={product.name}
@@ -39,13 +39,12 @@ export function ProductCard({ product }: { product: ProductDTO }) {
             </span>
           )}
         </div>
-        <div className="p-4 pb-2">
-          {product.scentFamily?.name && <p className="eyebrow mb-1">{product.scentFamily.name}</p>}
+        <div className="p-3.5 pb-1.5">
           <h3 className="font-display text-base leading-snug text-content">{product.name}</h3>
-          <div className="mt-1"><Rating avg={product.rating.avg} count={product.rating.count} /></div>
+          <div className="mt-0.5"><Rating avg={product.rating.avg} count={product.rating.count} /></div>
         </div>
       </Link>
-      <div className="mt-auto flex flex-col gap-2.5 px-4 pb-4">
+      <div className="mt-auto flex flex-col gap-2 px-3.5 pb-3.5">
         <Price value={product.basePrice} compareAt={baseSize?.compareAtPrice} />
         <button
           type="button"

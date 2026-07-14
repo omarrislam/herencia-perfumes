@@ -11,6 +11,7 @@ import { PageLoader } from './components/PageLoader';
 import { ScrollToTop } from './components/ScrollToTop';
 import { SampleProvider } from './features/samples/SampleContext';
 import { preloadCachedHero } from './lib/heroCache';
+import { fetchSettings, fetchProducts } from './lib/api';
 import '@fontsource/cinzel/400.css';
 import '@fontsource/cinzel/600.css';
 import '@fontsource/cinzel/700.css';
@@ -46,6 +47,16 @@ if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
 // Start downloading the last-known hero image before React mounts.
 preloadCachedHero();
+
+// Warm the queries the first screen needs before React mounts — the fetches
+// run in parallel with the route chunks instead of after them.
+void queryClient.prefetchQuery({ queryKey: ['settings'], queryFn: fetchSettings });
+if (location.pathname === '/') {
+  void queryClient.prefetchQuery({
+    queryKey: ['products', 'featured'],
+    queryFn: () => fetchProducts({ featured: true, sort: 'rating', limit: 12 }),
+  });
+}
 
 const root = document.getElementById('root')!;
 if (root.hasChildNodes()) hydrateRoot(root, app);

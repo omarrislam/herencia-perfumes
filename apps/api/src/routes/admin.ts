@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { adminProductSchema, scentFamilySchema, slugify, updateOrderStatusSchema, updateOrderPaidSchema, updateReviewSchema, quizQuestionSchema, bannerSchema, blogPostSchema, updateSettingsSchema, noteIconSchema, ORDER_STATUS, ORDER_STATUS_TRANSITIONS, type OrderStatus } from '@herencia/shared';
+import { adminProductSchema, scentFamilySchema, slugify, updateOrderStatusSchema, updateOrderPaidSchema, updateReviewSchema, quizQuestionSchema, bannerSchema, blogPostSchema, updateSettingsSchema, noteIconSchema, discountCodeSchema, ORDER_STATUS, ORDER_STATUS_TRANSITIONS, type OrderStatus } from '@herencia/shared';
 import { Product } from '../models/Product';
 import { ScentFamily } from '../models/ScentFamily';
 import { Order } from '../models/Order';
@@ -9,10 +9,13 @@ import { Banner } from '../models/Banner';
 import { BlogPost } from '../models/BlogPost';
 import { Setting } from '../models/Setting';
 import { NoteIcon } from '../models/NoteIcon';
+import { Subscriber } from '../models/Subscriber';
+import { DiscountCode } from '../models/DiscountCode';
+import { User } from '../models/User';
 import { HttpError } from '../middleware/error';
 import { requireAdmin } from '../middleware/requireAdmin';
 import { isCloudinaryConfigured, signUploadParams } from '../lib/cloudinary';
-import { toProductDTO, toScentFamilyDTO, toOrderDTO, toReviewDTO, toQuizQuestionAdminDTO, toBannerDTO, toBlogPostDTO, toSettingDTO, toNoteIconDTO } from '../lib/serialize';
+import { toProductDTO, toScentFamilyDTO, toOrderDTO, toReviewDTO, toQuizQuestionAdminDTO, toBannerDTO, toBlogPostDTO, toSettingDTO, toNoteIconDTO, toSubscriberDTO, toDiscountCodeDTO } from '../lib/serialize';
 import { sendStatusUpdate } from '../lib/waCloud';
 import { recomputeProductRating } from '../modules/review/service';
 
@@ -108,7 +111,10 @@ export function adminRouter(): Router {
       const data = parsed.data;
       const doc = await Product.findById(req.params['id']);
       if (!doc) throw new HttpError(404, 'Product not found', 'not_found');
-      doc.set({ ...data, slug: data.slug ?? slugify(data.name) });
+      // Keep the existing slug unless one is explicitly sent — the form omits it,
+      // and a rename must not silently break product URLs (or detach the seeded
+      // sample product from its 'sample-box' storefront lookup).
+      doc.set({ ...data, slug: data.slug ?? doc.slug });
       await doc.save(); // re-runs pre('validate') → basePrice/slug
       const populated = await doc.populate('scentFamily');
       res.json(toProductDTO(populated.toObject()));
@@ -253,6 +259,206 @@ export function adminRouter(): Router {
       const order = await Order.findByIdAndDelete(req.params['id']);
       if (!order) throw new HttpError(404, 'Order not found', 'not_found');
       res.status(204).end();
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // ---- Newsletter subscribers ----
+  router.get('/subscribers', async (req, res, next) => {
+    try {
+      const page = Math.max(1, Number(req.query['page'] ?? 1) || 1);
+      const limit = Math.min(100, Math.max(1, Number(req.query['limit'] ?? 50) || 50));
+      const [docs, total] = await Promise.all([
+        Subscriber.find().sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).lean(),
+        Subscriber.countDocuments(),
+      ]);
+      res.json({ items: docs.map(toSubscriberDTO), total, page, pages: Math.ceil(total / limit) || 1 });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // ---- Customers (registered users + order aggregates) ----
+  router.get('/customers', async (req, res, next) => {
+    try {
+      const page = Math.max(1, Number(req.query['page'] ?? 1) || 1);
+      const limit = Math.min(100, Math.max(1, Number(req.query['limit'] ?? 50) || 50));
+      const filter = { role: 'customer' };
+      const [users, total] = await Promise.all([
+        User.find(filter).sort({ createdAt: -1 }).skip((page - 1) * limit).limit(limit).lean(),
+        User.countDocuments(filter),
+      ]);
+      const agg = await Order.aggregate<{ _id: unknown; orderCount: number; totalSpent: number }>([
+        { $match: { user: { $in: users.map((u) => u._id) }, status: { $ne: 'cancelled' } } },
+        { $group: { _id: '$user', orderCount: { $sum: 1 }, totalSpent: { $sum: '$total' } } },
+      ]);
+      const byUser = new Map(agg.map((a) => [String(a._id), a]));
+      res.json({
+        items: users.map((u) => ({
+          id: String(u._id),
+          name: u.name,
+          email: u.email,
+          phone: u.phone ?? undefined,
+          createdAt: (u.createdAt instanceof Date ? u.createdAt : new Date(u.createdAt)).toISOString(),
+          orderCount: byUser.get(String(u._id))?.orderCount ?? 0,
+          totalSpent: byUser.get(String(u._id))?.totalSpent ?? 0,
+        })),
+        total,
+        page,
+        pages: Math.ceil(total / limit) || 1,
+      });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // ---- Dashboard stats (cancelled orders excluded from revenue) ----
+  router.get('/stats', async (_req, res, next) => {
+    try {
+      const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const notCancelled = { status: { $ne: 'cancelled' } };
+      const sum = { _id: null, n: { $sum: 1 }, rev: { $sum: '$total' } };
+      const [all, recent, pending, best] = await Promise.all([
+        Order.aggregate<{ n: number; rev: number }>([{ $match: notCancelled }, { $group: sum }]),
+        Order.aggregate<{ n: number; rev: number }>([
+          { $match: { ...notCancelled, createdAt: { $gte: since } } },
+          { $group: sum },
+        ]),
+        // "Awaiting action" = InstaPay awaiting payment + confirmed awaiting shipment.
+        Order.countDocuments({ status: { $in: ['pending', 'confirmed'] } }),
+        Order.aggregate<{ _id: string; qty: number; revenue: number }>([
+          { $match: notCancelled },
+          { $unwind: '$items' },
+          {
+            $group: {
+              _id: '$items.name',
+              qty: { $sum: '$items.qty' },
+              revenue: { $sum: { $multiply: ['$items.qty', '$items.unitPrice'] } },
+            },
+          },
+          { $sort: { qty: -1 } },
+          { $limit: 5 },
+        ]),
+      ]);
+      res.json({
+        orders: all[0]?.n ?? 0,
+        revenue: all[0]?.rev ?? 0,
+        orders30: recent[0]?.n ?? 0,
+        revenue30: recent[0]?.rev ?? 0,
+        pending,
+        bestSellers: best.map((b) => ({ name: b._id, qty: b.qty, revenue: b.revenue })),
+      });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // ---- Discount codes ----
+  router.get('/discounts', async (_req, res, next) => {
+    try {
+      const docs = await DiscountCode.find().sort({ createdAt: -1 }).lean();
+      res.json(docs.map(toDiscountCodeDTO));
+    } catch (err) {
+      next(err);
+    }
+  });
+  router.post('/discounts', async (req, res, next) => {
+    try {
+      const parsed = discountCodeSchema.safeParse(req.body);
+      if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? 'Invalid', 'invalid');
+      const { expiresAt, ...data } = parsed.data;
+      const doc = await DiscountCode.create({ ...data, ...(expiresAt ? { expiresAt: new Date(expiresAt) } : {}) });
+      res.status(201).json(toDiscountCodeDTO(doc.toObject()));
+    } catch (err) {
+      if ((err as { code?: number }).code === 11000) {
+        return next(new HttpError(409, 'A code with that name already exists', 'conflict'));
+      }
+      next(err);
+    }
+  });
+  router.put('/discounts/:id', async (req, res, next) => {
+    try {
+      const parsed = discountCodeSchema.safeParse(req.body);
+      if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? 'Invalid', 'invalid');
+      const { expiresAt, ...data } = parsed.data;
+      const doc = await DiscountCode.findByIdAndUpdate(
+        req.params['id'],
+        {
+          $set: { ...data, ...(expiresAt ? { expiresAt: new Date(expiresAt) } : {}) },
+          ...(expiresAt ? {} : { $unset: { expiresAt: 1 } }),
+        },
+        { new: true },
+      ).lean();
+      if (!doc) throw new HttpError(404, 'Discount code not found', 'not_found');
+      res.json(toDiscountCodeDTO(doc));
+    } catch (err) {
+      if ((err as { code?: number }).code === 11000) {
+        return next(new HttpError(409, 'A code with that name already exists', 'conflict'));
+      }
+      next(err);
+    }
+  });
+  router.delete('/discounts/:id', async (req, res, next) => {
+    try {
+      const doc = await DiscountCode.findByIdAndDelete(req.params['id']).lean();
+      if (!doc) throw new HttpError(404, 'Discount code not found', 'not_found');
+      res.status(204).end();
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // ---- Orders CSV export (honors the same status/q filters as the list) ----
+  router.get('/orders-export', async (req, res, next) => {
+    try {
+      const status = req.query['status'];
+      const filter: Record<string, unknown> = {};
+      if (typeof status === 'string' && status) {
+        if (!ORDER_STATUS.includes(status as OrderStatus)) throw new HttpError(400, 'Invalid status', 'invalid');
+        filter['status'] = status;
+      }
+      const q = typeof req.query['q'] === 'string' ? req.query['q'].trim() : '';
+      if (q) {
+        const rx = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+        filter['$or'] = [
+          { orderNumber: rx },
+          { 'customer.name': rx },
+          { 'customer.phone': rx },
+          { 'shippingAddress.phone': rx },
+        ];
+      }
+      const docs = await Order.find(filter).sort({ createdAt: -1 }).limit(5000).lean();
+      const esc = (v: unknown) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+      const header = [
+        'orderNumber', 'placedAt', 'status', 'payment', 'paidAt', 'customer', 'phone', 'email',
+        'address', 'city', 'governorate', 'items', 'subtotal', 'shipping', 'discount', 'discountCode', 'total', 'notes',
+      ].join(',');
+      const rows = docs.map((o) =>
+        [
+          o.orderNumber,
+          new Date(o.createdAt).toISOString(),
+          o.status,
+          o.paymentMethod ?? 'cod',
+          o.paidAt ? new Date(o.paidAt).toISOString() : '',
+          o.customer?.name ?? '',
+          o.customer?.phone ?? '',
+          o.customer?.email ?? '',
+          o.shippingAddress?.line1 ?? '',
+          o.shippingAddress?.city ?? '',
+          o.shippingAddress?.governorate ?? '',
+          (o.items ?? []).map((i) => `${i.name} x${i.qty} (${i.sizeLabel})`).join('; '),
+          o.subtotal,
+          o.shipping,
+          o.discount ?? 0,
+          o.discountCode ?? '',
+          o.total,
+          o.notes ?? '',
+        ].map(esc).join(','),
+      );
+      res.setHeader('content-type', 'text/csv; charset=utf-8');
+      res.setHeader('content-disposition', `attachment; filename="herencia-orders${typeof status === 'string' && status ? `-${status}` : ''}.csv"`);
+      res.send([header, ...rows].join('\n'));
     } catch (err) {
       next(err);
     }

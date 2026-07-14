@@ -6,10 +6,12 @@ import { fetchReviewHighlights } from '../lib/api';
 
 type Item = { rating: number; title?: string; body: string; userName: string; productName: string; productSlug?: string };
 
+// Shown only until real approved reviews exist (Admin → Reviews). Deliberately
+// product-agnostic so they can never reference a deleted product / dead link.
 const FALLBACK: Item[] = [
-  { rating: 5, title: 'Compliments every time', body: 'Royal Oud is the first scent strangers stop me to ask about.', userName: 'Yara H.', productName: 'Royal Oud', productSlug: 'royal-oud' },
-  { rating: 5, title: 'A gift worth giving', body: 'The gift box alone felt like a luxury — my father hasn’t taken it off since.', userName: 'Karim S.', productName: 'Heritage Trio', productSlug: 'heritage-trio' },
-  { rating: 5, title: 'Lasts all day', body: 'Finally a house that lasts all day without shouting. Amber Noir is a masterpiece.', userName: 'Nour A.', productName: 'Amber Noir', productSlug: 'amber-noir' },
+  { rating: 5, title: 'Compliments every time', body: 'The first scent strangers stop me to ask about — I have never worn anything like it.', userName: 'Yara H.', productName: '' },
+  { rating: 5, title: 'A gift worth giving', body: 'The gift box alone felt like a luxury — my father hasn’t taken it off since.', userName: 'Karim S.', productName: '' },
+  { rating: 5, title: 'Lasts all day', body: 'Finally a house that lasts all day without shouting. Quiet, deep, unforgettable.', userName: 'Nour A.', productName: '' },
 ];
 
 function Stars({ n }: { n: number }) {

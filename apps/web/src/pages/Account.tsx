@@ -8,6 +8,7 @@ import { Button } from '../components/Button';
 import { Price } from '../components/Price';
 import { ProductCard } from '../components/ProductCard';
 import { ApiError } from '../lib/api';
+import { useSeo } from '../lib/useSeo';
 import {
   fetchProfile,
   updateProfile,
@@ -355,6 +356,7 @@ function WishlistSection() {
 // ---- Main Account page ----
 
 export default function Account() {
+  useSeo({ title: 'My Account — HERENCIA' });
   const { logout } = useAuth();
   const navigate = useNavigate();
 

@@ -3,8 +3,10 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../features/auth/AuthContext';
 import { ApiError } from '../lib/api';
 import { Button } from '../components/Button';
+import { useSeo } from '../lib/useSeo';
 
 export default function Register() {
+  useSeo({ title: 'Create Account — HERENCIA' });
   const { register } = useAuth();
   const navigate = useNavigate();
   const [name, setName] = useState('');

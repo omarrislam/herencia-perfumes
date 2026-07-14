@@ -14,16 +14,19 @@ export function SampleModal() {
   const sampleProduct = useQuery({ queryKey: ['product', SAMPLE_PRODUCT.slug], queryFn: () => fetchProduct(SAMPLE_PRODUCT.slug), enabled: isOpen, retry: false });
 
   const pool = (products.data?.items ?? []).filter((p) => p.type === 'perfume');
-  const unitPrice = sampleProduct.data?.sizes.find((s) => s.label === SAMPLE_PRODUCT.sizeLabel)?.price ?? SAMPLE_PRODUCT.price;
+  // The sample's size (label + price) is whatever the admin set in Products.
+  const size = sampleProduct.data?.sizes[0];
+  const sizeLabel = size?.label ?? SAMPLE_PRODUCT.sizeLabel;
+  const unitPrice = size?.price ?? SAMPLE_PRODUCT.price;
   const canAdd = samples.length > 0 && !!sampleProduct.data;
 
   const addSamplesToCart = () => {
     if (!sampleProduct.data || samples.length === 0) return;
     // One cart line for the sample product; qty = number of picked samples.
     const id = sampleProduct.data.id;
-    const line = items.find((i) => i.productId === id && i.sizeLabel === SAMPLE_PRODUCT.sizeLabel);
-    if (line) updateQty(id, SAMPLE_PRODUCT.sizeLabel, samples.length);
-    else addItem({ productId: id, sizeLabel: SAMPLE_PRODUCT.sizeLabel, qty: samples.length });
+    const line = items.find((i) => i.productId === id && i.sizeLabel === sizeLabel);
+    if (line) updateQty(id, sizeLabel, samples.length);
+    else addItem({ productId: id, sizeLabel, qty: samples.length });
     close();
     setOpen(true);
   };
@@ -56,7 +59,7 @@ export function SampleModal() {
                 <p className="eyebrow">Try before you commit</p>
                 <h2 className="display mt-1 text-2xl text-content">Order samples</h2>
                 <p className="mt-1 font-body text-sm text-muted">
-                  Pick as many as you like · 2ml each · {formatEGP(unitPrice)} per sample. The value is credited when you buy the bottle.
+                  Pick as many as you like · {sizeLabel} each · {formatEGP(unitPrice)} per sample. The value is credited when you buy the bottle.
                 </p>
               </div>
               <button type="button" onClick={close} aria-label="Close" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-hairline text-content hover:border-accent hover:text-accent">✕</button>

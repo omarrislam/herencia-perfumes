@@ -16,6 +16,7 @@ import { bannerRouter } from './routes/banners';
 import { blogRouter } from './routes/blog';
 import { newsletterRouter } from './routes/newsletter';
 import { noteIconRouter } from './routes/noteIcons';
+import { discountRouter } from './routes/discounts';
 import { buildSitemap, ROBOTS_TXT } from './lib/seo';
 import { mountSpa } from './middleware/spa';
 import { Product } from './models/Product';
@@ -58,7 +59,9 @@ export function createApp(opts: {
       },
     }),
   );
-  app.use(cors({ origin: opts.clientOrigin, credentials: true }));
+  // Comma-separated list supported so the old .vercel.app domain keeps working
+  // alongside the custom domain during (and after) the switch.
+  app.use(cors({ origin: opts.clientOrigin.split(',').map((o) => o.trim()), credentials: true }));
   app.use(express.json());
   app.use(cookieParser());
 
@@ -76,6 +79,7 @@ export function createApp(opts: {
   app.use('/api', blogRouter());
   app.use('/api', newsletterRouter());
   app.use('/api', noteIconRouter);
+  app.use('/api/discounts', discountRouter());
   app.use('/api', notFound);
 
   const origin = opts.origin ?? '';

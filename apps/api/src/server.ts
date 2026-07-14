@@ -31,7 +31,8 @@ async function main() {
   const app = createApp({
     clientOrigin: env.CLIENT_ORIGIN,
     webDist,
-    origin: env.CLIENT_ORIGIN,
+    // Canonical origin for SEO = first entry when CLIENT_ORIGIN is a list.
+    origin: env.CLIENT_ORIGIN.split(',')[0]!.trim(),
   });
   app.listen(env.PORT, () => console.log(`API listening on :${env.PORT}`));
 }

@@ -60,6 +60,41 @@ describe('admin products', () => {
     expect(await Product.countDocuments()).toBe(0);
   });
 
+  it('keeps the existing slug when a rename omits it (URLs must not silently break)', async () => {
+    // Regression: PUT used to regenerate the slug from the name on every edit.
+    // The admin form never sends a slug, so editing the seeded "Perfume Sample"
+    // (name ≠ slug 'sample-box') detached it from the storefront lookup and the
+    // boot seeder created a duplicate.
+    const fam = await ScentFamily.create({ name: 'Woody', slug: 'woody', order: 1 });
+    const doc = await Product.create({
+      ...validProduct(String(fam._id)),
+      name: 'Perfume Sample',
+      slug: 'sample-box',
+      type: 'sample',
+      scentFamily: undefined,
+      basePrice: 60,
+      sizes: [{ label: '2ml', price: 60, stock: 999 }],
+    });
+
+    const update = await request(app).put(`/api/admin/products/${doc._id}`).set('Cookie', ADMIN)
+      .send({
+        ...validProduct(String(fam._id)),
+        name: 'Perfume Sample',
+        type: 'sample',
+        scentFamily: '',
+        sizes: [{ label: '5ml', price: 80, stock: 999 }],
+      });
+    expect(update.status).toBe(200);
+    expect(update.body.slug).toBe('sample-box'); // preserved, NOT 'perfume-sample'
+    expect(update.body.sizes[0].label).toBe('5ml');
+
+    // An explicit slug in the payload still renames.
+    const explicit = await request(app).put(`/api/admin/products/${doc._id}`).set('Cookie', ADMIN)
+      .send({ ...validProduct(String(fam._id)), name: 'Perfume Sample', type: 'sample', scentFamily: '', slug: 'new-slug' });
+    expect(explicit.status).toBe(200);
+    expect(explicit.body.slug).toBe('new-slug');
+  });
+
   it('rejects an invalid product with 400', async () => {
     const fam = await ScentFamily.create({ name: 'Woody', slug: 'woody', order: 1 });
     const res = await request(app).post('/api/admin/products').set('Cookie', ADMIN)

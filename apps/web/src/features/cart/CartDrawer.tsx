@@ -189,13 +189,22 @@ export function CartDrawer() {
                   <span>Total</span>
                   <Price value={priced.total} />
                 </div>
-                <Link
-                  to="/checkout"
-                  onClick={() => setOpen(false)}
-                  className="mt-3 block w-full rounded-md bg-cta px-4 py-3 text-center font-body text-sm text-cream transition-colors hover:bg-cta-hover"
-                >
-                  Checkout
-                </Link>
+                {priced.hasUnavailable ? (
+                  <div className="mt-3 space-y-1.5">
+                    <button type="button" disabled className="block w-full cursor-not-allowed rounded-md bg-cta px-4 py-3 text-center font-body text-sm text-cream opacity-50">
+                      Checkout
+                    </button>
+                    <p className="text-center font-body text-xs text-danger">Remove the unavailable items to continue.</p>
+                  </div>
+                ) : (
+                  <Link
+                    to="/checkout"
+                    onClick={() => setOpen(false)}
+                    className="mt-3 block w-full rounded-md bg-cta px-4 py-3 text-center font-body text-sm text-cream transition-colors hover:bg-cta-hover"
+                  >
+                    Checkout
+                  </Link>
+                )}
                 <Link
                   to="/cart"
                   onClick={() => setOpen(false)}

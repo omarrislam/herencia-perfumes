@@ -35,6 +35,25 @@ describe('adminProductSchema', () => {
   it('rejects a price with more than 2 decimals', () => {
     expect(() => adminProductSchema.parse({ ...base, sizes: [{ label: '50ml', price: 1.001, stock: 1 }] })).toThrow();
   });
+  it('allows a sample product without a scent family (empty string or absent)', () => {
+    // The seeded "Perfume Sample" has no scent family; the admin form sends ''.
+    const sample = { ...base, type: 'sample' as const, scentFamily: '' };
+    expect(adminProductSchema.parse(sample).scentFamily).toBeUndefined();
+    const noFamily: Record<string, unknown> = { ...sample };
+    delete noFamily['scentFamily'];
+    expect(adminProductSchema.parse(noFamily).scentFamily).toBeUndefined();
+  });
+  it('still requires a scent family for perfumes and bundles', () => {
+    expect(() => adminProductSchema.parse({ ...base, scentFamily: '' })).toThrow();
+    expect(() =>
+      adminProductSchema.parse({
+        ...base,
+        type: 'bundle',
+        scentFamily: '',
+        bundleItems: [{ product: 'b'.repeat(24), qty: 1 }],
+      }),
+    ).toThrow();
+  });
   it('requires bundleItems when type is bundle', () => {
     expect(() => adminProductSchema.parse({ ...base, type: 'bundle' })).toThrow();
     const bundle = adminProductSchema.parse({

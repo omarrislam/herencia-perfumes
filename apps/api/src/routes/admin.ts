@@ -112,8 +112,7 @@ export function adminRouter(): Router {
       const doc = await Product.findById(req.params['id']);
       if (!doc) throw new HttpError(404, 'Product not found', 'not_found');
       // Keep the existing slug unless one is explicitly sent — the form omits it,
-      // and a rename must not silently break product URLs (or detach the seeded
-      // sample product from its 'sample-box' storefront lookup).
+      // and a rename must not silently break product URLs.
       doc.set({ ...data, slug: data.slug ?? doc.slug });
       await doc.save(); // re-runs pre('validate') → basePrice/slug
       const populated = await doc.populate('scentFamily');

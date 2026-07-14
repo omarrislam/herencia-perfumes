@@ -10,16 +10,6 @@ export type Concentration = (typeof CONCENTRATION)[number];
 export const PRODUCT_TYPE = ['perfume', 'bundle', 'sample'] as const;
 export type ProductType = (typeof PRODUCT_TYPE)[number];
 
-// The perfume sample — a real per-unit product (type 'sample', hidden from listings)
-// so it flows through the normal cart + checkout. Cart qty = number of samples picked.
-// Price lives on the product (admin-editable in Products); `price` here is only the
-// seed/migration default. The slug predates the per-unit shape — kept for DB compat.
-export const SAMPLE_PRODUCT = {
-  slug: 'sample-box',
-  sizeLabel: '2ml',
-  price: 60,
-} as const;
-
 // Reserved cart-line size label for per-perfume samples. A cart line
 // { productId: <perfume>, sizeLabel: SAMPLE_SIZE_LABEL } is priced from
 // settings.samples and stocked from Product.sampleStock.

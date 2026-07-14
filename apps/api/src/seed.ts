@@ -38,14 +38,14 @@ async function seed() {
       description: 'Royal Oud opens with bergamot before settling into a heart of rose and a base of aged oud and sandalwood.',
       images: ['https://picsum.photos/seed/royal-oud/800/800'], sizes: [{ label: '50ml', price: 1200, stock: 12 }, { label: '100ml', price: 1900, stock: 8 }],
       scentFamily: woody!._id, notes: { top: ['Bergamot'], heart: ['Rose'], base: ['Oud', 'Sandalwood'] },
-      gender: 'unisex', concentration: 'EDP', isFeatured: true, rating: { avg: 4.7, count: 23 },
+      gender: 'unisex', concentration: 'EDP', isFeatured: true, rating: { avg: 4.7, count: 23 }, sampleStock: 10,
     },
     {
       name: 'Rose Veil', type: 'perfume', shortDesc: 'A luminous, dewy rose.',
       description: 'Rose Veil layers Damascus rose over peony and a soft musk drydown.',
       images: ['https://picsum.photos/seed/rose-veil/800/800'], sizes: [{ label: '50ml', price: 950, stock: 15 }],
       scentFamily: floral!._id, notes: { top: ['Pink Pepper'], heart: ['Damascus Rose', 'Peony'], base: ['White Musk'] },
-      gender: 'women', concentration: 'EDP', isFeatured: true, rating: { avg: 4.5, count: 18 },
+      gender: 'women', concentration: 'EDP', isFeatured: true, rating: { avg: 4.5, count: 18 }, sampleStock: 10,
     },
     {
       name: 'Amber Noir', type: 'perfume', shortDesc: 'Spiced amber for the evening.',

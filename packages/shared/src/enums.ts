@@ -20,6 +20,11 @@ export const SAMPLE_PRODUCT = {
   price: 60,
 } as const;
 
+// Reserved cart-line size label for per-perfume samples. A cart line
+// { productId: <perfume>, sizeLabel: SAMPLE_SIZE_LABEL } is priced from
+// settings.samples and stocked from Product.sampleStock.
+export const SAMPLE_SIZE_LABEL = 'sample' as const;
+
 export const BANNER_PLACEMENT = ['home_hero', 'home_strip', 'global_top'] as const;
 export type BannerPlacement = (typeof BANNER_PLACEMENT)[number];
 

@@ -35,7 +35,12 @@ export const adminProductSchema = z
     shortDesc: z.string().min(1).max(200),
     description: z.string().min(1),
     images: z.array(z.string().min(1)).min(1),
-    sizes: z.array(productSizeSchema).min(1),
+    sizes: z
+      .array(productSizeSchema)
+      .min(1)
+      .refine((arr) => arr.every((s) => s.label.trim().toLowerCase() !== 'sample'), {
+        message: "'sample' is a reserved size label",
+      }),
     // Optional so the utility "sample" product (seeded without a family) stays
     // editable; the form sends '' for "none". Perfumes/bundles require one (refine).
     scentFamily: z.preprocess((v) => (v === '' ? undefined : v), objectId.optional()),
@@ -47,6 +52,7 @@ export const adminProductSchema = z
     gender: z.enum(GENDER),
     concentration: z.enum(CONCENTRATION),
     isFeatured: z.boolean().default(false),
+    sampleStock: z.number().int().min(0).default(0),
     isActive: z.boolean().default(true),
     seo: z.object({ title: z.string().optional(), description: z.string().optional() }).default({}),
     bundleItems: z.array(z.object({ product: objectId, qty: z.number().int().min(1) })).optional(),
@@ -74,6 +80,12 @@ export const productQuerySchema = z.object({
     .enum(['true', 'false'])
     .optional()
     .transform((v) => v === 'true'),
+  // Perfumes that currently offer samples (sampleStock > 0). Same explicit
+  // parse as `featured` — z.coerce.boolean would turn "false" into true.
+  samples: z
+    .enum(['true', 'false'])
+    .optional()
+    .transform((v) => v === 'true'),
   sort: z.enum(PRODUCT_SORT).default('newest'),
   page: z.coerce.number().int().min(1).default(1),
   limit: z.coerce.number().int().min(1).max(48).default(12),
@@ -92,6 +104,7 @@ export type ProductDTO = {
   description: string;
   images: string[];
   sizes: ProductSizeDTO[];
+  sampleStock: number;
   basePrice: number;
   scentFamily: ScentFamilyDTO | null;
   notes: { top: string[]; heart: string[]; base: string[] };

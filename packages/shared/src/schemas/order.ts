@@ -73,6 +73,7 @@ export type OrderItemDTO = {
   unitPrice: number;
   qty: number;
   image: string;
+  isSample?: boolean;
 };
 export type OrderDTO = {
   id: string;

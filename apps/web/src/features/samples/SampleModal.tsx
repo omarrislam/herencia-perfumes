@@ -1,32 +1,32 @@
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import { SAMPLE_PRODUCT } from '@herencia/shared';
+import { SAMPLE_SIZE_LABEL, DEFAULT_SAMPLES_SETTINGS } from '@herencia/shared';
 import { useSamples } from './SampleContext';
-import { fetchProducts, fetchProduct } from '../../lib/api';
+import { fetchProducts, fetchSettings } from '../../lib/api';
+import { applySampleTokens } from '../../lib/sampleCopy';
 import { useCart } from '../cart/CartContext';
 import { ProductImage } from '../../components/ProductImage';
 import { formatEGP } from '../../components/Price';
 
 export function SampleModal() {
   const { isOpen, close, samples, add, remove, has, clear } = useSamples();
-  const { items, addItem, updateQty, setOpen } = useCart();
-  const products = useQuery({ queryKey: ['products', 'sample-pick'], queryFn: () => fetchProducts({ limit: 24 }), enabled: isOpen });
-  const sampleProduct = useQuery({ queryKey: ['product', SAMPLE_PRODUCT.slug], queryFn: () => fetchProduct(SAMPLE_PRODUCT.slug), enabled: isOpen, retry: false });
+  const { items, addItem, setOpen } = useCart();
+  const products = useQuery({ queryKey: ['products', 'sample-pick'], queryFn: () => fetchProducts({ samples: true, limit: 48 }), enabled: isOpen });
+  const settings = useQuery({ queryKey: ['settings'], queryFn: fetchSettings, enabled: isOpen, staleTime: 60_000 });
+  const s = settings.data?.samples ?? DEFAULT_SAMPLES_SETTINGS;
 
-  const pool = (products.data?.items ?? []).filter((p) => p.type === 'perfume');
-  // The sample's size (label + price) is whatever the admin set in Products.
-  const size = sampleProduct.data?.sizes[0];
-  const sizeLabel = size?.label ?? SAMPLE_PRODUCT.sizeLabel;
-  const unitPrice = size?.price ?? SAMPLE_PRODUCT.price;
-  const canAdd = samples.length > 0 && !!sampleProduct.data;
+  const pool = products.data?.items ?? []; // server already filtered to sampled perfumes
+  const unitPrice = s.price;
+  const canAdd = samples.length > 0;
 
   const addSamplesToCart = () => {
-    if (!sampleProduct.data || samples.length === 0) return;
-    // One cart line for the sample product; qty = number of picked samples.
-    const id = sampleProduct.data.id;
-    const line = items.find((i) => i.productId === id && i.sizeLabel === sizeLabel);
-    if (line) updateQty(id, sizeLabel, samples.length);
-    else addItem({ productId: id, sizeLabel, qty: samples.length });
+    if (samples.length === 0) return;
+    // One line per picked perfume (qty 1 each).
+    for (const picked of samples) {
+      const line = items.find((i) => i.productId === picked.id && i.sizeLabel === SAMPLE_SIZE_LABEL);
+      if (!line) addItem({ productId: picked.id, sizeLabel: SAMPLE_SIZE_LABEL, qty: 1 });
+    }
+    clear();
     close();
     setOpen(true);
   };
@@ -56,11 +56,9 @@ export function SampleModal() {
             {/* header */}
             <div className="flex items-start justify-between gap-4 border-b border-hairline p-6">
               <div>
-                <p className="eyebrow">Try before you commit</p>
-                <h2 className="display mt-1 text-2xl text-content">Order samples</h2>
-                <p className="mt-1 font-body text-sm text-muted">
-                  Pick as many as you like · {sizeLabel} each · {formatEGP(unitPrice)} per sample. The value is credited when you buy the bottle.
-                </p>
+                <p className="eyebrow">{s.eyebrow}</p>
+                <h2 className="display mt-1 text-2xl text-content">{s.modalTitle}</h2>
+                <p className="mt-1 font-body text-sm text-muted">{applySampleTokens(s.modalText, s)}</p>
               </div>
               <button type="button" onClick={close} aria-label="Close" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-hairline text-content hover:border-accent hover:text-accent">✕</button>
             </div>

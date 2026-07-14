@@ -112,8 +112,7 @@ export function adminRouter(): Router {
       const doc = await Product.findById(req.params['id']);
       if (!doc) throw new HttpError(404, 'Product not found', 'not_found');
       // Keep the existing slug unless one is explicitly sent — the form omits it,
-      // and a rename must not silently break product URLs (or detach the seeded
-      // sample product from its 'sample-box' storefront lookup).
+      // and a rename must not silently break product URLs.
       doc.set({ ...data, slug: data.slug ?? doc.slug });
       await doc.save(); // re-runs pre('validate') → basePrice/slug
       const populated = await doc.populate('scentFamily');
@@ -221,10 +220,14 @@ export function adminRouter(): Router {
       // product or size has since been deleted).
       if (from !== to && to === 'cancelled') {
         for (const item of order.items) {
-          await Product.updateOne(
-            { _id: item.product, 'sizes.label': item.sizeLabel },
-            { $inc: { 'sizes.$.stock': item.qty } },
-          );
+          if (item.isSample) {
+            await Product.updateOne({ _id: item.product }, { $inc: { sampleStock: item.qty } });
+          } else {
+            await Product.updateOne(
+              { _id: item.product, 'sizes.label': item.sizeLabel },
+              { $inc: { 'sizes.$.stock': item.qty } },
+            );
+          }
         }
       }
       // WhatsApp status update via the official Cloud API (no-op unless configured).

@@ -1,7 +1,7 @@
 // apps/web/src/pages/admin/AdminInventory.tsx
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { fetchProducts } from '../../lib/api';
+import { fetchProducts, fetchSettings } from '../../lib/api';
 
 type Row = { id: string; name: string; type: string; size: string; price: number; stock: number };
 
@@ -13,10 +13,15 @@ function statusOf(stock: number) {
 
 export default function AdminInventory() {
   const products = useQuery({ queryKey: ['admin-products'], queryFn: () => fetchProducts({ limit: 48 }) });
+  const settings = useQuery({ queryKey: ['settings'], queryFn: fetchSettings, staleTime: 60_000 });
+  const samplePrice = settings.data?.samples.price ?? 60;
 
-  const rows: Row[] = (products.data?.items ?? []).flatMap((p) =>
-    p.sizes.map((s) => ({ id: p.id, name: p.name, type: p.type, size: s.label, price: s.price, stock: s.stock })),
-  );
+  const rows: Row[] = (products.data?.items ?? []).flatMap((p) => [
+    ...p.sizes.map((s) => ({ id: p.id, name: p.name, type: p.type, size: s.label, price: s.price, stock: s.stock })),
+    ...(p.type === 'perfume' && p.sampleStock > 0
+      ? [{ id: p.id, name: p.name, type: p.type, size: 'Sample', price: samplePrice, stock: p.sampleStock }]
+      : []),
+  ]);
   rows.sort((a, b) => a.stock - b.stock); // surface low stock first
 
   const units = rows.reduce((sum, r) => sum + r.stock, 0);

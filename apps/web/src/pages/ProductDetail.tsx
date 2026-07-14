@@ -98,7 +98,7 @@ export default function ProductDetail() {
             <WishlistButton productId={p.id} />
           </div>
 
-          {p.type === 'perfume' && (
+          {p.type === 'perfume' && p.sampleStock > 0 && (
             <TryScentButton
               product={p}
               className="mt-3 w-full rounded-md border border-hairline py-3 font-body text-sm font-medium tracking-wide text-content transition-colors hover:border-accent hover:text-accent"

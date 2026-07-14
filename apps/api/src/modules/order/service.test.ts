@@ -103,4 +103,37 @@ describe('createOrder', () => {
     expect(Array.isArray(details?.items)).toBe(true);
     expect((details?.items ?? []).length).toBeGreaterThan(0);
   });
+
+  it('creates an order with a sample line: decrements sampleStock, snapshots label', async () => {
+    const fam = await ScentFamily.create({ name: 'Citrus', slug: 'citrus', order: 2 });
+    const p = await Product.create({
+      name: 'Amber Noir', type: 'perfume', shortDesc: 's', description: 'd', images: ['img1'],
+      sizes: [{ label: '50ml', price: 800, stock: 3 }], scentFamily: fam._id,
+      notes: { top: [], heart: [], base: [] }, gender: 'unisex', concentration: 'EDP',
+      sampleStock: 3,
+    });
+    const result = await createOrder({
+      ...input(2),
+      items: [{ productId: String(p._id), sizeLabel: 'sample', qty: 2 }],
+    });
+    expect(result.order.items[0]!.sizeLabel).toBe('Sample · 5ml');
+    expect(result.order.items[0]!.isSample).toBe(true);
+    const fresh = await Product.findById(p._id).lean();
+    expect(fresh!.sampleStock).toBe(1);
+  });
+
+  it('rejects a sample order beyond sampleStock and rolls back nothing', async () => {
+    const fam = await ScentFamily.create({ name: 'Citrus', slug: 'citrus', order: 2 });
+    const p = await Product.create({
+      name: 'Amber Noir', type: 'perfume', shortDesc: 's', description: 'd', images: ['img1'],
+      sizes: [{ label: '50ml', price: 800, stock: 3 }], scentFamily: fam._id,
+      notes: { top: [], heart: [], base: [] }, gender: 'unisex', concentration: 'EDP',
+      sampleStock: 1,
+    });
+    await expect(
+      createOrder({ ...input(2), items: [{ productId: String(p._id), sizeLabel: 'sample', qty: 2 }] }),
+    ).rejects.toMatchObject({ status: 409 });
+    const fresh = await Product.findById(p._id).lean();
+    expect(fresh!.sampleStock).toBe(1);
+  });
 });

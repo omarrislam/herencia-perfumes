@@ -66,6 +66,20 @@ describe('GET /api/products', () => {
     const res = await request(app).get('/api/products?sort=banana');
     expect(res.status).toBe(400);
   });
+  it('filters ?samples=true to active perfumes with sampleStock > 0', async () => {
+    const fam = await ScentFamily.create({ name: 'Woody 2', slug: 'woody-2', order: 1 });
+    const mk = (slug: string, sampleStock: number) => ({
+      name: slug, slug, type: 'perfume', shortDesc: 's', description: 'd',
+      images: ['x'], sizes: [{ label: '50ml', price: 100, stock: 5 }], basePrice: 100,
+      scentFamily: fam._id, gender: 'unisex', concentration: 'EDP', isActive: true, sampleStock,
+    });
+    await Product.create(mk('with-samples', 10));
+    await Product.create(mk('without-samples', 0));
+    const res = await request(app).get('/api/products?samples=true');
+    expect(res.status).toBe(200);
+    expect(res.body.items.map((p: { slug: string }) => p.slug)).toEqual(['with-samples']);
+    expect(res.body.items[0].sampleStock).toBe(10);
+  });
 });
 
 describe('GET /api/products/:slug', () => {

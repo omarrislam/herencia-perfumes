@@ -29,6 +29,11 @@ export default function AdminHome() {
   const [sections, setSections] = useState<HomeSections>({ hero: true, featured: true, samples: true, essence: true, gifting: true, time: true, testimonials: true, values: true, quiz: true, faq: true });
   const [order, setOrder] = useState<ReorderableSection[]>(DEFAULT_SECTION_ORDER);
   const [shipping, setShipping] = useState<{ fee: string; freeOver: string }>({ fee: '', freeOver: '' });
+  const [samples, setSamples] = useState({
+    price: '60', sizeLabel: '5ml', eyebrow: '', heading: '', strapline: '',
+    steps: ['', '', ''] as [string, string, string],
+    ctaText: '', stickerTop: '', stickerBottom: '', modalTitle: '', modalText: '',
+  });
   const [instapay, setInstapay] = useState<{ enabled: boolean; handle: string; payLink: string }>({ enabled: false, handle: '', payLink: '' });
   const [emailPopup, setEmailPopup] = useState<{ enabled: boolean; title: string; text: string; code: string; discountPercent: string }>({ enabled: false, title: '', text: '', code: '', discountPercent: '10' });
   const [promoBar, setPromoBar] = useState<{ enabled: boolean; text: string; ctaText: string; ctaLink: string }>({ enabled: false, text: '', ctaText: '', ctaLink: '' });
@@ -45,6 +50,12 @@ export default function AdminHome() {
     setSections(s.homeSections);
     setOrder(s.sectionOrder);
     setShipping({ fee: String(s.shippingFee), freeOver: s.freeShippingThreshold != null ? String(s.freeShippingThreshold) : '' });
+    setSamples({
+      price: String(s.samples.price), sizeLabel: s.samples.sizeLabel, eyebrow: s.samples.eyebrow,
+      heading: s.samples.heading, strapline: s.samples.strapline, steps: s.samples.steps,
+      ctaText: s.samples.ctaText, stickerTop: s.samples.stickerTop, stickerBottom: s.samples.stickerBottom,
+      modalTitle: s.samples.modalTitle, modalText: s.samples.modalText,
+    });
     setInstapay({ enabled: s.instapay.enabled, handle: s.instapay.handle ?? '', payLink: s.instapay.payLink ?? '' });
     setEmailPopup({
       enabled: s.emailPopup.enabled,
@@ -98,6 +109,19 @@ export default function AdminHome() {
       sectionOrder: order,
       ...(shipping.fee.trim() !== '' && Number(shipping.fee) >= 0 ? { shippingFee: Number(shipping.fee) } : {}),
       ...(shipping.freeOver.trim() !== '' && Number(shipping.freeOver) >= 0 ? { freeShippingThreshold: Number(shipping.freeOver) } : {}),
+      samples: {
+        ...(Number(samples.price) > 0 ? { price: Number(samples.price) } : {}),
+        sizeLabel: samples.sizeLabel || undefined,
+        eyebrow: samples.eyebrow || undefined,
+        heading: samples.heading || undefined,
+        strapline: samples.strapline || undefined,
+        steps: samples.steps.every((x) => x.trim()) ? samples.steps : undefined,
+        ctaText: samples.ctaText || undefined,
+        stickerTop: samples.stickerTop || undefined,
+        stickerBottom: samples.stickerBottom || undefined,
+        modalTitle: samples.modalTitle || undefined,
+        modalText: samples.modalText || undefined,
+      },
       instapay: {
         enabled: instapay.enabled,
         handle: instapay.handle || undefined,
@@ -253,6 +277,71 @@ export default function AdminHome() {
             <input type="number" min="0" value={shipping.freeOver} onChange={(e) => setShipping({ ...shipping, freeOver: e.target.value })} className="field-lux" />
           </label>
         </div>
+      </section>
+
+      {/* Samples */}
+      <section className="rounded-xl border border-hairline bg-surface p-5 space-y-4">
+        <h2 className="font-display text-lg text-content">Samples</h2>
+        <p className="font-body text-sm text-muted">
+          Per-perfume availability is set on each perfume in Products (Sample stock). <code>{'{price}'}</code> and{' '}
+          <code>{'{size}'}</code> are replaced automatically.
+        </p>
+        <div className="grid grid-cols-2 gap-3">
+          <label className="block">
+            <span className="mb-1 block font-body text-sm text-muted">Price (EGP)</span>
+            <input type="number" min="0" value={samples.price} onChange={(e) => setSamples({ ...samples, price: e.target.value })} className="field-lux" />
+          </label>
+          <label className="block">
+            <span className="mb-1 block font-body text-sm text-muted">Size label</span>
+            <input value={samples.sizeLabel} onChange={(e) => setSamples({ ...samples, sizeLabel: e.target.value })} placeholder="5ml" className="field-lux" />
+          </label>
+        </div>
+        <label className="block">
+          <span className="mb-1 block font-body text-sm text-muted">Eyebrow</span>
+          <input value={samples.eyebrow} onChange={(e) => setSamples({ ...samples, eyebrow: e.target.value })} placeholder="Try before you commit" className="field-lux" />
+        </label>
+        <label className="block">
+          <span className="mb-1 block font-body text-sm text-muted">Heading <span className="text-xs">(line break = new line)</span></span>
+          <textarea value={samples.heading} onChange={(e) => setSamples({ ...samples, heading: e.target.value })} rows={2} placeholder={'Samples first.\nBottles later.'} className="field-lux" />
+        </label>
+        <label className="block">
+          <span className="mb-1 block font-body text-sm text-muted">Strapline</span>
+          <input value={samples.strapline} onChange={(e) => setSamples({ ...samples, strapline: e.target.value })} placeholder="Any scent · {size} vial · {price} each — credited back when you buy the bottle." className="field-lux" />
+        </label>
+        <label className="block">
+          <span className="mb-1 block font-body text-sm text-muted">Step 1</span>
+          <input value={samples.steps[0]} onChange={(e) => setSamples({ ...samples, steps: [e.target.value, samples.steps[1], samples.steps[2]] })} className="field-lux" />
+        </label>
+        <label className="block">
+          <span className="mb-1 block font-body text-sm text-muted">Step 2</span>
+          <input value={samples.steps[1]} onChange={(e) => setSamples({ ...samples, steps: [samples.steps[0], e.target.value, samples.steps[2]] })} className="field-lux" />
+        </label>
+        <label className="block">
+          <span className="mb-1 block font-body text-sm text-muted">Step 3</span>
+          <input value={samples.steps[2]} onChange={(e) => setSamples({ ...samples, steps: [samples.steps[0], samples.steps[1], e.target.value] })} className="field-lux" />
+        </label>
+        <label className="block">
+          <span className="mb-1 block font-body text-sm text-muted">Button text</span>
+          <input value={samples.ctaText} onChange={(e) => setSamples({ ...samples, ctaText: e.target.value })} placeholder="Order samples · {price} each" className="field-lux" />
+        </label>
+        <div className="grid grid-cols-2 gap-3">
+          <label className="block">
+            <span className="mb-1 block font-body text-sm text-muted">Sticker top</span>
+            <input value={samples.stickerTop} onChange={(e) => setSamples({ ...samples, stickerTop: e.target.value })} placeholder="{size} from" className="field-lux" />
+          </label>
+          <label className="block">
+            <span className="mb-1 block font-body text-sm text-muted">Sticker bottom</span>
+            <input value={samples.stickerBottom} onChange={(e) => setSamples({ ...samples, stickerBottom: e.target.value })} placeholder="per sample" className="field-lux" />
+          </label>
+        </div>
+        <label className="block">
+          <span className="mb-1 block font-body text-sm text-muted">Modal title</span>
+          <input value={samples.modalTitle} onChange={(e) => setSamples({ ...samples, modalTitle: e.target.value })} placeholder="Order samples" className="field-lux" />
+        </label>
+        <label className="block">
+          <span className="mb-1 block font-body text-sm text-muted">Modal text</span>
+          <textarea value={samples.modalText} onChange={(e) => setSamples({ ...samples, modalText: e.target.value })} rows={2} placeholder="Pick as many as you like · {size} each · {price} per sample. The value is credited when you buy the bottle." className="field-lux" />
+        </label>
       </section>
 
       {/* InstaPay */}

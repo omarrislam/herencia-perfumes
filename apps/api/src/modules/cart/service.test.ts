@@ -47,4 +47,33 @@ describe('priceItems', () => {
     const cart = await priceItems([{ productId, sizeLabel: '999ml', qty: 1 }]);
     expect(cart.items[0]).toMatchObject({ available: false, unitPrice: 0, maxQty: 0 });
   });
+
+  it('prices a sample line from settings and gates on sampleStock', async () => {
+    const p = await Product.create({
+      name: 'Amber Noir', slug: 'amber-noir', type: 'perfume', shortDesc: 's', description: 'd',
+      images: ['img'], sizes: [{ label: '50ml', price: 1100, stock: 3 }], basePrice: 1100,
+      gender: 'unisex', concentration: 'EDP', isActive: true, sampleStock: 2,
+    });
+    await Setting.findOneAndUpdate({}, { samples: { price: 75 } });
+    const priced = await priceItems([{ productId: String(p._id), sizeLabel: 'sample', qty: 2 }]);
+    expect(priced.items[0]!.unitPrice).toBe(75);
+    expect(priced.items[0]!.available).toBe(true);
+    expect(priced.items[0]!.maxQty).toBe(2);
+    expect(priced.subtotal).toBe(150);
+
+    const over = await priceItems([{ productId: String(p._id), sizeLabel: 'sample', qty: 3 }]);
+    expect(over.items[0]!.available).toBe(false);
+    expect(over.hasUnavailable).toBe(true);
+  });
+
+  it('sample lines are unavailable for non-perfumes and zero-sample products', async () => {
+    const bundle = await Product.create({
+      name: 'Duo', slug: 'duo', type: 'bundle', shortDesc: 's', description: 'd', images: ['img'],
+      sizes: [{ label: 'Set', price: 1900, stock: 3 }], basePrice: 1900,
+      gender: 'unisex', concentration: 'Other', isActive: true, sampleStock: 5,
+      bundleItems: [],
+    });
+    const priced = await priceItems([{ productId: String(bundle._id), sizeLabel: 'sample', qty: 1 }]);
+    expect(priced.items[0]!.available).toBe(false);
+  });
 });

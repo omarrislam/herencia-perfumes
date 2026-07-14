@@ -62,6 +62,7 @@ export type ProductFilters = {
   minPrice?: number;
   maxPrice?: number;
   featured?: boolean;
+  samples?: boolean;
   sort?: string;
   page?: number;
   limit?: number;

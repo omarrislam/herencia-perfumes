@@ -55,7 +55,7 @@ export function ProductCard({ product }: { product: ProductDTO }) {
         >
           {inStock ? 'Add to cart' : 'Sold out'}
         </button>
-        {product.type === 'perfume' && <TryScentButton product={product} />}
+        {product.type === 'perfume' && product.sampleStock > 0 && <TryScentButton product={product} />}
       </div>
       <div className="absolute right-3 top-3 z-10">
         <WishlistButton productId={product.id} />

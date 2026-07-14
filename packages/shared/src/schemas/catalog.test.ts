@@ -63,6 +63,16 @@ describe('adminProductSchema', () => {
     });
     expect(bundle.bundleItems?.[0]?.qty).toBe(2);
   });
+  it('defaults sampleStock to 0 and accepts a value', () => {
+    expect(adminProductSchema.parse(base).sampleStock).toBe(0);
+    expect(adminProductSchema.parse({ ...base, sampleStock: 12 }).sampleStock).toBe(12);
+    expect(() => adminProductSchema.parse({ ...base, sampleStock: -1 })).toThrow();
+  });
+  it('rejects a size row labeled with the reserved sample label', () => {
+    expect(() =>
+      adminProductSchema.parse({ ...base, sizes: [{ label: 'Sample', price: 60, stock: 1 }] }),
+    ).toThrow();
+  });
 });
 
 describe('productQuerySchema', () => {
@@ -75,5 +85,10 @@ describe('productQuerySchema', () => {
   });
   it('rejects an unknown sort', () => {
     expect(() => productQuerySchema.parse({ sort: 'banana' })).toThrow();
+  });
+  it('parses samples=true explicitly', () => {
+    expect(productQuerySchema.parse({ samples: 'true' }).samples).toBe(true);
+    expect(productQuerySchema.parse({ samples: 'false' }).samples).toBe(false);
+    expect(productQuerySchema.parse({}).samples).toBe(false);
   });
 });

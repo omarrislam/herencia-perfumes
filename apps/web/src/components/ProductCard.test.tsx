@@ -14,6 +14,7 @@ const product: ProductDTO = {
   images: ['herencia/royal-oud'], sizes: [{ label: '50ml', price: 1200, stock: 5 }], basePrice: 1200,
   scentFamily: { id: 'f', name: 'Woody', slug: 'woody', order: 1 }, notes: { top: [], heart: [], base: [] },
   gender: 'unisex', concentration: 'EDP', rating: { avg: 4.5, count: 10 }, isFeatured: true, isActive: true, seo: {},
+  sampleStock: 0,
 };
 
 // WishlistButton calls useAuth() which mounts AuthProvider which calls fetchMe.
@@ -66,5 +67,14 @@ describe('ProductCard', () => {
     // compareAt for the basePrice (800) size is 1000, not 1500
     expect(screen.getByText(/1,?000/)).toBeInTheDocument();
     expect(screen.queryByText(/1,?500/)).not.toBeInTheDocument();
+  });
+  it('does not render TryScentButton when sampleStock is 0', () => {
+    wrap(<ProductCard product={product} />);
+    expect(screen.queryByRole('button', { name: /order a sample/i })).not.toBeInTheDocument();
+  });
+  it('renders TryScentButton when perfume has sampleStock > 0', () => {
+    const perfumeWithSamples = { ...product, sampleStock: 5 };
+    wrap(<ProductCard product={perfumeWithSamples} />);
+    expect(screen.getByRole('button', { name: /order a sample/i })).toBeInTheDocument();
   });
 });

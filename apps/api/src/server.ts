@@ -4,7 +4,6 @@ import { fileURLToPath } from 'node:url';
 import mongoose from 'mongoose';
 import { createApp } from './app';
 import { loadEnv } from './config/env';
-import { ensureSampleProduct } from './lib/ensureSampleProduct';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -25,7 +24,6 @@ async function connectWithRetry(uri: string, attempts = 6): Promise<void> {
 async function main() {
   const env = loadEnv(process.env);
   await connectWithRetry(env.MONGODB_URI);
-  await ensureSampleProduct();
   const webDistCandidate = path.resolve(__dirname, '../../web/dist');
   const webDist = existsSync(path.join(webDistCandidate, 'index.html')) ? webDistCandidate : undefined;
   const app = createApp({

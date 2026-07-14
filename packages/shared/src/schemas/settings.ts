@@ -58,6 +58,41 @@ export const promoBarSchema = z.object({
 });
 export type PromoBarSettings = z.infer<typeof promoBarSchema>;
 
+// Samples program — global price/size + every user-facing string of the home
+// samples section and the sample modal. {price}/{size} tokens are interpolated.
+export const samplesSettingsSchema = z.object({
+  price: z.number().positive(),
+  sizeLabel: z.string().min(1).max(20),
+  eyebrow: z.string().min(1).max(80),
+  heading: z.string().min(1).max(120),
+  strapline: z.string().min(1).max(200),
+  steps: z.tuple([z.string().min(1).max(120), z.string().min(1).max(120), z.string().min(1).max(120)]),
+  ctaText: z.string().min(1).max(80),
+  stickerTop: z.string().min(1).max(40),
+  stickerBottom: z.string().min(1).max(40),
+  modalTitle: z.string().min(1).max(80),
+  modalText: z.string().min(1).max(300),
+});
+export type SamplesSettings = z.infer<typeof samplesSettingsSchema>;
+
+export const DEFAULT_SAMPLES_SETTINGS: SamplesSettings = {
+  price: 60,
+  sizeLabel: '5ml',
+  eyebrow: 'Try before you commit',
+  heading: 'Samples first.\nBottles later.',
+  strapline: 'Any scent · {size} vial · {price} each — credited back when you buy the bottle.',
+  steps: [
+    'Pick any scents from the collection',
+    'Wear each one for a full day',
+    'Sample price credited to your bottle',
+  ],
+  ctaText: 'Order samples · {price} each',
+  stickerTop: '{size} from',
+  stickerBottom: 'per sample',
+  modalTitle: 'Order samples',
+  modalText: 'Pick as many as you like · {size} each · {price} per sample. The value is credited when you buy the bottle.',
+};
+
 export const socialLinksSchema = z
   .object({
     instagram: z.string().max(200).optional(),
@@ -79,6 +114,7 @@ export const updateSettingsSchema = z.object({
   instapay: instapaySchema.partial().optional(),
   promoBar: promoBarSchema.partial().optional(),
   emailPopup: emailPopupSchema.partial().optional(),
+  samples: samplesSettingsSchema.partial().optional(),
 });
 export type UpdateSettingsInput = z.infer<typeof updateSettingsSchema>;
 
@@ -93,6 +129,7 @@ export type SettingDTO = {
   instapay: InstaPaySettings;
   promoBar: PromoBarSettings;
   emailPopup: EmailPopupSettings;
+  samples: SamplesSettings;
   contactEmail?: string;
 };
 

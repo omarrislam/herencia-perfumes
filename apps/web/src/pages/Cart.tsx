@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
-import { SAMPLE_PRODUCT } from '@herencia/shared';
+import { SAMPLE_SIZE_LABEL, DEFAULT_SAMPLES_SETTINGS } from '@herencia/shared';
 import { useCart } from '../features/cart/CartContext';
-import { useSamples } from '../features/samples/SampleContext';
 import { Price } from '../components/Price';
 import { cld } from '../lib/cloudinary';
 import { useSeo } from '../lib/useSeo';
@@ -9,7 +8,6 @@ import { useSeo } from '../lib/useSeo';
 export default function Cart() {
   useSeo({ title: 'Your Cart — HERENCIA' });
   const { priced, updateQty, removeItem } = useCart();
-  const { samples } = useSamples();
 
   return (
     <div className="mx-auto max-w-2xl space-y-8">
@@ -53,12 +51,9 @@ export default function Cart() {
                   <div className="flex items-start justify-between">
                     <div>
                       <p className="font-body font-medium text-content">{line.name}</p>
-                      <p className="font-body text-sm text-muted">{line.sizeLabel}</p>
-                      {line.slug === SAMPLE_PRODUCT.slug && samples.length > 0 && (
-                        <p className="mt-0.5 font-body text-xs text-muted">
-                          {samples.map((s) => s.name).join(' · ')}
-                        </p>
-                      )}
+                      <p className="font-body text-sm text-muted">
+                        {line.sizeLabel === SAMPLE_SIZE_LABEL ? `Sample · ${DEFAULT_SAMPLES_SETTINGS.sizeLabel}` : line.sizeLabel}
+                      </p>
                       {!line.available && (
                         <p className="font-body text-xs text-danger">Unavailable</p>
                       )}

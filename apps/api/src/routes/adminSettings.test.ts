@@ -82,4 +82,14 @@ describe('admin settings (home CMS)', () => {
     const pub = await request(app).get('/api/settings').expect(200);
     expect(pub.body.emailPopup.code).toBe('WELCOME10');
   });
+
+  it('partially updates samples settings without clobbering siblings', async () => {
+    await Setting.create(baseSetting);
+    const res = await request(app).put('/api/admin/settings').set('Cookie', ADMIN)
+      .send({ samples: { price: 80, sizeLabel: '3ml' } });
+    expect(res.status).toBe(200);
+    expect(res.body.samples.price).toBe(80);
+    expect(res.body.samples.sizeLabel).toBe('3ml');
+    expect(res.body.samples.modalTitle).toBe('Order samples'); // default preserved
+  });
 });

@@ -6,6 +6,7 @@ import Checkout from './Checkout';
 import { AuthProvider } from '../features/auth/AuthContext';
 import { CartProvider } from '../features/cart/CartContext';
 import { SampleProvider } from '../features/samples/SampleContext';
+import { DEFAULT_SAMPLES_SETTINGS } from '@herencia/shared';
 import * as api from '../lib/api';
 
 function setup() {
@@ -18,6 +19,7 @@ function setup() {
     instapay: { enabled: false },
     promoBar: { enabled: false },
     emailPopup: { enabled: false },
+    samples: DEFAULT_SAMPLES_SETTINGS,
   });
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   vi.spyOn(api, 'priceCart').mockResolvedValue({

@@ -9,6 +9,7 @@ const orderItemSchema = new Schema(
     unitPrice: { type: Number, required: true },
     qty: { type: Number, required: true, min: 1 },
     image: { type: String, default: '' },
+    isSample: { type: Boolean },
   },
   { _id: false },
 );

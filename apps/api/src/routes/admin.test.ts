@@ -62,14 +62,13 @@ describe('admin products', () => {
 
   it('keeps the existing slug when a rename omits it (URLs must not silently break)', async () => {
     // Regression: PUT used to regenerate the slug from the name on every edit.
-    // The admin form never sends a slug, so editing the seeded "Perfume Sample"
-    // (name ≠ slug 'sample-box') detached it from the storefront lookup and the
-    // boot seeder created a duplicate.
+    // The admin form never sends a slug, so renaming a product whose name no
+    // longer matches its slug must not silently change the storefront URL.
     const fam = await ScentFamily.create({ name: 'Woody', slug: 'woody', order: 1 });
     const doc = await Product.create({
       ...validProduct(String(fam._id)),
       name: 'Perfume Sample',
-      slug: 'sample-box',
+      slug: 'legacy-sample',
       type: 'sample',
       scentFamily: undefined,
       basePrice: 60,
@@ -85,7 +84,7 @@ describe('admin products', () => {
         sizes: [{ label: '5ml', price: 80, stock: 999 }],
       });
     expect(update.status).toBe(200);
-    expect(update.body.slug).toBe('sample-box'); // preserved, NOT 'perfume-sample'
+    expect(update.body.slug).toBe('legacy-sample'); // preserved, NOT 'perfume-sample'
     expect(update.body.sizes[0].label).toBe('5ml');
 
     // An explicit slug in the payload still renames.

@@ -68,4 +68,13 @@ describe('ProductCard', () => {
     expect(screen.getByText(/1,?000/)).toBeInTheDocument();
     expect(screen.queryByText(/1,?500/)).not.toBeInTheDocument();
   });
+  it('does not render TryScentButton when sampleStock is 0', () => {
+    wrap(<ProductCard product={product} />);
+    expect(screen.queryByRole('button', { name: /order a sample/i })).not.toBeInTheDocument();
+  });
+  it('renders TryScentButton when perfume has sampleStock > 0', () => {
+    const perfumeWithSamples = { ...product, sampleStock: 5 };
+    wrap(<ProductCard product={perfumeWithSamples} />);
+    expect(screen.getByRole('button', { name: /order a sample/i })).toBeInTheDocument();
+  });
 });

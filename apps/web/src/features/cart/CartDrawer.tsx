@@ -1,10 +1,9 @@
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { SAMPLE_PRODUCT } from '@herencia/shared';
+import { SAMPLE_SIZE_LABEL } from '@herencia/shared';
 import { useQuery } from '@tanstack/react-query';
 import { useCart } from './CartContext';
-import { useSamples } from '../samples/SampleContext';
 import { Price, formatEGP } from '../../components/Price';
 import { fetchSettings } from '../../lib/api';
 import { cld } from '../../lib/cloudinary';
@@ -14,8 +13,8 @@ import { useReducedMotion } from '../../hooks/useReducedMotion';
 
 export function CartDrawer() {
   const { priced, open, setOpen, updateQty, removeItem } = useCart();
-  const { samples } = useSamples();
-  const threshold = useQuery({ queryKey: ['settings'], queryFn: fetchSettings }).data?.freeShippingThreshold;
+  const settingsData = useQuery({ queryKey: ['settings'], queryFn: fetchSettings }).data;
+  const threshold = settingsData?.freeShippingThreshold;
   const trapRef = useFocusTrap(open);
   const reduced = useReducedMotion();
   const d = reduced ? 0 : DURATION.base;
@@ -102,12 +101,9 @@ export function CartDrawer() {
                         <div className="flex items-start justify-between">
                           <div>
                             <p className="font-body text-sm font-medium text-content">{line.name}</p>
-                            <p className="font-body text-xs text-muted">{line.sizeLabel}</p>
-                            {line.slug === SAMPLE_PRODUCT.slug && samples.length > 0 && (
-                              <p className="mt-0.5 font-body text-xs text-muted">
-                                {samples.map((s) => s.name).join(' · ')}
-                              </p>
-                            )}
+                            <p className="font-body text-xs text-muted">
+                              {line.sizeLabel === SAMPLE_SIZE_LABEL ? `Sample · ${settingsData?.samples.sizeLabel ?? '5ml'}` : line.sizeLabel}
+                            </p>
                             {!line.available && (
                               <p className="font-body text-xs text-danger">Unavailable</p>
                             )}

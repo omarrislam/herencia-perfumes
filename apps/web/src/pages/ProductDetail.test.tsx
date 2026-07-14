@@ -15,6 +15,7 @@ const product: ProductDTO = {
   scentFamily: { id: 'f', name: 'Woody', slug: 'woody', order: 1 },
   notes: { top: ['Bergamot'], heart: ['Rose'], base: ['Oud'] },
   gender: 'unisex', concentration: 'EDP', rating: { avg: 4.5, count: 10 }, isFeatured: true, isActive: true, seo: {},
+  sampleStock: 5,
 };
 
 beforeEach(() => {

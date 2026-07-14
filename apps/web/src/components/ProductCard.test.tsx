@@ -14,6 +14,7 @@ const product: ProductDTO = {
   images: ['herencia/royal-oud'], sizes: [{ label: '50ml', price: 1200, stock: 5 }], basePrice: 1200,
   scentFamily: { id: 'f', name: 'Woody', slug: 'woody', order: 1 }, notes: { top: [], heart: [], base: [] },
   gender: 'unisex', concentration: 'EDP', rating: { avg: 4.5, count: 10 }, isFeatured: true, isActive: true, seo: {},
+  sampleStock: 0,
 };
 
 // WishlistButton calls useAuth() which mounts AuthProvider which calls fetchMe.

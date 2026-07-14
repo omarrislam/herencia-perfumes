@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { createOrderSchema, type CreateOrderInput, type CreateOrderResultDTO, type PaymentMethod, SAMPLE_PRODUCT } from '@herencia/shared';
+import { createOrderSchema, type CreateOrderInput, type CreateOrderResultDTO, type PaymentMethod, SAMPLE_SIZE_LABEL, DEFAULT_SAMPLES_SETTINGS } from '@herencia/shared';
 import { useCart } from '../features/cart/CartContext';
 import { useSamples } from '../features/samples/SampleContext';
 import { useAuth } from '../features/auth/AuthContext';
@@ -51,7 +51,7 @@ const GOVERNORATES = [
 export default function Checkout() {
   useSeo({ title: 'Checkout — HERENCIA' });
   const { items, priced, clear } = useCart();
-  const { samples, clear: clearSamples } = useSamples();
+  const { clear: clearSamples } = useSamples();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -144,15 +144,7 @@ export default function Checkout() {
         governorate: form.governorate,
         phone: form.phone,
       },
-      ...((() => {
-        const sampleLine = priced?.items.find((i) => i.slug === SAMPLE_PRODUCT.slug);
-        const sampleNote =
-          sampleLine && samples.length > 0
-            ? `Samples (${samples.length} × ${sampleLine.sizeLabel}): ${samples.map((s) => s.name).join(', ')}`
-            : '';
-        const notes = [sampleNote, form.notes].filter(Boolean).join('\n');
-        return notes ? { notes } : {};
-      })()),
+      ...(form.notes ? { notes: form.notes } : {}),
       paymentMethod: instapayOn ? payment : 'cod',
       ...(discountCode.trim() ? { discountCode: discountCode.trim() } : {}),
     };
@@ -201,7 +193,12 @@ export default function Checkout() {
                 className="flex items-center justify-between gap-3 font-body text-sm text-content"
               >
                 <span className="min-w-0 truncate">
-                  {item.name} × {item.qty} <span className="text-muted">({item.sizeLabel})</span>
+                  {item.name} × {item.qty}{' '}
+                  <span className="text-muted">
+                    ({item.sizeLabel === SAMPLE_SIZE_LABEL
+                      ? `Sample · ${settings.data?.samples.sizeLabel ?? DEFAULT_SAMPLES_SETTINGS.sizeLabel}`
+                      : item.sizeLabel})
+                  </span>
                 </span>
                 <Price value={item.lineTotal} />
               </li>

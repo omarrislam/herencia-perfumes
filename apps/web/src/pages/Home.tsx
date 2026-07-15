@@ -84,28 +84,84 @@ export default function Home() {
   // snap carousel with arrows (mobile always swipes).
   const featuredCarousel = featuredItems.length > 3;
   const featuredScroller = useRef<HTMLDivElement>(null);
-  const scrollFeatured = (dir: 1 | -1) => {
-    const el = featuredScroller.current;
-    if (!el) return;
-    const step = (el.firstElementChild?.getBoundingClientRect().width ?? el.clientWidth / 3) + 24;
-    const max = el.scrollWidth - el.clientWidth;
-    const target = Math.max(0, Math.min(max, el.scrollLeft + dir * step));
-    // Native smooth scrollTo gets cancelled by Chrome in this handler context —
-    // tween scrollLeft manually instead (instant under reduced motion).
-    if (reduced) {
-      el.scrollLeft = target;
-      return;
-    }
+  // Auto-advance stops for good once the visitor interacts — it exists only to
+  // reveal that there are more cards, not to fight the user for the scrollbar.
+  const featuredAutoStopped = useRef(false);
+  // Native smooth scrollTo gets cancelled by Chrome in handler contexts —
+  // tween scrollLeft manually instead (cubic ease-out).
+  const tweenScroll = (el: HTMLElement, target: number, duration: number) => {
     const from = el.scrollLeft;
     const t0 = performance.now();
-    const D = 350;
     const tick = (now: number) => {
-      const p = Math.min(1, (now - t0) / D);
+      const p = Math.min(1, (now - t0) / duration);
       el.scrollLeft = from + (target - from) * (1 - Math.pow(1 - p, 3));
       if (p < 1) requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
   };
+  const scrollFeatured = (dir: 1 | -1) => {
+    const el = featuredScroller.current;
+    if (!el) return;
+    featuredAutoStopped.current = true; // arrow click = the user has found the carousel
+    const step = (el.firstElementChild?.getBoundingClientRect().width ?? el.clientWidth / 3) + 24;
+    const max = el.scrollWidth - el.clientWidth;
+    const target = Math.max(0, Math.min(max, el.scrollLeft + dir * step));
+    if (reduced) {
+      el.scrollLeft = target;
+      return;
+    }
+    tweenScroll(el, target, 350);
+  };
+
+  // Gentle auto-scroll (desktop carousel only): one card every 4s, wrapping back
+  // to the start — the 3-up desktop view gives no visual hint of a 4th card.
+  // Skipped entirely under reduced motion; paused while hovered, off-screen, or
+  // the tab is hidden; stopped permanently on any pointer/wheel/touch interaction.
+  useEffect(() => {
+    if (!featuredCarousel || reduced) return;
+    const el = featuredScroller.current;
+    if (!el) return;
+    featuredAutoStopped.current = false;
+    let hovered = false;
+    let visible = false;
+    const stop = () => {
+      featuredAutoStopped.current = true;
+    };
+    const onEnter = () => {
+      hovered = true;
+    };
+    const onLeave = () => {
+      hovered = false;
+    };
+    const io = new IntersectionObserver(([e]) => {
+      visible = !!e?.isIntersecting;
+    }, { threshold: 0.5 });
+    io.observe(el);
+    el.addEventListener('mouseenter', onEnter);
+    el.addEventListener('mouseleave', onLeave);
+    el.addEventListener('pointerdown', stop);
+    el.addEventListener('wheel', stop, { passive: true });
+    el.addEventListener('touchstart', stop, { passive: true });
+    const id = window.setInterval(() => {
+      // Desktop-only: the mobile swipe view already peeks the next card.
+      if (featuredAutoStopped.current || hovered || !visible || document.hidden) return;
+      if (window.innerWidth < 768) return;
+      const max = el.scrollWidth - el.clientWidth;
+      if (max <= 0) return;
+      const step = (el.firstElementChild?.getBoundingClientRect().width ?? el.clientWidth / 3) + 24;
+      const atEnd = el.scrollLeft >= max - 4;
+      tweenScroll(el, atEnd ? 0 : Math.min(max, el.scrollLeft + step), atEnd ? 700 : 600);
+    }, 4000);
+    return () => {
+      io.disconnect();
+      window.clearInterval(id);
+      el.removeEventListener('mouseenter', onEnter);
+      el.removeEventListener('mouseleave', onLeave);
+      el.removeEventListener('pointerdown', stop);
+      el.removeEventListener('wheel', stop);
+      el.removeEventListener('touchstart', stop);
+    };
+  }, [featuredCarousel, reduced, featuredItems.length]);
   // Render the last-known hero instantly (cached from the previous visit); the
   // fresh settings replace it once loaded — same image → no swap for returning users.
   const cachedHero = useMemo(() => readHeroCache(), []);

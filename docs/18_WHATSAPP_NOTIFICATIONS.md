@@ -1,9 +1,49 @@
-# WhatsApp order notifications (official Cloud API)
+# WhatsApp order notifications
 
-The API sends customers a WhatsApp **receipt when they place an order** and an
-**update whenever the order status changes**, using Meta's official WhatsApp
-Business Cloud API. Everything is env-gated: with no env vars set, nothing is
-sent and nothing breaks.
+> ## ⛔ Cloud API is BLOCKED — do not retry this setup (2026-07-17)
+>
+> Business portfolio `1401383105229630` ("Herencia") was hit with a **Business
+> restriction** on 11 Jul 2026 — *"prohibited from advertising, including app
+> sharing"*. The review request came back **final**. App sharing is what links a
+> developer app to a portfolio, and a WABA can only live under a portfolio, so
+> the Cloud API can never be provisioned here. This is not a config problem and
+> there is nothing to fix in the dashboard.
+>
+> A second, unrestricted portfolio (`1647810982950230`) exists, but rebuilding
+> the same business's WhatsApp under it right after a permanent restriction is
+> the pattern Meta enforces as circumvention — it risks that portfolio and the
+> personal account too. **Don't.**
+>
+> Unofficial libraries (Baileys, whatsapp-web.js) were considered and rejected:
+> they need an always-on process with persistent session storage, which the
+> Vercel-deployed API cannot host, and they risk a ban on the store's actual
+> phone number.
+>
+> **The live solution is the wa.me deep link** — see "Current approach" below.
+> `waCloud.ts` and the rest of this doc are kept only in case the account
+> situation ever changes.
+
+## Current approach: wa.me deep links (live)
+
+Admin → Orders → expand an order gives two links: **WhatsApp receipt** and
+**WhatsApp "<status>" update**. Each opens WhatsApp with the message pre-filled
+and addressed to the customer; the owner taps send. Free, no Meta approval, no
+platform risk, reaches every customer (phone is required at checkout). The cost
+is one tap per order — accepted deliberately at current volume, since wa.me
+cannot auto-send by design.
+
+Code: `apps/web/src/features/admin/whatsappMessage.ts` (+ tests). The message
+copy mirrors the Cloud API templates below so the two can't drift.
+
+If automation ever matters more than the channel, the escalation is email
+(only reaches customers who supplied one — `email` is optional on orders) or an
+Egyptian SMS gateway (reaches everyone, costs per message). Neither needs Meta.
+
+## Dormant: official Cloud API
+
+The API can send customers a WhatsApp **receipt on order** and an **update on
+status change** via Meta's Cloud API. Env-gated: with no env vars set, nothing
+is sent and nothing breaks — which is the permanent state today.
 
 Code: `apps/api/src/lib/waCloud.ts` (called from order creation and the admin
 status route).

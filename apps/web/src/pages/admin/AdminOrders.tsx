@@ -11,8 +11,10 @@ import {
   adminDeleteOrder,
   adminDownloadOrdersCsv,
 } from '../../features/admin/adminClient';
+import { fetchSettings } from '../../lib/api';
 import { Price } from '../../components/Price';
 import { OrderReceipt } from '../../components/OrderReceipt';
+import { customerWhatsAppUrl, receiptMessage, statusMessage } from '../../features/admin/whatsappMessage';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -55,6 +57,9 @@ export default function AdminOrders() {
     queryKey: ['admin-orders', filter, q, page],
     queryFn: () => adminFetchOrders({ status: filter, q, page }),
   });
+
+  // Only needed so the InstaPay receipt message can name the handle to pay.
+  const settings = useQuery({ queryKey: ['settings'], queryFn: fetchSettings });
 
   const invalidate = () => void qc.invalidateQueries({ queryKey: ['admin-orders'] });
 
@@ -246,6 +251,7 @@ export default function AdminOrders() {
                           deleting={deleteMut.isPending}
                           onMarkPaid={(paid) => paidMut.mutate({ id: order.id, paid })}
                           markingPaid={paidMut.isPending}
+                          instapayHandle={settings.data?.instapay?.handle}
                         />
                       </td>
                     </tr>
@@ -298,12 +304,14 @@ function OrderDetails({
   deleting,
   onMarkPaid,
   markingPaid,
+  instapayHandle,
 }: {
   order: OrderDTO;
   onDelete: () => void;
   deleting: boolean;
   onMarkPaid: (paid: boolean) => void;
   markingPaid: boolean;
+  instapayHandle?: string | null;
 }) {
   const addr = order.shippingAddress;
   const isInstapay = order.paymentMethod === 'instapay';
@@ -409,7 +417,24 @@ function OrderDetails({
         </ul>
       </div>
 
-      <div className="flex items-center gap-3 border-t border-line pt-3">
+      <div className="flex flex-wrap items-center gap-3 border-t border-line pt-3">
+        {/* Open WhatsApp pre-filled; the owner taps send. See whatsappMessage.ts. */}
+        <a
+          href={customerWhatsAppUrl(order.customer.phone, receiptMessage(order, instapayHandle))}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="rounded bg-success px-3 py-1.5 font-medium text-cream transition-opacity hover:opacity-90"
+        >
+          WhatsApp receipt
+        </a>
+        <a
+          href={customerWhatsAppUrl(order.customer.phone, statusMessage(order))}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="rounded border border-line px-3 py-1.5 text-content transition-colors hover:border-accent hover:text-accent"
+        >
+          WhatsApp “{order.status}” update
+        </a>
         <button
           type="button"
           onClick={() => window.print()}

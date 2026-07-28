@@ -1,6 +1,13 @@
 # Current State
 
-_Last updated: 2026-07-15_
+_Last updated: 2026-07-17_
+
+## Post-M4 round 35 (WhatsApp customer notifications via wa.me — Cloud API permanently dead, UNCOMMITTED, 2026-07-17)
+- ⛔ **Meta Cloud API is dead for this business — stop trying.** Portfolio `1401383105229630` ("Herencia") got a **Business restriction** 11 Jul 2026 ("prohibited from advertising, **including app sharing**"); the review request came back **final**. App sharing = linking a dev app to a portfolio, and a WABA can only live under a portfolio → templates can never be approved. The user's earlier ID verification cleared a *different*, personal-level check; it never touched this. Red herring along the way: Account Quality showed "No advertising issues" because it was reporting on a **second, clean portfolio** (`1647810982950230`) while the incognito dev session was working inside the restricted one. Three old dev apps (Type: None) are junk — WhatsApp never appears without app type **Business**.
+- 🚫 **Rejected**: rebuilding under the clean portfolio (= circumvention, risks that portfolio + personal account); Baileys/whatsapp-web.js (needs always-on process + session storage the Vercel API can't host, risks banning the store's real number).
+- ✅ **Built instead**: `apps/web/src/features/admin/whatsappMessage.ts` (+ 6 tests) — `receiptMessage` / `statusMessage` / `customerWhatsAppUrl`, copy mirroring the dormant `waCloud.ts` templates, local `01…` → `201…` E.164 normalize. Admin → Orders expanded panel now has **WhatsApp receipt** (green) + **WhatsApp "<status>" update** links; owner taps send. `AdminOrders` pulls `settings.instapay.handle` so the InstaPay receipt names the handle. web tsc clean, 10/10 tests green, real output verified.
+- `waCloud.ts` KEPT, untouched, still env-gated (dead unless `WA_PHONE_NUMBER_ID`/`WA_ACCESS_TOKEN` are ever set). ntfy owner alerts unaffected.
+- ⏭ **Not deployed, not committed** — ask the user before either.
 
 ## Post-M4 round 34 (fake seed ratings zeroed + quiz explained + featured auto-scroll, COMMITTED + DEPLOYED web, 2026-07-15)
 - ✅ **Fake seeded ratings zeroed**: user asked where "Perla Rosa"/"VASCO" reviews came from — they're his RENAMES of seeded amber-noir/cedar-smoke (slugs preserved by the round-31 fix), whose `rating: {4.8,31}/{4.3,9}` were hardcoded demo aggregates in seed.ts with ZERO real review docs behind them. Zeroed both via one-off mongoose script against the shared prod DB; verified live. NOTE: quiz fallback + `sort=rating` are now arbitrary-order until real approved reviews exist.

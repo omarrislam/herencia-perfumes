@@ -1,5 +1,5 @@
 // apps/web/src/features/admin/adminClient.ts
-import type { AdminProductInput, ProductDTO, ScentFamilyDTO, OrderDTO, OrderStatus, ReviewDTO, QuizQuestionAdminDTO, QuizQuestionInput, BannerDTO, BannerInput, BlogPostDTO, BlogPostInput, SubscriberDTO, CustomerDTO, AdminStatsDTO, DiscountCodeDTO, DiscountCodeInput } from '@herencia/shared';
+import type { AdminProductInput, AdminUpdateOrderInput, ProductDTO, ProductListDTO, ScentFamilyDTO, OrderDTO, OrderStatus, ReviewDTO, QuizQuestionAdminDTO, QuizQuestionInput, BannerDTO, BannerInput, BlogPostDTO, BlogPostInput, SubscriberDTO, CustomerDTO, AdminStatsDTO, DiscountCodeDTO, DiscountCodeInput, StaleUnpaidDTO, ReleaseStaleResultDTO } from '@herencia/shared';
 import { apiSend, apiGet, apiGetBlob } from '../../lib/api';
 
 type Paged<T> = { items: T[]; total: number; page: number; pages: number };
@@ -30,6 +30,17 @@ export async function adminDownloadOrdersCsv(opts: { status?: OrderStatus; q?: s
   a.click();
   URL.revokeObjectURL(a.href);
 }
+
+// Admin catalog listing — includes deactivated products, which the public
+// /api/products endpoint filters out (they'd be unreachable in admin otherwise).
+export const adminFetchProducts = (opts: { page?: number; limit?: number; q?: string } = {}) => {
+  const params = new URLSearchParams();
+  if (opts.page && opts.page > 1) params.set('page', String(opts.page));
+  if (opts.limit) params.set('limit', String(opts.limit));
+  if (opts.q) params.set('q', opts.q);
+  const qs = params.toString();
+  return apiGet<ProductListDTO>(`/api/admin/products${qs ? `?${qs}` : ''}`);
+};
 
 export const adminCreateProduct = (data: AdminProductInput) =>
   apiSend<ProductDTO>('POST', '/api/admin/products', data);
@@ -79,6 +90,12 @@ export const adminMarkOrderPaid = (id: string, paid: boolean) =>
   apiSend<OrderDTO>('PUT', `/api/admin/orders/${id}/paid`, { paid });
 export const adminDeleteOrder = (id: string) =>
   apiSend<void>('DELETE', `/api/admin/orders/${id}`);
+export const adminUpdateOrder = (id: string, input: AdminUpdateOrderInput) =>
+  apiSend<OrderDTO>('PUT', `/api/admin/orders/${id}`, input);
+export const adminFetchStaleUnpaid = (hours?: number) =>
+  apiGet<StaleUnpaidDTO>(`/api/admin/orders/stale-unpaid${hours ? `?hours=${hours}` : ''}`);
+export const adminReleaseStale = (hours: number) =>
+  apiSend<ReleaseStaleResultDTO>('POST', '/api/admin/orders/release-stale', { hours });
 
 export const adminFetchReviews = (status?: 'pending' | 'approved') =>
   apiGet<{ items: ReviewDTO[]; total: number; page: number; pages: number }>(`/api/admin/reviews${status ? `?status=${status}` : ''}`);

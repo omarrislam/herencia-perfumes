@@ -9,7 +9,7 @@ import { SampleProvider } from '../features/samples/SampleContext';
 import { DEFAULT_SAMPLES_SETTINGS } from '@herencia/shared';
 import * as api from '../lib/api';
 
-function setup() {
+function setup(settingsOverrides: Record<string, unknown> = {}) {
   vi.spyOn(api, 'fetchMe').mockRejectedValue(new api.ApiError(401, 'no'));
   vi.spyOn(api, 'fetchSettings').mockResolvedValue({
     whatsappNumber: '+20', shippingFee: 50, socialLinks: {},
@@ -20,7 +20,8 @@ function setup() {
     promoBar: { enabled: false },
     emailPopup: { enabled: false },
     samples: DEFAULT_SAMPLES_SETTINGS,
-  });
+    ...settingsOverrides,
+  } as never);
   const qc = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   vi.spyOn(api, 'priceCart').mockResolvedValue({
     items: [{ productId: 'a'.repeat(24), slug: 'royal-oud', name: 'Royal Oud', image: 'x', sizeLabel: '50ml', unitPrice: 800, qty: 1, lineTotal: 800, available: true, maxQty: 5 }],
@@ -81,5 +82,24 @@ describe('Checkout', () => {
     // Typing in a field clears its error
     fireEvent.change(screen.getByLabelText('Full name'), { target: { value: 'Mai' } });
     expect(screen.queryByText('Full name is required')).not.toBeInTheDocument();
+  });
+
+  // Eligibility for the welcome code is settled server-side at submit (first
+  // order per phone number), so a customer told "remove the code" must have a
+  // control to remove it — the applied state used to hide the field entirely.
+  it('lets the customer remove an applied discount code', async () => {
+    localStorage.setItem('herencia.discountCode', 'WELCOME10');
+    setup({ emailPopup: { enabled: true, code: 'WELCOME10', discountPercent: 10 } });
+    await waitFor(() => expect(screen.getByText(/Royal Oud/)).toBeInTheDocument());
+
+    expect(await screen.findByText(/Discount \(10%/)).toBeInTheDocument();
+    // The applied-code row (with its Remove control) sits alongside the total.
+    expect(screen.getByText(/applied/)).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('button', { name: /^remove$/i }));
+
+    await waitFor(() => expect(screen.queryByText(/Discount \(10%/)).not.toBeInTheDocument());
+    expect(localStorage.getItem('herencia.discountCode')).toBeNull();
+    expect(screen.getByRole('button', { name: /have a discount code/i })).toBeInTheDocument();
   });
 });

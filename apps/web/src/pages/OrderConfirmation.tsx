@@ -16,7 +16,14 @@ export default function OrderConfirmation() {
   if (!result) {
     return (
       <div className="py-16 text-center font-body space-y-4">
-        <p className="text-muted">No order to display.</p>
+        <p className="text-muted">No order to display — this page clears when you reload it.</p>
+        <p className="text-sm text-muted">
+          Already placed an order?{' '}
+          <Link to="/track" className="text-accent underline underline-offset-2">
+            Look it up with your order number
+          </Link>
+          .
+        </p>
         <Link to="/" className="inline-block text-accent hover:underline">
           Return to home
         </Link>
@@ -45,6 +52,15 @@ export default function OrderConfirmation() {
         <p className="text-muted">
           Order number{' '}
           <span className="rounded-md bg-surface2 px-2 py-0.5 font-medium text-content">{order.orderNumber}</span>
+        </p>
+        {/* This page only exists for as long as the tab does — point at the
+            lookup that can bring the order back with the number + phone. */}
+        <p className="mx-auto max-w-sm text-xs text-muted">
+          Save this number — you can pull your order back up any time on{' '}
+          <Link to={`/track?order=${encodeURIComponent(order.orderNumber)}`} className="text-accent underline underline-offset-2">
+            Track your order
+          </Link>
+          .
         </p>
         {!isInstapay && (
           <p className="mx-auto max-w-sm text-sm text-muted">

@@ -228,12 +228,14 @@ export function StorefrontLayout() {
                 worn like an heirloom.
               </p>
               <div className="mt-5 flex items-center gap-3">
+                {/* Only networks the store actually has — an unset link used to
+                    fall back to the platform's homepage, which is a dead click. */}
                 {[
-                  { label: 'Instagram', href: social?.instagram || 'https://instagram.com', d: 'M12 2.2c3.2 0 3.6 0 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s0 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58 0-4.85-.07c-1.17-.05-1.8-.25-2.23-.41a3.7 3.7 0 0 1-1.38-.9 3.7 3.7 0 0 1-.9-1.38c-.16-.42-.36-1.06-.41-2.23C2.21 15.58 2.2 15.2 2.2 12s0-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.42 2.21 8.8 2.2 12 2.2Zm0 4.9a4.9 4.9 0 1 0 0 9.8 4.9 4.9 0 0 0 0-9.8Zm0 8.08a3.18 3.18 0 1 1 0-6.36 3.18 3.18 0 0 1 0 6.36Zm6.24-8.28a1.14 1.14 0 1 1-2.29 0 1.14 1.14 0 0 1 2.29 0Z' },
-                  { label: 'Facebook', href: social?.facebook || 'https://facebook.com', d: 'M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99A10 10 0 0 0 22 12Z' },
-                  { label: 'TikTok', href: social?.tiktok || 'https://tiktok.com', d: 'M16.5 3c.3 2.03 1.5 3.6 3.5 3.9v2.5c-1.2.05-2.4-.28-3.5-.95v6.05a5.5 5.5 0 1 1-5.5-5.5c.28 0 .55.02.82.06v2.6a2.9 2.9 0 1 0 2.08 2.78V3h2.6Z' },
+                  { label: 'Instagram', href: social?.instagram, d: 'M12 2.2c3.2 0 3.6 0 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s0 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23-.22.56-.48.96-.9 1.38-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58 0-4.85-.07c-1.17-.05-1.8-.25-2.23-.41a3.7 3.7 0 0 1-1.38-.9 3.7 3.7 0 0 1-.9-1.38c-.16-.42-.36-1.06-.41-2.23C2.21 15.58 2.2 15.2 2.2 12s0-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.42 2.21 8.8 2.2 12 2.2Zm0 4.9a4.9 4.9 0 1 0 0 9.8 4.9 4.9 0 0 0 0-9.8Zm0 8.08a3.18 3.18 0 1 1 0-6.36 3.18 3.18 0 0 1 0 6.36Zm6.24-8.28a1.14 1.14 0 1 1-2.29 0 1.14 1.14 0 0 1 2.29 0Z' },
+                  { label: 'Facebook', href: social?.facebook, d: 'M22 12a10 10 0 1 0-11.56 9.88v-6.99H7.9V12h2.54V9.8c0-2.5 1.49-3.89 3.78-3.89 1.09 0 2.24.2 2.24.2v2.46h-1.26c-1.24 0-1.63.77-1.63 1.56V12h2.78l-.44 2.89h-2.34v6.99A10 10 0 0 0 22 12Z' },
+                  { label: 'TikTok', href: social?.tiktok, d: 'M16.5 3c.3 2.03 1.5 3.6 3.5 3.9v2.5c-1.2.05-2.4-.28-3.5-.95v6.05a5.5 5.5 0 1 1-5.5-5.5c.28 0 .55.02.82.06v2.6a2.9 2.9 0 1 0 2.08 2.78V3h2.6Z' },
                   ...(whatsapp ? [{ label: 'WhatsApp', href: `https://wa.me/${whatsapp.replace(/[^0-9]/g, '')}`, d: 'M12 2a10 10 0 0 0-8.6 15.06L2 22l5.06-1.33A10 10 0 1 0 12 2Zm5.1 14.13c-.22.62-1.28 1.18-1.77 1.22-.47.05-.9.24-3.03-.63-2.56-1.04-4.18-3.7-4.3-3.87-.13-.17-1.03-1.37-1.03-2.6 0-1.24.65-1.85.88-2.1.23-.25.5-.31.67-.31l.48.01c.15 0 .36-.06.56.43.22.53.73 1.83.8 1.96.06.13.1.28.02.45-.08.17-.13.28-.25.43l-.37.43c-.12.12-.25.25-.11.5.14.24.63 1.04 1.35 1.68.93.83 1.71 1.09 1.95 1.21.24.13.38.11.52-.06.14-.17.6-.7.76-.94.16-.24.32-.2.54-.12.22.08 1.4.66 1.64.78.24.12.4.18.46.28.06.1.06.6-.16 1.22Z' }] : []),
-                ].map((s) => (
+                ].filter((s): s is { label: string; href: string; d: string } => !!s.href).map((s) => (
                   <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" aria-label={s.label}
                     className="flex h-9 w-9 items-center justify-center rounded-full border border-hairline text-muted transition-colors hover:border-accent hover:text-accent">
                     <svg viewBox="0 0 24 24" fill="currentColor" className="h-4 w-4"><path d={s.d} /></svg>
@@ -254,8 +256,11 @@ export function StorefrontLayout() {
               <ul className="space-y-2.5 font-body text-sm text-muted">
                 <li><Link to="/blog" className="link-underline transition-colors hover:text-accent">Journal</Link></li>
                 <li><Link to="/returns" className="link-underline transition-colors hover:text-accent">Returns &amp; refunds</Link></li>
+                <li><Link to="/track" className="link-underline transition-colors hover:text-accent">Track your order</Link></li>
                 <li><Link to={user ? '/account' : '/login'} className="link-underline transition-colors hover:text-accent">{user ? 'Account' : 'Sign in'}</Link></li>
-                <li><a href={`mailto:${settingsData?.contactEmail || 'hello@herencia.example'}`} className="link-underline transition-colors hover:text-accent">Contact</a></li>
+                {settingsData?.contactEmail && (
+                  <li><a href={`mailto:${settingsData.contactEmail}`} className="link-underline transition-colors hover:text-accent">Contact</a></li>
+                )}
               </ul>
             </div>
           </div>

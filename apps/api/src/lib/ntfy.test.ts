@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { buildMessage, sendNewOrderAlert } from './ntfy';
+import { buildMessage, sendNewOrderAlert, buildLowStockMessage, sendLowStockAlert } from './ntfy';
 
 const order = {
   orderNumber: 'HRC-TEST-0001',
@@ -80,5 +80,52 @@ describe('ntfy', () => {
     const spy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('', { status: 200 }));
     await sendNewOrderAlert(order);
     expect(String(spy.mock.calls[0]![0])).toBe('https://ntfy.example.com');
+  });
+});
+
+describe('low-stock alert', () => {
+  beforeEach(() => {
+    delete process.env.NTFY_TOPIC;
+    delete process.env.CLIENT_ORIGIN;
+  });
+  afterEach(() => vi.restoreAllMocks());
+
+  it('summarises how many units are left per line', () => {
+    const { title, body } = buildLowStockMessage([
+      { name: 'Ashes', sizeLabel: '50ml', remaining: 3 },
+      { name: 'Eclipse', sizeLabel: 'Sample · 5ml', remaining: 1 },
+    ]);
+    expect(title).toBe('Low stock — 2 items');
+    expect(body).toContain('Ashes (50ml): 3 left');
+    expect(body).toContain('Eclipse (Sample · 5ml): 1 left');
+  });
+
+  it('calls out sold-out lines in the title', () => {
+    const { title, body } = buildLowStockMessage([{ name: 'Ashes', sizeLabel: '50ml', remaining: 0 }]);
+    expect(title).toBe('Stock alert — 1 sold out');
+    expect(body).toContain('SOLD OUT');
+  });
+
+  it('is a silent no-op without NTFY_TOPIC, and posts JSON when configured', async () => {
+    const lines = [{ name: 'Ashes', sizeLabel: '50ml', remaining: 2 }];
+    const spy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('', { status: 200 }));
+    await sendLowStockAlert(lines);
+    expect(spy).not.toHaveBeenCalled();
+
+    process.env.NTFY_TOPIC = 'topic';
+    process.env.CLIENT_ORIGIN = 'https://herencia-eg.com';
+    await sendLowStockAlert(lines);
+    const payload = JSON.parse(String(spy.mock.calls[0]![1]!.body));
+    expect(payload.topic).toBe('topic');
+    expect(payload.priority).toBe(3);
+    // Tapping the alert should land on the screen that fixes it.
+    expect(payload.click).toBe('https://herencia-eg.com/admin/inventory');
+  });
+
+  it('sends nothing for an empty list', async () => {
+    process.env.NTFY_TOPIC = 'topic';
+    const spy = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('', { status: 200 }));
+    await sendLowStockAlert([]);
+    expect(spy).not.toHaveBeenCalled();
   });
 });

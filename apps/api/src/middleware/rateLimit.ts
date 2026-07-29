@@ -21,3 +21,7 @@ export function makeLimiter(opts: {
 export const authLimiter = makeLimiter({ windowMs: 15 * 60 * 1000, max: 20 });
 export const orderLimiter = makeLimiter({ windowMs: 15 * 60 * 1000, max: 10 });
 export const reviewLimiter = makeLimiter({ windowMs: 60 * 60 * 1000, max: 10 });
+// Order lookup is a guessable pair (order number + phone), so it gets its own
+// bucket — generous for a customer refreshing, tight enough to stop enumeration,
+// and separate from orderLimiter so tracking never blocks checkout.
+export const trackLimiter = makeLimiter({ windowMs: 15 * 60 * 1000, max: 20 });

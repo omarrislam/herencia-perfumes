@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { GENDER, CONCENTRATION, PRODUCT_SORT, type ScentFamilyDTO } from '@herencia/shared';
 import type { ProductFilters } from '../../lib/api';
@@ -12,6 +12,21 @@ export function FilterBar({
   onReset: () => void;
 }) {
   const [open, setOpen] = useState(false);
+  // The search box is uncontrolled and debounced: every keystroke used to write
+  // the URL and fire a request, so "amber" cost five round trips.
+  const [term, setTerm] = useState(filters.q ?? '');
+  const committed = useRef(filters.q ?? '');
+  useEffect(() => {
+    if (term === committed.current) return;
+    const id = setTimeout(() => {
+      committed.current = term;
+      onChange('q', term || undefined);
+    }, 300);
+    return () => clearTimeout(id);
+    // onChange is recreated per render; the term is the only real trigger.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [term]);
+
   const active = [filters.scentFamily, filters.gender, filters.concentration, filters.minPrice, filters.maxPrice].filter(
     (v) => v !== undefined && v !== '',
   ).length;
@@ -26,8 +41,8 @@ export function FilterBar({
             <circle cx="11" cy="11" r="7" /><path d="m20 20-3.5-3.5" strokeLinecap="round" />
           </svg>
           <input
-            type="search" placeholder="Search perfumes…" defaultValue={filters.q ?? ''}
-            onChange={(e) => onChange('q', e.target.value || undefined)}
+            type="search" placeholder="Search perfumes…" value={term}
+            onChange={(e) => setTerm(e.target.value)}
             className="field-lux w-full py-3 pl-12 text-base"
             aria-label="Search perfumes"
           />

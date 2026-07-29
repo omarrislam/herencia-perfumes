@@ -53,6 +53,51 @@ describe('POST /api/orders', () => {
   });
 });
 
+describe('POST /api/orders/track', () => {
+  const place = async () => (await request(app).post('/api/orders').send(body(1))).body.order;
+
+  it('returns the order for the right order number + phone', async () => {
+    const placed = await place();
+    const res = await request(app)
+      .post('/api/orders/track')
+      .send({ orderNumber: placed.orderNumber, phone: '01000000000' });
+    expect(res.status).toBe(200);
+    expect(res.body.orderNumber).toBe(placed.orderNumber);
+    expect(res.body.items[0].name).toBe('Royal Oud');
+  });
+
+  it('accepts the +20 form of the same number and a lowercase order number', async () => {
+    const placed = await place();
+    const res = await request(app)
+      .post('/api/orders/track')
+      .send({ orderNumber: placed.orderNumber.toLowerCase(), phone: '+20 100 000 0000' });
+    expect(res.status).toBe(200);
+  });
+
+  it('404s when the phone does not match — an order number alone reveals nothing', async () => {
+    const placed = await place();
+    const res = await request(app)
+      .post('/api/orders/track')
+      .send({ orderNumber: placed.orderNumber, phone: '01111111111' });
+    expect(res.status).toBe(404);
+    expect(res.body.error.message).not.toContain('phone number is wrong');
+  });
+
+  it('404s for an unknown order number', async () => {
+    const res = await request(app)
+      .post('/api/orders/track')
+      .send({ orderNumber: 'HRC-NOPE-0000', phone: '01000000000' });
+    expect(res.status).toBe(404);
+  });
+
+  it('400s on a malformed phone number', async () => {
+    const res = await request(app)
+      .post('/api/orders/track')
+      .send({ orderNumber: 'HRC-XXXX-0000', phone: '12345' });
+    expect(res.status).toBe(400);
+  });
+});
+
 describe('GET /api/orders/me', () => {
   it('401s for a guest', async () => {
     expect((await request(app).get('/api/orders/me')).status).toBe(401);

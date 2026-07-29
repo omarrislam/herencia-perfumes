@@ -20,3 +20,11 @@ export type BannerPlacement = (typeof BANNER_PLACEMENT)[number];
 
 export const PAYMENT_METHOD = ['cod', 'instapay'] as const;
 export type PaymentMethod = (typeof PAYMENT_METHOD)[number];
+
+// A size (or a perfume's sample pool) at or below this many units is "low" —
+// drives the admin inventory badges and the owner's low-stock push alert.
+export const LOW_STOCK_THRESHOLD = 5;
+
+// Default age at which an unpaid InstaPay order is considered abandoned and its
+// reserved stock can be released. Owner-triggered, never automatic.
+export const STALE_UNPAID_HOURS = 48;

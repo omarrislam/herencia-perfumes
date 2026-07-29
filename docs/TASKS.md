@@ -61,6 +61,19 @@ _Last updated: 2026-07-01 (Milestone 3 complete)_
 - [x] Tests: closed deferred Vitest gaps (T16); Playwright E2E smoke authored (T17)
 - [~] E2E run: infra + specs committed; **run blocked on env** — built `node dist/server.js` fails under plain Node ESM (see deploy note)
 
+## Pre-launch gap fixes (round 37, 2026-07-29) — UNCOMMITTED
+- [x] Admin catalog endpoint so deactivating a product doesn't hide it from admin (+ pagination, no 48 cap)
+- [x] Guest order tracking: `POST /api/orders/track` + `/track` page (footer, confirmation, fallback links)
+- [x] Discount codes one-per-phone (welcome code = first order only) + removable applied code at checkout
+- [x] Admin order editing (delivery details) + delete blocked unless cancelled
+- [x] Owner-triggered release of stale unpaid InstaPay orders (restores stock)
+- [x] Account order detail (items, address, progress, receipt)
+- [x] Guest orders link to accounts on register / login / profile save
+- [x] Low-stock ntfy alert + server-side stock counts on the dashboard
+- [x] Debounced product search; Returns contact email from settings; footer socials only when configured
+- [ ] **Password reset (customer + admin)** — still missing; an owner lockout needs DB access to fix
+- [ ] Set `instapay.handle` in Admin → Home (confirmation step 1 currently names no destination)
+
 ## Milestone 5 (deferred) — Ops / Deploy (separate plan)
 - [ ] **Fix built-server ESM** so `node apps/api/dist/server.js` runs on plain Node (NodeNext + `.js` imports, or esbuild bundle) — blocks E2E run + deploy
 - [ ] Deployment (VPS + Nginx + PM2)

@@ -1,31 +1,41 @@
 // apps/web/src/pages/admin/AdminInventory.tsx
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { fetchProducts, fetchSettings } from '../../lib/api';
+import { LOW_STOCK_THRESHOLD } from '@herencia/shared';
+import { fetchSettings } from '../../lib/api';
+import { adminFetchProducts } from '../../features/admin/adminClient';
 
-type Row = { id: string; name: string; type: string; size: string; price: number; stock: number };
+type Row = { id: string; name: string; type: string; size: string; price: number; stock: number; hidden: boolean };
 
 function statusOf(stock: number) {
   if (stock === 0) return { label: 'Out', cls: 'bg-danger-soft text-danger' };
-  if (stock <= 5) return { label: 'Low', cls: 'bg-warning-soft text-warning' };
+  if (stock <= LOW_STOCK_THRESHOLD) return { label: 'Low', cls: 'bg-warning-soft text-warning' };
   return { label: 'In stock', cls: 'bg-success-soft text-success' };
 }
 
+const PAGE_LIMIT = 200;
+
 export default function AdminInventory() {
-  const products = useQuery({ queryKey: ['admin-products'], queryFn: () => fetchProducts({ limit: 48 }) });
+  // Admin listing (deactivated products included) — stock still needs managing
+  // for a product that's temporarily hidden from the storefront.
+  const products = useQuery({
+    queryKey: ['admin-products', 'inventory'],
+    queryFn: () => adminFetchProducts({ limit: PAGE_LIMIT }),
+  });
   const settings = useQuery({ queryKey: ['settings'], queryFn: fetchSettings, staleTime: 60_000 });
   const samplePrice = settings.data?.samples.price ?? 60;
+  const truncated = (products.data?.total ?? 0) > (products.data?.items.length ?? 0);
 
   const rows: Row[] = (products.data?.items ?? []).flatMap((p) => [
-    ...p.sizes.map((s) => ({ id: p.id, name: p.name, type: p.type, size: s.label, price: s.price, stock: s.stock })),
+    ...p.sizes.map((s) => ({ id: p.id, name: p.name, type: p.type, size: s.label, price: s.price, stock: s.stock, hidden: !p.isActive })),
     ...(p.type === 'perfume' && p.sampleStock > 0
-      ? [{ id: p.id, name: p.name, type: p.type, size: 'Sample', price: samplePrice, stock: p.sampleStock }]
+      ? [{ id: p.id, name: p.name, type: p.type, size: 'Sample', price: samplePrice, stock: p.sampleStock, hidden: !p.isActive }]
       : []),
   ]);
   rows.sort((a, b) => a.stock - b.stock); // surface low stock first
 
   const units = rows.reduce((sum, r) => sum + r.stock, 0);
-  const low = rows.filter((r) => r.stock > 0 && r.stock <= 5).length;
+  const low = rows.filter((r) => r.stock > 0 && r.stock <= LOW_STOCK_THRESHOLD).length;
   const out = rows.filter((r) => r.stock === 0).length;
 
   return (
@@ -41,6 +51,13 @@ export default function AdminInventory() {
         <div className="rounded-xl border border-hairline bg-surface p-4"><p className="font-body text-xs uppercase tracking-wide text-muted">Low</p><p className="mt-1 font-display text-2xl text-warning">{low}</p></div>
         <div className="rounded-xl border border-hairline bg-surface p-4"><p className="font-body text-xs uppercase tracking-wide text-muted">Out</p><p className="mt-1 font-display text-2xl text-danger">{out}</p></div>
       </div>
+
+      {truncated && (
+        <p className="rounded-xl border border-warning bg-warning-soft px-4 py-3 font-body text-sm text-warning">
+          Showing the {PAGE_LIMIT} most recent products of {products.data?.total} — the totals above
+          cover only those. Manage the rest from Products.
+        </p>
+      )}
 
       <section className="overflow-hidden rounded-xl border border-hairline bg-surface">
         <table className="w-full text-left">
@@ -63,7 +80,11 @@ export default function AdminInventory() {
                 const st = statusOf(r.stock);
                 return (
                   <tr key={`${r.id}-${r.size}-${i}`} className="font-body text-sm text-content">
-                    <td className="px-4 py-3">{r.name}<span className="ml-2 text-xs capitalize text-muted">{r.type}</span></td>
+                    <td className="px-4 py-3">
+                      {r.name}
+                      <span className="ml-2 text-xs capitalize text-muted">{r.type}</span>
+                      {r.hidden && <span className="ml-2 rounded bg-warning-soft px-1.5 py-0.5 text-xs text-warning">Hidden</span>}
+                    </td>
                     <td className="px-4 py-3 text-muted">{r.size}</td>
                     <td className="hidden px-4 py-3 text-muted sm:table-cell">EGP {r.price.toLocaleString()}</td>
                     <td className="px-4 py-3">{r.stock}</td>

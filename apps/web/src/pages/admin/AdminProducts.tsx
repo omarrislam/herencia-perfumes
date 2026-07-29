@@ -2,16 +2,20 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { AdminProductInput, ProductDTO } from '@herencia/shared';
-import { fetchProducts, fetchScentFamilies } from '../../lib/api';
-import { adminCreateProduct, adminUpdateProduct, adminDeleteProduct } from '../../features/admin/adminClient';
+import { fetchScentFamilies } from '../../lib/api';
+import { adminFetchProducts, adminCreateProduct, adminUpdateProduct, adminDeleteProduct } from '../../features/admin/adminClient';
 import { ProductForm } from '../../features/admin/ProductForm';
 
 export default function AdminProducts() {
   const qc = useQueryClient();
   const [editing, setEditing] = useState<ProductDTO | null>(null);
   const [creating, setCreating] = useState(false);
+  const [page, setPage] = useState(1);
   const families = useQuery({ queryKey: ['scent-families'], queryFn: fetchScentFamilies });
-  const products = useQuery({ queryKey: ['admin-products'], queryFn: () => fetchProducts({ limit: 48 }) });
+  const products = useQuery({
+    queryKey: ['admin-products', page],
+    queryFn: () => adminFetchProducts({ page, limit: 25 }),
+  });
 
   const invalidate = () => {
     void qc.invalidateQueries({ queryKey: ['admin-products'] });
@@ -75,6 +79,12 @@ export default function AdminProducts() {
           <li key={p.id} className="flex items-center justify-between py-3 font-body">
             <span className="text-content">
               {p.name} <span className="text-muted">· {p.type}</span>
+              {/* Deactivated products live only here — the storefront hides them. */}
+              {!p.isActive && (
+                <span className="ml-2 rounded bg-warning-soft px-2 py-0.5 text-xs font-medium text-warning">
+                  Hidden
+                </span>
+              )}
             </span>
             <span className="flex gap-3">
               <button onClick={() => setEditing(p)} className="text-accent">
@@ -92,6 +102,28 @@ export default function AdminProducts() {
           </li>
         ))}
       </ul>
+
+      {products.data && products.data.pages > 1 && (
+        <div className="mt-4 flex items-center justify-between font-body text-sm text-muted">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page <= 1}
+            className="rounded border border-line px-3 py-1 hover:text-accent disabled:opacity-40"
+          >
+            ← Previous
+          </button>
+          <span>
+            Page {products.data.page} of {products.data.pages} · {products.data.total} products
+          </span>
+          <button
+            onClick={() => setPage((p) => Math.min(products.data!.pages, p + 1))}
+            disabled={page >= products.data.pages}
+            className="rounded border border-line px-3 py-1 hover:text-accent disabled:opacity-40"
+          >
+            Next →
+          </button>
+        </div>
+      )}
     </div>
   );
 }

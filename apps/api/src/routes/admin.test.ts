@@ -42,6 +42,71 @@ describe('admin scent-families', () => {
   });
 });
 
+describe('GET /api/admin/products', () => {
+  async function seedPair() {
+    const fam = await ScentFamily.create({ name: 'Woody', slug: 'woody', order: 1 });
+    const base = validProduct(String(fam._id));
+    await Product.create({ ...base, name: 'Visible One' });
+    await Product.create({ ...base, name: 'Hidden One', isActive: false });
+  }
+
+  // The public catalog filters isActive, which used to make a deactivated
+  // product unreachable from the only screen that can switch it back on.
+  it('includes deactivated products, unlike the public catalog', async () => {
+    await seedPair();
+    const admin = await request(app).get('/api/admin/products').set('Cookie', ADMIN);
+    expect(admin.status).toBe(200);
+    expect(admin.body.total).toBe(2);
+    expect(admin.body.items.map((p: { name: string }) => p.name).sort()).toEqual(['Hidden One', 'Visible One']);
+
+    const publicList = await request(app).get('/api/products');
+    expect(publicList.body.total).toBe(1);
+  });
+
+  it('paginates and reports totals', async () => {
+    await seedPair();
+    const res = await request(app).get('/api/admin/products?limit=1').set('Cookie', ADMIN);
+    expect(res.body).toMatchObject({ total: 2, page: 1, pages: 2 });
+    expect(res.body.items).toHaveLength(1);
+    const page2 = await request(app).get('/api/admin/products?limit=1&page=2').set('Cookie', ADMIN);
+    expect(page2.body.items).toHaveLength(1);
+    expect(page2.body.items[0].id).not.toBe(res.body.items[0].id);
+  });
+
+  it('filters by name and 403s a customer', async () => {
+    await seedPair();
+    const res = await request(app).get('/api/admin/products?q=hidden').set('Cookie', ADMIN);
+    expect(res.body.total).toBe(1);
+    expect(res.body.items[0].name).toBe('Hidden One');
+    const denied = await request(app).get('/api/admin/products').set('Cookie', authCookie('000000000000000000000002', 'customer'));
+    expect(denied.status).toBe(403);
+  });
+});
+
+describe('GET /api/admin/stats stock health', () => {
+  it('counts low and sold-out units across the whole catalog, samples included', async () => {
+    const fam = await ScentFamily.create({ name: 'Woody', slug: 'woody', order: 1 });
+    const base = validProduct(String(fam._id));
+    await Product.create({
+      ...base, name: 'Healthy', sizes: [{ label: '50ml', price: 100, stock: 40 }], sampleStock: 30,
+    });
+    await Product.create({
+      ...base, name: 'Running Out', sizes: [{ label: '50ml', price: 100, stock: 3 }], sampleStock: 0,
+    });
+    // Deactivated products still need restocking, so they must be counted.
+    await Product.create({
+      ...base, name: 'Hidden Sold Out', isActive: false,
+      sizes: [{ label: '50ml', price: 100, stock: 0 }], sampleStock: 2,
+    });
+
+    const res = await request(app).get('/api/admin/stats').set('Cookie', ADMIN);
+    expect(res.status).toBe(200);
+    expect(res.body.products).toBe(3);
+    expect(res.body.lowStock).toBe(2); // Running Out 50ml (3) + Hidden sample (2)
+    expect(res.body.outOfStock).toBe(2); // Running Out sample (0) + Hidden 50ml (0)
+  });
+});
+
 describe('admin products', () => {
   it('creates, updates, and deletes a product', async () => {
     const fam = await ScentFamily.create({ name: 'Woody', slug: 'woody', order: 1 });

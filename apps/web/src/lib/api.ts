@@ -1,4 +1,4 @@
-import type { ProductDTO, ProductListDTO, ScentFamilyDTO, UserDTO, LoginInput, RegisterInput, PricedCartDTO, CartItemInput, CreateOrderInput, CreateOrderResultDTO, AddressDTO, UpdateProfileInput, AddressInput, OrderDTO, ReviewDTO, CreateReviewInput, QuizQuestionPublicDTO, QuizResultDTO, QuizResultInput, BannerDTO, BannerPlacement, BlogListDTO, BlogPostDTO } from '@herencia/shared';
+import type { ProductDTO, ProductListDTO, ScentFamilyDTO, UserDTO, LoginInput, RegisterInput, PricedCartDTO, CartItemInput, CreateOrderInput, CreateOrderResultDTO, TrackOrderInput, AddressDTO, UpdateProfileInput, AddressInput, OrderDTO, ReviewDTO, CreateReviewInput, QuizQuestionPublicDTO, QuizResultDTO, QuizResultInput, BannerDTO, BannerPlacement, BlogListDTO, BlogPostDTO } from '@herencia/shared';
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -103,6 +103,8 @@ export const setServerCart = (items: CartItemInput[]) => apiSend<PricedCartDTO>(
 export const mergeServerCart = (items: CartItemInput[]) => apiSend<PricedCartDTO>('POST', '/api/cart/merge', { items });
 
 export const createOrder = (input: CreateOrderInput) => apiSend<CreateOrderResultDTO>('POST', '/api/orders', input);
+// Guest order lookup — order number + the phone it was placed with.
+export const trackOrder = (input: TrackOrderInput) => apiSend<OrderDTO>('POST', '/api/orders/track', input);
 
 export const fetchProfile = () => apiGet<UserDTO>('/api/account/profile');
 export const updateProfile = (input: UpdateProfileInput) => apiSend<UserDTO>('PUT', '/api/account/profile', input);

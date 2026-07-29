@@ -146,15 +146,143 @@ describe('PUT /api/admin/orders/:id/paid', () => {
 
 describe('DELETE /api/admin/orders/:id', () => {
   it('403s for a customer', async () => {
-    const o = await seedOrder('pending');
+    const o = await seedOrder('cancelled');
     expect((await request(app).delete(`/api/admin/orders/${o._id}`).set('Cookie', CUSTOMER)).status).toBe(403);
   });
-  it('deletes an order and 404s on a second delete', async () => {
-    const o = await seedOrder('pending');
+  it('deletes a cancelled order and 404s on a second delete', async () => {
+    const o = await seedOrder('cancelled');
     const res = await request(app).delete(`/api/admin/orders/${o._id}`).set('Cookie', ADMIN);
     expect(res.status).toBe(204);
     expect(await Order.findById(o._id)).toBeNull();
     const again = await request(app).delete(`/api/admin/orders/${o._id}`).set('Cookie', ADMIN);
     expect(again.status).toBe(404);
+  });
+  // Deleting never restored stock while cancelling does, so a live order had to
+  // go through cancel first or its units vanished from inventory.
+  it('refuses to delete a live order with 409 and leaves it in place', async () => {
+    for (const status of ['pending', 'confirmed', 'shipped', 'delivered']) {
+      const o = await seedOrder(status);
+      const res = await request(app).delete(`/api/admin/orders/${o._id}`).set('Cookie', ADMIN);
+      expect(res.status).toBe(409);
+      expect(res.body.error.code).toBe('cancel_before_delete');
+      expect(await Order.findById(o._id)).not.toBeNull();
+    }
+  });
+});
+
+describe('PUT /api/admin/orders/:id (edit delivery details)', () => {
+  const edit = {
+    customer: { name: 'Mai Hassan', phone: '01111111111' },
+    shippingAddress: { line1: '9 Nile St', city: 'Giza', governorate: 'Giza', phone: '01111111111' },
+  };
+
+  it('updates customer and address, normalizing the phone', async () => {
+    const o = await seedOrder('confirmed');
+    const res = await request(app)
+      .put(`/api/admin/orders/${o._id}`)
+      .set('Cookie', ADMIN)
+      .send({ ...edit, customer: { ...edit.customer, phone: '+20 111 111 1111' } });
+    expect(res.status).toBe(200);
+    expect(res.body.customer).toMatchObject({ name: 'Mai Hassan', phone: '01111111111' });
+    expect(res.body.shippingAddress).toMatchObject({ line1: '9 Nile St', city: 'Giza' });
+  });
+
+  it('leaves items and money untouched', async () => {
+    const o = await seedOrder('confirmed');
+    const res = await request(app).put(`/api/admin/orders/${o._id}`).set('Cookie', ADMIN).send(edit);
+    expect(res.body.total).toBe(850);
+    expect(res.body.items).toHaveLength(1);
+    expect(res.body.status).toBe('confirmed');
+  });
+
+  it('clears the email when it is submitted empty', async () => {
+    const o = await Order.create({
+      orderNumber: 'HRC-EMAIL-1',
+      items: [{ product: '000000000000000000000099', name: 'X', sizeLabel: '50ml', unitPrice: 800, qty: 1, image: '' }],
+      customer: { name: 'Mai', phone: '01000000000', email: 'mai@example.com' },
+      shippingAddress: { line1: '1 St', city: 'Cairo', governorate: 'Cairo', phone: '01000000000' },
+      subtotal: 800, shipping: 50, total: 850, status: 'pending', paymentMethod: 'cod',
+    });
+    const res = await request(app).put(`/api/admin/orders/${o._id}`).set('Cookie', ADMIN).send(edit);
+    expect(res.body.customer.email).toBeUndefined();
+  });
+
+  it('400s on an invalid phone, 404s an unknown id, 403s a customer', async () => {
+    const o = await seedOrder('pending');
+    const bad = await request(app)
+      .put(`/api/admin/orders/${o._id}`)
+      .set('Cookie', ADMIN)
+      .send({ ...edit, customer: { ...edit.customer, phone: '12345' } });
+    expect(bad.status).toBe(400);
+    expect((await request(app).put('/api/admin/orders/000000000000000000000abc').set('Cookie', ADMIN).send(edit)).status).toBe(404);
+    expect((await request(app).put(`/api/admin/orders/${o._id}`).set('Cookie', CUSTOMER).send(edit)).status).toBe(403);
+  });
+});
+
+describe('stale unpaid InstaPay orders', () => {
+  const hoursAgo = (h: number) => new Date(Date.now() - h * 60 * 60 * 1000);
+
+  let seq = 0;
+  async function seedInstapay(opts: { ageHours: number; paid?: boolean; status?: string }) {
+    const name = `Amber ${(seq += 1)}`; // unique — the slug index is unique
+    const p = await Product.create({
+      name, type: 'perfume', shortDesc: 's', description: 'd', images: ['i'],
+      sizes: [{ label: '50ml', price: 800, stock: 1 }],
+      scentFamily: '000000000000000000000010',
+      notes: { top: [], heart: [], base: [] }, gender: 'unisex', concentration: 'EDP',
+    });
+    const o = await Order.create({
+      orderNumber: `HRC-STALE-${seq}`,
+      items: [{ product: p._id, name, sizeLabel: '50ml', unitPrice: 800, qty: 2, image: '' }],
+      customer: { name: 'Mai', phone: '01000000000' },
+      shippingAddress: { line1: '1 St', city: 'Cairo', governorate: 'Cairo', phone: '01000000000' },
+      subtotal: 1600, shipping: 50, total: 1650,
+      status: opts.status ?? 'pending',
+      paymentMethod: 'instapay',
+      ...(opts.paid ? { paidAt: new Date() } : {}),
+    });
+    // Mongoose marks timestamps' createdAt immutable, so age the order through
+    // the raw driver.
+    await Order.collection.updateOne({ _id: o._id }, { $set: { createdAt: hoursAgo(opts.ageHours) } });
+    return { order: o, product: p };
+  }
+
+  it('counts only unpaid, still-pending InstaPay orders past the window', async () => {
+    await seedInstapay({ ageHours: 72 }); // stale
+    await seedInstapay({ ageHours: 1 }); // too recent
+    await seedInstapay({ ageHours: 72, paid: true }); // paid
+    await seedInstapay({ ageHours: 72, status: 'confirmed' }); // already moved on
+    await seedOrder('pending'); // COD
+    const res = await request(app).get('/api/admin/orders/stale-unpaid').set('Cookie', ADMIN);
+    expect(res.status).toBe(200);
+    expect(res.body).toMatchObject({ count: 1, hours: 48 });
+  });
+
+  it('honours a custom window', async () => {
+    await seedInstapay({ ageHours: 5 });
+    expect((await request(app).get('/api/admin/orders/stale-unpaid?hours=2').set('Cookie', ADMIN)).body.count).toBe(1);
+    expect((await request(app).get('/api/admin/orders/stale-unpaid?hours=12').set('Cookie', ADMIN)).body.count).toBe(0);
+  });
+
+  it('releasing cancels them and returns their stock', async () => {
+    const { order, product } = await seedInstapay({ ageHours: 72 });
+    const fresh = await seedInstapay({ ageHours: 1 });
+    const res = await request(app).post('/api/admin/orders/release-stale').set('Cookie', ADMIN).send({ hours: 48 });
+    expect(res.status).toBe(200);
+    expect(res.body.cancelled).toBe(1);
+
+    const cancelled = await Order.findById(order._id).lean();
+    expect(cancelled!.status).toBe('cancelled');
+    expect(cancelled!.statusHistory.at(-1)!.status).toBe('cancelled');
+    expect((await Product.findById(product._id).lean())!.sizes[0]!.stock).toBe(3); // 1 + 2 restored
+
+    // The recent one is untouched.
+    expect((await Order.findById(fresh.order._id).lean())!.status).toBe('pending');
+    expect((await Product.findById(fresh.product._id).lean())!.sizes[0]!.stock).toBe(1);
+  });
+
+  it('403s for a customer', async () => {
+    expect((await request(app).get('/api/admin/orders/stale-unpaid').set('Cookie', CUSTOMER)).status).toBe(403);
+    expect((await request(app).post('/api/admin/orders/release-stale').set('Cookie', CUSTOMER).send({ hours: 48 })).status).toBe(403);
   });
 });

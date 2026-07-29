@@ -26,6 +26,11 @@ export type AdminStatsDTO = {
   orders30: number;
   revenue30: number;
   pending: number;
+  // Counted server-side over the whole catalog (inactive products included) so
+  // the dashboard never under-reports because of a client-side page limit.
+  products: number;
+  lowStock: number;
+  outOfStock: number;
   bestSellers: { name: string; qty: number; revenue: number }[];
 };
 

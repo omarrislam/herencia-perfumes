@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createOrderSchema, egyptianPhoneSchema, ORDER_STATUS, ORDER_STATUS_TRANSITIONS, updateOrderStatusSchema, updateOrderPaidSchema } from './order';
+import { createOrderSchema, egyptianPhoneSchema, ORDER_STATUS, ORDER_STATUS_TRANSITIONS, updateOrderStatusSchema, updateOrderPaidSchema, adminUpdateOrderSchema, trackOrderSchema, releaseStaleSchema } from './order';
 
 describe('createOrderSchema', () => {
   const valid = {
@@ -59,6 +59,49 @@ describe('updateOrderPaidSchema', () => {
   it('accepts a boolean paid flag only', () => {
     expect(updateOrderPaidSchema.safeParse({ paid: true }).success).toBe(true);
     expect(updateOrderPaidSchema.safeParse({ paid: 'yes' }).success).toBe(false);
+  });
+});
+
+describe('trackOrderSchema', () => {
+  it('normalizes the phone so any accepted form matches the stored one', () => {
+    const parsed = trackOrderSchema.parse({ orderNumber: ' HRC-ABC-1234 ', phone: '+20 100 000 0000' });
+    expect(parsed).toEqual({ orderNumber: 'HRC-ABC-1234', phone: '01000000000' });
+  });
+  it('rejects a missing order number or a non-Egyptian phone', () => {
+    expect(trackOrderSchema.safeParse({ orderNumber: '', phone: '01000000000' }).success).toBe(false);
+    expect(trackOrderSchema.safeParse({ orderNumber: 'HRC-ABC-1234', phone: '99' }).success).toBe(false);
+  });
+});
+
+describe('adminUpdateOrderSchema', () => {
+  const valid = {
+    customer: { name: 'Sara', phone: '01000000000' },
+    shippingAddress: { line1: '1 Nile St', city: 'Cairo', governorate: 'Cairo', phone: '01000000000' },
+  };
+  it('accepts delivery details and normalizes both phones', () => {
+    const parsed = adminUpdateOrderSchema.parse({
+      customer: { ...valid.customer, phone: '+201000000000' },
+      shippingAddress: { ...valid.shippingAddress, phone: '20 100 000 0000' },
+    });
+    expect(parsed.customer.phone).toBe('01000000000');
+    expect(parsed.shippingAddress.phone).toBe('01000000000');
+  });
+  it('treats an empty email as "clear it" rather than an error', () => {
+    expect(adminUpdateOrderSchema.safeParse({ ...valid, customer: { ...valid.customer, email: '' } }).success).toBe(true);
+    expect(adminUpdateOrderSchema.safeParse({ ...valid, customer: { ...valid.customer, email: 'nope' } }).success).toBe(false);
+  });
+  it('rejects a blank name, address, city or governorate', () => {
+    expect(adminUpdateOrderSchema.safeParse({ ...valid, customer: { ...valid.customer, name: ' ' } }).success).toBe(false);
+    expect(adminUpdateOrderSchema.safeParse({ ...valid, shippingAddress: { ...valid.shippingAddress, city: '' } }).success).toBe(false);
+  });
+});
+
+describe('releaseStaleSchema', () => {
+  it('takes a whole number of hours within a month', () => {
+    expect(releaseStaleSchema.safeParse({ hours: 48 }).success).toBe(true);
+    expect(releaseStaleSchema.safeParse({ hours: 0 }).success).toBe(false);
+    expect(releaseStaleSchema.safeParse({ hours: 1000 }).success).toBe(false);
+    expect(releaseStaleSchema.safeParse({ hours: 1.5 }).success).toBe(false);
   });
 });
 

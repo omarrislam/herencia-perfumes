@@ -62,6 +62,41 @@ export const ORDER_STATUS_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
 export const updateOrderStatusSchema = z.object({ status: z.enum(ORDER_STATUS) });
 export type UpdateOrderStatusInput = z.infer<typeof updateOrderStatusSchema>;
 
+// Admin correction of a placed order. Deliberately limited to the delivery
+// details a phone call fixes — items and money are never editable after the
+// fact (stock was already decremented against them).
+export const adminUpdateOrderSchema = z.object({
+  customer: z.object({
+    name: z.string().trim().min(1, 'Full name is required'),
+    phone: egyptianPhoneSchema,
+    email: z.string().email('Enter a valid email address').optional().or(z.literal('')),
+  }),
+  shippingAddress: z.object({
+    line1: z.string().trim().min(1, 'Address is required'),
+    line2: z.string().optional(),
+    city: z.string().trim().min(1, 'City is required'),
+    governorate: z.string().trim().min(1, 'Governorate is required'),
+    phone: egyptianPhoneSchema,
+  }),
+});
+export type AdminUpdateOrderInput = z.infer<typeof adminUpdateOrderSchema>;
+
+// Guest order lookup: order number + the phone it was placed with. Both must
+// match, so an order number alone never exposes a customer's address.
+export const trackOrderSchema = z.object({
+  orderNumber: z.string().trim().min(4, 'Enter your order number').max(40),
+  phone: egyptianPhoneSchema,
+});
+export type TrackOrderInput = z.infer<typeof trackOrderSchema>;
+
+// Owner-triggered release of stock held by abandoned unpaid InstaPay orders.
+export const releaseStaleSchema = z.object({
+  hours: z.number().int().min(1).max(24 * 30),
+});
+export type ReleaseStaleInput = z.infer<typeof releaseStaleSchema>;
+export type StaleUnpaidDTO = { count: number; hours: number };
+export type ReleaseStaleResultDTO = { cancelled: number };
+
 // Marks an InstaPay transfer as received (or undoes a mistaken mark).
 export const updateOrderPaidSchema = z.object({ paid: z.boolean() });
 export type UpdateOrderPaidInput = z.infer<typeof updateOrderPaidSchema>;

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { adminProductSchema, scentFamilySchema, slugify, updateOrderStatusSchema, updateOrderPaidSchema, updateReviewSchema, quizQuestionSchema, bannerSchema, blogPostSchema, updateSettingsSchema, noteIconSchema, discountCodeSchema, ORDER_STATUS, ORDER_STATUS_TRANSITIONS, type OrderStatus } from '@herencia/shared';
+import { adminProductSchema, scentFamilySchema, slugify, updateOrderStatusSchema, updateOrderPaidSchema, adminUpdateOrderSchema, releaseStaleSchema, updateReviewSchema, quizQuestionSchema, bannerSchema, blogPostSchema, updateSettingsSchema, noteIconSchema, discountCodeSchema, ORDER_STATUS, ORDER_STATUS_TRANSITIONS, LOW_STOCK_THRESHOLD, STALE_UNPAID_HOURS, type OrderStatus } from '@herencia/shared';
 import { Product } from '../models/Product';
 import { ScentFamily } from '../models/ScentFamily';
 import { Order } from '../models/Order';
@@ -91,6 +91,36 @@ export function adminRouter(): Router {
   });
 
   // ---- Products / bundles ----
+  // Admin listing — unlike the public catalog this does NOT filter on isActive,
+  // otherwise deactivating a product would hide it from the only UI that can
+  // reactivate it. Paginated so the catalog can outgrow one page.
+  router.get('/products', async (req, res, next) => {
+    try {
+      const page = Math.max(1, Number(req.query['page'] ?? 1) || 1);
+      const limit = Math.min(200, Math.max(1, Number(req.query['limit'] ?? 50) || 50));
+      const filter: Record<string, unknown> = {};
+      const q = typeof req.query['q'] === 'string' ? req.query['q'].trim() : '';
+      if (q) filter['name'] = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+      const [docs, total] = await Promise.all([
+        Product.find(filter)
+          .sort({ createdAt: -1 })
+          .skip((page - 1) * limit)
+          .limit(limit)
+          .populate('scentFamily')
+          .lean(),
+        Product.countDocuments(filter),
+      ]);
+      res.json({
+        items: docs.map((d) => toProductDTO(d)),
+        total,
+        page,
+        pages: Math.max(1, Math.ceil(total / limit)),
+      });
+    } catch (err) {
+      next(err);
+    }
+  });
+
   router.post('/products', async (req, res, next) => {
     try {
       const parsed = adminProductSchema.safeParse(req.body);
@@ -216,23 +246,45 @@ export function adminRouter(): Router {
       order.status = to;
       if (from !== to) order.statusHistory.push({ status: to, at: new Date() });
       await order.save();
-      // Cancelling puts the reserved units back on the shelf (fail-soft if a
-      // product or size has since been deleted).
-      if (from !== to && to === 'cancelled') {
-        for (const item of order.items) {
-          if (item.isSample) {
-            await Product.updateOne({ _id: item.product }, { $inc: { sampleStock: item.qty } });
-          } else {
-            await Product.updateOne(
-              { _id: item.product, 'sizes.label': item.sizeLabel },
-              { $inc: { 'sizes.$.stock': item.qty } },
-            );
-          }
-        }
-      }
+      // Cancelling puts the reserved units back on the shelf.
+      if (from !== to && to === 'cancelled') await restoreStock(order.items);
       // WhatsApp status update via the official Cloud API (no-op unless configured).
       if (from !== to) await sendStatusUpdate(order, to);
       res.json(toOrderDTO(order.toObject()));
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // Corrects the delivery details of a placed order (wrong phone, mistyped
+  // address). Items and totals are deliberately immutable — stock was already
+  // decremented against them.
+  router.put('/orders/:id', async (req, res, next) => {
+    try {
+      const parsed = adminUpdateOrderSchema.safeParse(req.body);
+      if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? 'Invalid', 'invalid');
+      const { customer, shippingAddress } = parsed.data;
+      // Dot-paths so the sub-documents keep any field the form doesn't carry.
+      const $set: Record<string, unknown> = {
+        'customer.name': customer.name,
+        'customer.phone': customer.phone,
+        'shippingAddress.line1': shippingAddress.line1,
+        'shippingAddress.city': shippingAddress.city,
+        'shippingAddress.governorate': shippingAddress.governorate,
+        'shippingAddress.phone': shippingAddress.phone,
+      };
+      const $unset: Record<string, 1> = {};
+      if (shippingAddress.line2) $set['shippingAddress.line2'] = shippingAddress.line2;
+      else $unset['shippingAddress.line2'] = 1;
+      if (customer.email) $set['customer.email'] = customer.email;
+      else $unset['customer.email'] = 1;
+      const order = await Order.findByIdAndUpdate(
+        req.params['id'],
+        { $set, $unset },
+        { new: true },
+      ).lean();
+      if (!order) throw new HttpError(404, 'Order not found', 'not_found');
+      res.json(toOrderDTO(order));
     } catch (err) {
       next(err);
     }
@@ -255,12 +307,52 @@ export function adminRouter(): Router {
     }
   });
 
-  // Permanently removes an order. Does NOT restore stock (cancel first if the
-  // units should go back on the shelf).
+  // Counts InstaPay orders still unpaid past `hours` — their units are reserved
+  // but the money never came.
+  router.get('/orders/stale-unpaid', async (req, res, next) => {
+    try {
+      const hours = staleHours(req.query['hours']);
+      const count = await Order.countDocuments(staleUnpaidFilter(hours));
+      res.json({ count, hours });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // Cancels those orders in one sweep, which returns their stock. Owner-triggered
+  // only — nothing here runs on a timer against a real customer's order.
+  router.post('/orders/release-stale', async (req, res, next) => {
+    try {
+      const parsed = releaseStaleSchema.safeParse({ hours: staleHours(req.body?.hours) });
+      if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? 'Invalid', 'invalid');
+      const orders = await Order.find(staleUnpaidFilter(parsed.data.hours));
+      for (const order of orders) {
+        order.status = 'cancelled';
+        order.statusHistory.push({ status: 'cancelled', at: new Date() });
+        await order.save();
+        await restoreStock(order.items);
+      }
+      res.json({ cancelled: orders.length });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // Permanently removes an order. Only a cancelled order can be deleted, so the
+  // units it reserved have always been returned first (cancelling restores them;
+  // deleting never did, which quietly ate inventory).
   router.delete('/orders/:id', async (req, res, next) => {
     try {
-      const order = await Order.findByIdAndDelete(req.params['id']);
+      const order = await Order.findById(req.params['id']).lean();
       if (!order) throw new HttpError(404, 'Order not found', 'not_found');
+      if (order.status !== 'cancelled') {
+        throw new HttpError(
+          409,
+          'Cancel this order first — cancelling returns its stock, deleting does not.',
+          'cancel_before_delete',
+        );
+      }
+      await Order.deleteOne({ _id: order._id });
       res.status(204).end();
     } catch (err) {
       next(err);
@@ -322,7 +414,44 @@ export function adminRouter(): Router {
       const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
       const notCancelled = { status: { $ne: 'cancelled' } };
       const sum = { _id: null, n: { $sum: 1 }, rev: { $sum: '$total' } };
-      const [all, recent, pending, best] = await Promise.all([
+      // Stock health is counted over the whole catalog (inactive included) so a
+      // page limit in the admin UI can never under-report it. A perfume's sample
+      // pool counts as its own line, matching the Inventory table.
+      const stockCounts = Product.aggregate<{ _id: null; low: number; out: number }>([
+        {
+          $project: {
+            units: {
+              $concatArrays: [
+                { $map: { input: '$sizes', as: 's', in: '$$s.stock' } },
+                {
+                  $cond: [
+                    { $eq: ['$type', 'perfume'] },
+                    [{ $ifNull: ['$sampleStock', 0] }],
+                    [],
+                  ],
+                },
+              ],
+            },
+          },
+        },
+        { $unwind: '$units' },
+        {
+          $group: {
+            _id: null,
+            low: {
+              $sum: {
+                $cond: [
+                  { $and: [{ $gt: ['$units', 0] }, { $lte: ['$units', LOW_STOCK_THRESHOLD] }] },
+                  1,
+                  0,
+                ],
+              },
+            },
+            out: { $sum: { $cond: [{ $eq: ['$units', 0] }, 1, 0] } },
+          },
+        },
+      ]);
+      const [all, recent, pending, best, products, stock] = await Promise.all([
         Order.aggregate<{ n: number; rev: number }>([{ $match: notCancelled }, { $group: sum }]),
         Order.aggregate<{ n: number; rev: number }>([
           { $match: { ...notCancelled, createdAt: { $gte: since } } },
@@ -343,6 +472,8 @@ export function adminRouter(): Router {
           { $sort: { qty: -1 } },
           { $limit: 5 },
         ]),
+        Product.countDocuments({}),
+        stockCounts,
       ]);
       res.json({
         orders: all[0]?.n ?? 0,
@@ -350,6 +481,9 @@ export function adminRouter(): Router {
         orders30: recent[0]?.n ?? 0,
         revenue30: recent[0]?.rev ?? 0,
         pending,
+        products,
+        lowStock: stock[0]?.low ?? 0,
+        outOfStock: stock[0]?.out ?? 0,
         bestSellers: best.map((b) => ({ name: b._id, qty: b.qty, revenue: b.revenue })),
       });
     } catch (err) {
@@ -640,4 +774,38 @@ export function adminRouter(): Router {
   });
 
   return router;
+}
+
+type StockLine = { product: unknown; sizeLabel: string; qty: number; isSample?: boolean | null };
+
+/**
+ * Returns an order's reserved units to the shelf. Fail-soft: a product or size
+ * deleted since the order was placed simply matches nothing.
+ */
+async function restoreStock(items: StockLine[]): Promise<void> {
+  for (const item of items) {
+    if (item.isSample) {
+      await Product.updateOne({ _id: item.product }, { $inc: { sampleStock: item.qty } });
+    } else {
+      await Product.updateOne(
+        { _id: item.product, 'sizes.label': item.sizeLabel },
+        { $inc: { 'sizes.$.stock': item.qty } },
+      );
+    }
+  }
+}
+
+/** InstaPay, never marked paid, still awaiting payment, and older than `hours`. */
+function staleUnpaidFilter(hours: number): Record<string, unknown> {
+  return {
+    paymentMethod: 'instapay',
+    paidAt: { $exists: false },
+    status: 'pending',
+    createdAt: { $lte: new Date(Date.now() - hours * 60 * 60 * 1000) },
+  };
+}
+
+function staleHours(raw: unknown): number {
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= 1 ? Math.floor(n) : STALE_UNPAID_HOURS;
 }

@@ -1,3 +1,5 @@
+import { useQuery } from '@tanstack/react-query';
+import { fetchSettings } from '../lib/api';
 import { useSeo } from '../lib/useSeo';
 
 const POLICY: { q: string; a: string }[] = [
@@ -9,6 +11,8 @@ const POLICY: { q: string; a: string }[] = [
 
 export default function Returns() {
   useSeo({ title: 'Returns & Refunds — HERENCIA', description: 'HERENCIA return and refund policy — 14-day returns on unopened items.' });
+  const settings = useQuery({ queryKey: ['settings'], queryFn: fetchSettings, staleTime: 60_000 });
+  const contactEmail = settings.data?.contactEmail;
   return (
     <div className="mx-auto max-w-2xl py-8">
       <div className="mb-8">
@@ -31,9 +35,11 @@ export default function Returns() {
         ))}
       </div>
 
-      <p className="mt-8 font-body text-sm text-muted">
-        Questions? <a href="mailto:hello@herencia.example" className="link-underline text-accent">Email us</a> and we’ll help.
-      </p>
+      {contactEmail && (
+        <p className="mt-8 font-body text-sm text-muted">
+          Questions? <a href={`mailto:${contactEmail}`} className="link-underline text-accent">Email us</a> and we’ll help.
+        </p>
+      )}
     </div>
   );
 }

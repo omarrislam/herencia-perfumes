@@ -8,6 +8,7 @@ import { setAuthCookie, clearAuthCookie } from '../lib/authCookie';
 import { authenticate, requireAuth } from '../middleware/auth';
 import { toUserDTO } from '../lib/serialize';
 import { authLimiter } from '../middleware/rateLimit';
+import { linkGuestOrders } from '../modules/order/service';
 
 export function authRouter(): Router {
   const router = Router();
@@ -20,6 +21,8 @@ export function authRouter(): Router {
       if (await User.exists({ email })) throw new HttpError(409, 'Email already registered', 'conflict');
       const passwordHash = await bcrypt.hash(password, 12);
       const user = await User.create({ name, email, passwordHash, role: 'customer' });
+      // Adopt anything they already ordered as a guest with this email.
+      await linkGuestOrders(String(user._id), { email: user.email });
       setAuthCookie(res, signToken({ sub: String(user._id), role: 'customer' }));
       res.status(201).json(toUserDTO(user.toObject()));
     } catch (err) {
@@ -36,6 +39,7 @@ export function authRouter(): Router {
       if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
         throw new HttpError(401, 'Invalid email or password', 'invalid_credentials');
       }
+      await linkGuestOrders(String(user._id), { email: user.email, phone: user.phone });
       setAuthCookie(res, signToken({ sub: String(user._id), role: user.role as 'customer' | 'admin' }));
       res.json(toUserDTO(user.toObject()));
     } catch (err) {

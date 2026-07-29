@@ -4,6 +4,7 @@ import { User } from '../models/User';
 import { HttpError } from '../middleware/error';
 import { authenticate, requireAuth } from '../middleware/auth';
 import { toUserDTO, toAddressDTO, toProductDTO } from '../lib/serialize';
+import { linkGuestOrders } from '../modules/order/service';
 
 export function accountRouter(): Router {
   const router = Router();
@@ -25,6 +26,8 @@ export function accountRouter(): Router {
       if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? 'Invalid', 'invalid');
       const user = await User.findByIdAndUpdate(req.user!.id, parsed.data, { new: true }).lean();
       if (!user) throw new HttpError(404, 'User not found', 'not_found');
+      // Saving a phone number is usually what makes past guest orders matchable.
+      await linkGuestOrders(String(user._id), { email: user.email, phone: user.phone });
       res.json(toUserDTO(user));
     } catch (err) {
       next(err);

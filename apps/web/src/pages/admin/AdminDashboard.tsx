@@ -1,7 +1,7 @@
 // apps/web/src/pages/admin/AdminDashboard.tsx
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
-import { fetchProducts } from '../../lib/api';
+import { LOW_STOCK_THRESHOLD } from '@herencia/shared';
 import { adminFetchOrders, adminFetchStats } from '../../features/admin/adminClient';
 
 const STATUS_COLORS: Record<string, string> = {
@@ -30,12 +30,10 @@ function StatCard({ label, value, hint, to }: { label: string; value: string; hi
 export default function AdminDashboard() {
   const stats = useQuery({ queryKey: ['admin-stats'], queryFn: adminFetchStats });
   const orders = useQuery({ queryKey: ['admin-orders'], queryFn: () => adminFetchOrders() });
-  const products = useQuery({ queryKey: ['admin-products'], queryFn: () => fetchProducts({ limit: 48 }) });
 
   const orderItems = orders.data?.items ?? [];
-  const productItems = products.data?.items ?? [];
-  const lowStock = productItems.filter((p) => p.sizes.some((s) => s.stock > 0 && s.stock <= 5)).length;
-  const outOfStock = productItems.filter((p) => p.sizes.every((s) => s.stock === 0)).length;
+  // Catalog + stock counts come from the server so they cover every product
+  // (including deactivated ones) rather than whatever fitted on one page.
   const s = stats.data;
 
   return (
@@ -50,9 +48,9 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <StatCard label="Products" value={String(products.data?.total ?? 0)} to="/admin/products" />
-        <StatCard label="Low stock" value={String(lowStock)} hint="≤ 5 left" to="/admin/inventory" />
-        <StatCard label="Out of stock" value={String(outOfStock)} to="/admin/inventory" />
+        <StatCard label="Products" value={String(s?.products ?? 0)} to="/admin/products" />
+        <StatCard label="Low stock" value={String(s?.lowStock ?? 0)} hint={`≤ ${LOW_STOCK_THRESHOLD} left`} to="/admin/inventory" />
+        <StatCard label="Out of stock" value={String(s?.outOfStock ?? 0)} hint="Sizes sold out" to="/admin/inventory" />
       </div>
 
       {/* Best sellers (by units, cancelled orders excluded) */}

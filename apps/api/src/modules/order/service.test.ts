@@ -4,7 +4,8 @@ import { ScentFamily } from '../../models/ScentFamily';
 import { Product } from '../../models/Product';
 import { Setting } from '../../models/Setting';
 import { DiscountCode } from '../../models/DiscountCode';
-import { createOrder } from './service';
+import { Order } from '../../models/Order';
+import { createOrder, linkGuestOrders } from './service';
 
 beforeAll(connectMemory);
 afterAll(disconnectMemory);
@@ -135,5 +136,104 @@ describe('createOrder', () => {
     ).rejects.toMatchObject({ status: 409 });
     const fresh = await Product.findById(p._id).lean();
     expect(fresh!.sampleStock).toBe(1);
+  });
+});
+
+describe('discount eligibility (one per phone number)', () => {
+  const otherPhone = (base: ReturnType<typeof input>, phone: string) => ({
+    ...base,
+    customer: { ...base.customer, phone },
+    shippingAddress: { ...base.shippingAddress, phone },
+  });
+
+  it('rejects the welcome code on a phone number that has ordered before', async () => {
+    await Setting.updateOne({}, { $set: { emailPopup: { enabled: true, code: 'WELCOME10', discountPercent: 10 } } });
+    const first = await createOrder({ ...input(1), discountCode: 'WELCOME10' });
+    expect(first.order.discount).toBe(80);
+
+    await expect(createOrder({ ...input(1), discountCode: 'WELCOME10' })).rejects.toMatchObject({
+      status: 409,
+      code: 'discount_not_eligible',
+    });
+  });
+
+  it('still honours the welcome code for a different phone number', async () => {
+    await Setting.updateOne({}, { $set: { emailPopup: { enabled: true, code: 'WELCOME10', discountPercent: 10 } } });
+    await createOrder({ ...input(1), discountCode: 'WELCOME10' });
+    const { order } = await createOrder({
+      ...otherPhone(input(1), '01111111111'),
+      discountCode: 'WELCOME10',
+    });
+    expect(order.discount).toBe(80);
+  });
+
+  it('a cancelled first order does not burn the welcome code', async () => {
+    await Setting.updateOne({}, { $set: { emailPopup: { enabled: true, code: 'WELCOME10', discountPercent: 10 } } });
+    const first = await createOrder(input(1));
+    await Order.updateOne({ _id: first.order.id }, { $set: { status: 'cancelled' } });
+    const { order } = await createOrder({ ...input(1), discountCode: 'WELCOME10' });
+    expect(order.discount).toBe(80);
+  });
+
+  it('rejects reuse of an admin code by the same phone but allows another', async () => {
+    await DiscountCode.create({ code: 'SAVE20', percent: 20, isActive: true });
+    await createOrder({ ...input(1), discountCode: 'SAVE20' });
+    await expect(createOrder({ ...input(1), discountCode: 'SAVE20' })).rejects.toMatchObject({
+      status: 409,
+      code: 'discount_not_eligible',
+    });
+    const { order } = await createOrder({
+      ...otherPhone(input(1), '01111111111'),
+      discountCode: 'SAVE20',
+    });
+    expect(order.discount).toBe(160);
+  });
+
+  it('a rejected code leaves stock untouched (checked before any decrement)', async () => {
+    await DiscountCode.create({ code: 'SAVE20', percent: 20, isActive: true });
+    await createOrder({ ...input(1), discountCode: 'SAVE20' });
+    const before = (await Product.findById(productId).lean())!.sizes[0]!.stock;
+    await expect(createOrder({ ...input(1), discountCode: 'SAVE20' })).rejects.toMatchObject({ status: 409 });
+    const after = (await Product.findById(productId).lean())!.sizes[0]!.stock;
+    expect(after).toBe(before);
+  });
+
+  it('does not count a code use until the order is actually created', async () => {
+    await DiscountCode.create({ code: 'SAVE20', percent: 20, isActive: true });
+    // qty 5 exceeds stock 3 → the order never exists, so `uses` must stay 0.
+    await expect(createOrder({ ...input(5), discountCode: 'SAVE20' })).rejects.toMatchObject({ status: 409 });
+    const dc = await DiscountCode.findOne({ code: 'SAVE20' }).lean();
+    expect(dc!.uses).toBe(0);
+  });
+});
+
+describe('linkGuestOrders', () => {
+  const userId = '000000000000000000000042';
+
+  it('adopts guest orders matching the phone, normalizing +20 form', async () => {
+    await createOrder(input(1));
+    const linked = await linkGuestOrders(userId, { phone: '+201000000000' });
+    expect(linked).toBe(1);
+    const order = await Order.findOne({}).lean();
+    expect(String(order!.user)).toBe(userId);
+  });
+
+  it('adopts guest orders matching the email case-insensitively', async () => {
+    await createOrder({
+      ...input(1),
+      customer: { name: 'Mai', phone: '01000000000', email: 'Mai@Example.com' },
+    });
+    expect(await linkGuestOrders(userId, { email: 'mai@example.com' })).toBe(1);
+  });
+
+  it('never reassigns an order that already belongs to someone', async () => {
+    await createOrder(input(1), '000000000000000000000099');
+    expect(await linkGuestOrders(userId, { phone: '01000000000' })).toBe(0);
+  });
+
+  it('matches nothing without a usable email or phone', async () => {
+    await createOrder(input(1));
+    expect(await linkGuestOrders(userId, { phone: 'not-a-phone' })).toBe(0);
+    expect(await linkGuestOrders(userId, {})).toBe(0);
   });
 });

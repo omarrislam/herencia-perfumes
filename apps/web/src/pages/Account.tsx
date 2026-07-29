@@ -1,4 +1,5 @@
 import { useState, useEffect, useId, type FormEvent } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { addressSchema } from '@herencia/shared';
@@ -6,6 +7,8 @@ import type { AddressDTO, AddressInput, UpdateProfileInput } from '@herencia/sha
 import { useAuth } from '../features/auth/AuthContext';
 import { Button } from '../components/Button';
 import { Price } from '../components/Price';
+import { OrderSummary, OrderStatusBadge } from '../components/OrderSummary';
+import { OrderReceipt } from '../components/OrderReceipt';
 import { ProductCard } from '../components/ProductCard';
 import { ApiError } from '../lib/api';
 import { useSeo } from '../lib/useSeo';
@@ -18,6 +21,7 @@ import {
   deleteAddress,
   fetchWishlist,
   fetchMyOrders,
+  fetchSettings,
 } from '../lib/api';
 
 // ---- Shared input field ----
@@ -259,20 +263,14 @@ function AddressesSection() {
 
 // ---- Orders section ----
 
-const STATUS_COLORS: Record<string, string> = {
-  pending: 'bg-warning-soft text-warning',
-  confirmed: 'bg-info-soft text-info',
-  shipped: 'bg-accent/15 text-accent',
-  delivered: 'bg-success-soft text-success',
-  cancelled: 'bg-danger-soft text-danger',
-};
-
 const ORDER_STATUS_LS = 'herencia.orderStatuses';
 
 function OrdersSection() {
   const ordersQ = useQuery({ queryKey: ['account', 'orders'], queryFn: fetchMyOrders });
   const orders = ordersQ.data?.items ?? [];
   const [changed, setChanged] = useState<Set<string>>(new Set());
+  const [openId, setOpenId] = useState<string | null>(null);
+  const settings = useQuery({ queryKey: ['settings'], queryFn: fetchSettings, staleTime: 60_000 });
 
   // Flag orders whose status changed since the last visit (client-side notification).
   useEffect(() => {
@@ -301,32 +299,61 @@ function OrdersSection() {
         <p className="font-body text-sm text-muted">No orders yet.</p>
       )}
       <div className="space-y-3">
-        {orders.map((order) => (
-          <div
-            key={order.id}
-            className="flex flex-wrap items-center gap-4 rounded-xl border border-hairline p-4"
-          >
-            <div className="min-w-0 flex-1">
-              <p className="font-body text-sm font-semibold text-content">#{order.orderNumber}</p>
-              <p className="font-body text-xs text-muted">
-                {new Date(order.createdAt).toLocaleDateString('en-US', {
-                  year: 'numeric', month: 'short', day: 'numeric',
-                })}
-              </p>
+        {orders.map((order) => {
+          const open = openId === order.id;
+          return (
+            <div key={order.id} className="rounded-xl border border-hairline">
+              <button
+                type="button"
+                onClick={() => setOpenId(open ? null : order.id)}
+                aria-expanded={open}
+                className="flex w-full flex-wrap items-center gap-4 p-4 text-left transition-colors hover:bg-surface2"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="font-body text-sm font-semibold text-content">
+                    <span className={`mr-2 inline-block text-xs text-muted transition-transform ${open ? 'rotate-90' : ''}`}>▸</span>
+                    #{order.orderNumber}
+                  </p>
+                  <p className="font-body text-xs text-muted">
+                    {new Date(order.createdAt).toLocaleDateString('en-US', {
+                      year: 'numeric', month: 'short', day: 'numeric',
+                    })}
+                    {' · '}
+                    {order.items.reduce((n, i) => n + i.qty, 0)} item
+                    {order.items.reduce((n, i) => n + i.qty, 0) === 1 ? '' : 's'}
+                  </p>
+                </div>
+                {changed.has(order.id) && (
+                  <span className="rounded-full bg-accent px-2 py-0.5 font-body text-[10px] font-medium uppercase tracking-wide text-surface" title="Status updated since your last visit">
+                    Updated
+                  </span>
+                )}
+                <OrderStatusBadge status={order.status} />
+                <Price value={order.total} />
+              </button>
+
+              {open && (
+                <div className="space-y-4 border-t border-hairline p-4">
+                  <OrderSummary order={order} />
+                  <div className="flex flex-wrap items-center gap-3 border-t border-hairline pt-3">
+                    <button
+                      type="button"
+                      onClick={() => window.print()}
+                      className="rounded border border-hairline px-3 py-1.5 font-body text-sm text-content transition-colors hover:border-accent hover:text-accent"
+                    >
+                      Print receipt
+                    </button>
+                  </div>
+                  {/* Only the expanded order renders a receipt, so printing targets it. */}
+                  {createPortal(
+                    <OrderReceipt order={order} instapayHandle={settings.data?.instapay?.handle} />,
+                    document.body,
+                  )}
+                </div>
+              )}
             </div>
-            {changed.has(order.id) && (
-              <span className="rounded-full bg-accent px-2 py-0.5 font-body text-[10px] font-medium uppercase tracking-wide text-surface" title="Status updated since your last visit">
-                Updated
-              </span>
-            )}
-            <span
-              className={`rounded px-2 py-0.5 font-body text-xs capitalize ${STATUS_COLORS[order.status] ?? 'bg-surface text-muted'}`}
-            >
-              {order.status}
-            </span>
-            <Price value={order.total} />
-          </div>
-        ))}
+          );
+        })}
       </div>
     </section>
   );

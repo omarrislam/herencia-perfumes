@@ -108,6 +108,13 @@ export default function Checkout() {
   const discount = codeValid && percent && priced ? round2(priced.subtotal * (percent / 100)) : 0;
   const totalDue = priced ? round2(priced.total - discount) : 0;
 
+  const clearDiscount = () => {
+    setDiscountCode('');
+    setFormError(null);
+    setShowCodeField(false);
+    try { localStorage.removeItem(DISCOUNT_KEY); } catch { /* private mode */ }
+  };
+
   const update =
     (field: keyof FormState) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -224,7 +231,20 @@ export default function Checkout() {
               <Price value={totalDue} />
             </div>
           </div>
-          {/* Discount code — auto-filled from the email popup, or entered manually */}
+          {/* Discount code — auto-filled from the email popup, or entered manually.
+              An applied code always stays removable: eligibility is settled
+              server-side at submit (the welcome code is first-order only), and a
+              customer told to remove it needs a control to do it with. */}
+          {codeValid && (
+            <div className="flex items-center justify-between gap-2 pt-1 font-body text-xs">
+              <span className="text-muted">
+                Code <span className="font-medium text-content">{discountCode.trim().toUpperCase()}</span> applied
+              </span>
+              <button type="button" onClick={clearDiscount} className="text-muted underline-offset-2 hover:text-accent hover:underline">
+                Remove
+              </button>
+            </div>
+          )}
           {!codeValid && (
             showCodeField ? (
               <div className="flex items-center gap-2 pt-1">

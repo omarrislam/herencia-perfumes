@@ -359,7 +359,9 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+  /* animation-delay must be zeroed too, or a staggered reveal leaves elements
+     sitting at their `from` state (opacity 0) for the length of the delay. */
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-delay: 0ms !important; transition-duration: 0.01ms !important; }
   html { scroll-behavior: auto; }
   .sparkle, .wisp, .mote { display: none; }
 }

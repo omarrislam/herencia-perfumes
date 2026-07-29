@@ -240,13 +240,17 @@ export default function Home() {
                   <div key={i} className="w-[46%] shrink-0 snap-start sm:w-[31%] md:w-full"><Skeleton className="aspect-[5/6] rounded-xl" /></div>
                 ))
               : featuredItems.map((p, i) => (
-                  <Reveal
+                  // Mount-based CSS reveal, NOT scroll-based: cards parked
+                  // off-screen to the right of the carousel never intersect the
+                  // viewport, so an IntersectionObserver reveal left them at
+                  // opacity 0 forever.
+                  <div
                     key={p.id}
-                    delay={Math.min(i, 2) * 0.1}
-                    className={`w-[46%] shrink-0 snap-start sm:w-[31%] ${featuredCarousel ? 'md:w-[31.5%]' : 'md:w-full'}`}
+                    className={`anim-fade-up w-[46%] shrink-0 snap-start sm:w-[31%] ${featuredCarousel ? 'md:w-[31.5%]' : 'md:w-full'}`}
+                    style={{ animationDelay: `${Math.min(i, 2) * 100}ms` }}
                   >
                     <ProductCard product={p} />
-                  </Reveal>
+                  </div>
                 ))}
           </div>
           {featuredCarousel && (

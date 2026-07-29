@@ -1,6 +1,9 @@
 # Next Session — START HERE
 
-_Last updated: 2026-07-17_
+_Last updated: 2026-07-29_
+
+## NEW (2026-07-29, round 36): featured products were **invisible**, not slow. `Reveal` (framer `whileInView`) gated each featured card on IntersectionObserver, which tests BOTH axes — carousel cards parked off-screen to the right never intersected and sat at opacity 0 forever (auto-advance is off below 768px, so mobile never recovered). Featured cards now use mount-based `.anim-fade-up` CSS; `animation-delay` zeroed in the reduced-motion rule. Regression test `Home.featured.test.tsx` (IntersectionObserver stubbed to never fire). Committed `e118f4c`, pushed, web deployed, live-verified at 390px. **⚠️ Lesson: never wrap items of a horizontal carousel in a scroll-reveal — use a mount-based animation.** Details: current-state round 36.
+**Still open (offered, user didn't take it):** featured cards enter the DOM at ~2562ms on throttled mobile — JS execution (framer-motion + Home chunk), not data (API resolves at 1657ms, 3.5 kB). Real fix is the M5 prerender/SSR item.
 
 ## NEW (2026-07-17, round 35): WhatsApp customer notifications = **wa.me links, NOT the Cloud API**. ⛔ Meta portfolio `1401383105229630` is PERMANENTLY restricted ("including app sharing", review returned final) → Cloud API can never be provisioned. **Do not re-attempt the Meta dashboard setup, and do not rebuild under the clean portfolio `1647810982950230`** (= circumvention, risks it + the personal account). Built `apps/web/src/features/admin/whatsappMessage.ts` + 6 tests; Admin → Orders expanded panel has **WhatsApp receipt** / **WhatsApp "<status>" update** links (owner taps send). `waCloud.ts` kept but permanently dormant. web tsc clean, 10/10 green. **SHIPPED 2026-07-28: committed `3a59271`, pushed to origin/master, web deployed + live-verified on herencia-eg.com.** README rewritten in the same round (`49d9d1c`). Details: current-state round 35, decisions #48–49, docs/18.
 

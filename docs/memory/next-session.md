@@ -2,13 +2,13 @@
 
 _Last updated: 2026-07-29_
 
-## NEW (2026-07-29, round 37): PRE-LAUNCH GAP AUDIT — 12 fixes, **UNCOMMITTED, NOT DEPLOYED**
+## NEW (2026-07-29, round 37): PRE-LAUNCH GAP AUDIT — 12 fixes. **SHIPPED 2026-07-30** (`f170deb`, pushed, api + web deployed, live-verified)
 Audit of the purchase + admin flows before launch; user picked 12 items. Decisions **#50–56**, detail in current-state round 37.
 **Worst bug found:** admin screens listed products through the PUBLIC catalog (`isActive: true`), so deactivating a product hid it from the only UI that could re-enable it. New `GET /api/admin/products` fixes it and retires the 48-item cap.
 Also shipped: `/track` guest order lookup (order no. + phone), discounts one-per-phone (+ a **Remove** control at checkout — the applied state used to hide the input), admin order editing, delete blocked unless cancelled, owner-triggered stale-unpaid InstaPay sweep, account order detail, guest→account order linking, low-stock ntfy alerts, debounced search, Returns contact email, footer socials.
 Suites: shared 60 / api 201 / web 70, typecheck + lint + build clean.
-**⚠️ Ask the user before committing or deploying.** API changes are involved, so **both** projects need deploying, not just web.
-**Still open from the audit (user didn't take these):** no password reset for customers OR the admin (an owner lockout currently needs DB/seed access — worth doing before launch); `instapay.handle` unset in prod; flat 60 EGP shipping nationwide; no minimum order; sold-out Perla Rosa still featured with no notify-me; /bundles empty but linked in nav + footer.
+**Deploy gotcha:** deploying the api via the `VERCEL_ORG_ID`/`VERCEL_PROJECT_ID` override prints a misleading `herencia-…` URL that looks like the web project — verify by probing the api domain, not the printed URL.
+**Still open from the audit (user didn't take these):** no password reset for customers OR the admin (an owner lockout currently needs DB/seed access — worth doing before launch); `instapay.handle` unset in prod; **`www.herencia-eg.com` doesn't serve** (DNS resolves, host not added to the Vercel project — apex is fine); flat 60 EGP shipping nationwide; no minimum order; sold-out Perla Rosa still featured with no notify-me; /bundles empty but linked in nav + footer.
 
 ## NEW (2026-07-29, round 36): featured products were **invisible**, not slow. `Reveal` (framer `whileInView`) gated each featured card on IntersectionObserver, which tests BOTH axes — carousel cards parked off-screen to the right never intersected and sat at opacity 0 forever (auto-advance is off below 768px, so mobile never recovered). Featured cards now use mount-based `.anim-fade-up` CSS; `animation-delay` zeroed in the reduced-motion rule. Regression test `Home.featured.test.tsx` (IntersectionObserver stubbed to never fire). Committed `e118f4c`, pushed, web deployed, live-verified at 390px. **⚠️ Lesson: never wrap items of a horizontal carousel in a scroll-reveal — use a mount-based animation.** Details: current-state round 36.
 **Still open (offered, user didn't take it):** featured cards enter the DOM at ~2562ms on throttled mobile — JS execution (framer-motion + Home chunk), not data (API resolves at 1657ms, 3.5 kB). Real fix is the M5 prerender/SSR item.

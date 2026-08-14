@@ -190,9 +190,14 @@ export function LineChart({ points, label, comparison, comparisonLabel = 'Previo
         )}
       </div>
 
-      {/* Selective direct labels — first and last only, never a number on every point. */}
-      <div className="mt-1 flex justify-between font-body text-[11px] text-muted">
+      {/* Selective direct labels — the peak and the latest value, never a number on
+          every point. Without these the chart has no readable scale at all. */}
+      <div className="mt-1 flex justify-between gap-3 font-body text-[11px] text-muted">
         <span>{points[0]!.x}</span>
+        <span className="text-content">
+          {peak.y > 0 && <>peak {fmt(peak.y)} · </>}
+          latest {fmt(last.y)}
+        </span>
         <span>{last.x}</span>
       </div>
 

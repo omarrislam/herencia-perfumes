@@ -52,6 +52,11 @@ function Funnel({ funnel }: { funnel: AnalyticsFunnelDTO }) {
   if (funnel.sessions === 0) {
     return <p className="font-body text-sm text-muted">No visits recorded in this period yet.</p>;
   }
+  // Orders are counted from the orders table and visits from tracking, so an order
+  // whose visit was never tracked (placed before analytics shipped, or with a
+  // blocker) makes the last step exceed the one above it. Say so, rather than
+  // leaving a funnel that looks broken.
+  const untracked = funnel.orders > funnel.checkoutStarts;
   return (
     <ol className="space-y-3">
       {STEPS.map((step, i) => {
@@ -78,6 +83,14 @@ function Funnel({ funnel }: { funnel: AnalyticsFunnelDTO }) {
           </li>
         );
       })}
+      {untracked && (
+        <li className="pt-1">
+          <p className="font-body text-xs text-muted">
+            More orders than tracked checkouts — some were placed by visitors whose visit
+            wasn&apos;t tracked. Order counts are always exact; visit counts are not.
+          </p>
+        </li>
+      )}
     </ol>
   );
 }

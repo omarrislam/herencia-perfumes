@@ -118,4 +118,20 @@ describe('AdminAnalytics', () => {
     renderPage();
     await waitFor(() => expect(screen.getByText(/could not load analytics/i)).toBeInTheDocument());
   });
+  it('explains a funnel where orders exceed tracked checkouts', async () => {
+    // Correct but confusing: orders are exact, visit tracking is not. An order whose
+    // visit was never tracked makes the last step exceed the one above it.
+    vi.spyOn(adminClient, 'adminFetchAnalytics').mockResolvedValue({
+      ...full,
+      funnel: { sessions: 8, productViews: 0, addToCarts: 0, checkoutStarts: 0, orders: 1 },
+    });
+    renderPage();
+    await waitFor(() => expect(screen.getByText(/more orders than tracked checkouts/i)).toBeInTheDocument());
+  });
+
+  it('does not show that note when the funnel is consistent', async () => {
+    renderPage();
+    await waitFor(() => expect(screen.getByText('Ordered')).toBeInTheDocument());
+    expect(screen.queryByText(/more orders than tracked checkouts/i)).not.toBeInTheDocument();
+  });
 });

@@ -62,4 +62,10 @@ describe('LineChart', () => {
     render(<LineChart points={pts([10, 20])} label="Revenue" />);
     expect(screen.getByRole('img', { name: /revenue/i })).toBeInTheDocument();
   });
+  it('labels the peak and latest value so the chart has a readable scale', () => {
+    // The SVG <title> also names the peak for screen readers, hence getAllByText.
+    render(<LineChart points={pts([10, 90, 40])} label="Revenue" format={(n) => `EGP ${n}`} />);
+    expect(screen.getAllByText(/peak EGP 90/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/latest EGP 40/).length).toBeGreaterThan(0);
+  });
 });

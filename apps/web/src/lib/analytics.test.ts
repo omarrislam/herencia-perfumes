@@ -110,4 +110,24 @@ describe('flush', () => {
     expect(body.events[0].productSlug).toBe('ashes');
     expect(body.events[0].productId).toBeUndefined();
   });
+  it('includes the landing campaign in the very FIRST batch of a session', async () => {
+    // Regression: flush() used to read the stored UTMs before getSessionId() had
+    // written them, so the first batch of every session carried utm {}. The server
+    // uses $setOnInsert, which made that emptiness permanent — silently destroying
+    // campaign attribution for every visitor.
+    localStorage.clear();
+    sessionStorage.clear();
+    history.replaceState({}, '', '/?utm_source=instagram&utm_campaign=launch');
+    const beacon = vi.fn<(url: string, body?: BodyInit | null) => boolean>(() => true);
+    vi.stubGlobal('navigator', { ...navigator, sendBeacon: beacon });
+
+    track('page_view', { path: '/' });
+    await flush();
+
+    const body = JSON.parse(String(beacon.mock.calls[0]![1]));
+    expect(body.session.utm.source).toBe('instagram');
+    expect(body.session.utm.campaign).toBe('launch');
+    expect(body.session.landingPath).toBe('/');
+    history.replaceState({}, '', '/');
+  });
 });

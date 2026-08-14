@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { track, flush, currentIds } from '../lib/analytics';
@@ -76,7 +76,12 @@ export default function Checkout() {
 
   // Top of the checkout funnel — fired once on mount, then flushed immediately so a
   // visitor who abandons the page is still counted as having started checkout.
+  // The ref guard is load-bearing: StrictMode double-invokes effects in dev, and a
+  // duplicate here would overstate the most important step in the funnel.
+  const trackedCheckout = useRef(false);
   useEffect(() => {
+    if (trackedCheckout.current) return;
+    trackedCheckout.current = true;
     track('checkout_started');
     void flush();
   }, []);

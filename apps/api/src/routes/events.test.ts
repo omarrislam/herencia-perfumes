@@ -150,4 +150,26 @@ describe('POST /api/events', () => {
     expect(e!.product).toBeTruthy();
     expect(e!.value == null).toBe(true);
   });
+  it('accepts a text/plain body — that is what navigator.sendBeacon sends', async () => {
+    // Regression: a string beacon body is labelled text/plain, which the app-level
+    // express.json() ignores. Sending application/json instead is not an option:
+    // cross-origin it would need a preflight, and sendBeacon cannot preflight.
+    await request(app)
+      .post('/api/events')
+      .set('User-Agent', CHROME)
+      .set('Content-Type', 'text/plain;charset=UTF-8')
+      .send(JSON.stringify(body()))
+      .expect(204);
+    expect(await Session.countDocuments({ sessionId: 'S1' })).toBe(1);
+    expect(await Event.countDocuments({ type: 'page_view' })).toBe(1);
+  });
+
+  it('still rejects a text/plain body that is not valid json', async () => {
+    await request(app)
+      .post('/api/events')
+      .set('User-Agent', CHROME)
+      .set('Content-Type', 'text/plain;charset=UTF-8')
+      .send('not json at all')
+      .expect(400);
+  });
 });

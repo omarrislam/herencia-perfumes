@@ -89,6 +89,11 @@ export async function flush(): Promise<void> {
   const events = queue.slice(0, 50);
   queue = queue.slice(50);
 
+  // MUST come first: getSessionId() is what captures and stores the landing UTMs.
+  // Reading them before this call returned {} on the first batch of every session,
+  // and the server's $setOnInsert then made that emptiness permanent.
+  const sessionId = getSessionId();
+
   let utm: Record<string, string | undefined> = {};
   try {
     utm = JSON.parse(safeGet(sessionStorage, UTM_KEY) ?? '{}') as Record<string, string | undefined>;
@@ -98,7 +103,7 @@ export async function flush(): Promise<void> {
 
   const payload = JSON.stringify({
     session: {
-      sessionId: getSessionId(),
+      sessionId,
       visitorId: getVisitorId(),
       landingPath: safeGet(sessionStorage, LANDING_KEY) ?? location.pathname,
       referrer: safeGet(sessionStorage, REFERRER_KEY) || undefined,

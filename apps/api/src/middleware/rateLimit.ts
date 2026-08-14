@@ -25,3 +25,8 @@ export const reviewLimiter = makeLimiter({ windowMs: 60 * 60 * 1000, max: 10 });
 // bucket — generous for a customer refreshing, tight enough to stop enumeration,
 // and separate from orderLimiter so tracking never blocks checkout.
 export const trackLimiter = makeLimiter({ windowMs: 15 * 60 * 1000, max: 20 });
+
+// Every visitor hits this, not just writers, and the client batches events before
+// sending — so the ceiling is far higher than the write limiters. Generous by design:
+// dropping real analytics is worse than absorbing a little noise.
+export const eventsLimiter = makeLimiter({ windowMs: 60 * 1000, max: 60 });

@@ -25,13 +25,23 @@ export function NotesPyramid({ notes }: { notes: { top: string[]; heart: string[
     { label: 'Base Notes', hint: 'The trail', items: notes.base },
   ];
   if (rows.every((r) => r.items.length === 0)) return null;
+
+  // Tiles appear in the order the scent actually unfolds: top notes first, then
+  // heart, then base. Rows are offset from each other and tiles within a row cascade.
+  // The per-tile step is capped so a long note list never leaves the last tiles
+  // invisible for an uncomfortable stretch.
+  const ROW_STEP_MS = 130;
+  const TILE_STEP_MS = 45;
+  const MAX_TILE_STEPS = 8;
+  const delayFor = (rowIndex: number, tileIndex: number) =>
+    rowIndex * ROW_STEP_MS + Math.min(tileIndex, MAX_TILE_STEPS) * TILE_STEP_MS;
   return (
     <section aria-label="Fragrance notes" className="space-y-5">
       <div>
         <p className="eyebrow">The composition</p>
         <h2 className="display mt-1 text-xl text-content">Fragrance notes</h2>
       </div>
-      {rows.map((r) =>
+      {rows.map((r, rowIndex) =>
         r.items.length > 0 ? (
           <div key={r.label}>
             <div className="mb-2.5 flex items-baseline gap-2">
@@ -39,10 +49,14 @@ export function NotesPyramid({ notes }: { notes: { top: string[]; heart: string[
               <span className="font-body text-xs text-muted">{r.hint}</span>
             </div>
             <ul className="flex flex-wrap gap-2.5">
-              {r.items.map((note) => {
+              {r.items.map((note, tileIndex) => {
                 const img = imageFor(note);
                 return (
-                  <li key={note} className="w-[4.6rem] text-center">
+                  <li
+                    key={note}
+                    className="note-tile w-[4.6rem] text-center"
+                    style={{ animationDelay: `${delayFor(rowIndex, tileIndex)}ms` }}
+                  >
                     {img ? (
                       <img
                         src={img}

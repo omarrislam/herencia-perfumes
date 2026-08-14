@@ -400,3 +400,22 @@
   body { background: #fff !important; }
   #receipt { display: block; }
 }
+
+/* Wishlist heart — a single confident pop on add, nothing on remove.
+   Scale + opacity only, so it stays on the compositor. */
+@keyframes heart-pop {
+  0%   { transform: scale(1); }
+  38%  { transform: scale(1.32); }
+  100% { transform: scale(1); }
+}
+.heart-pop { animation: heart-pop 0.42s cubic-bezier(0.22, 1, 0.36, 1); }
+
+/* Fragrance notes reveal in the order a scent actually unfolds on skin:
+   top, then heart, then base. The stagger is the point — it teaches how the
+   perfume develops rather than decorating the page.
+
+   Mount-based on purpose: the round-36 bug was a scroll-reveal that left cards
+   stranded at opacity 0 forever when they never intersected the viewport. This
+   cannot, because it never consults scroll position. The global reduced-motion
+   rule zeroes both duration AND delay, so the tiles appear instantly there. */
+.note-tile { opacity: 0; animation: rise-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }

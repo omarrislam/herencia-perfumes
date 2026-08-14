@@ -91,7 +91,7 @@ _Last updated: 2026-07-01 (Milestone 3 complete)_
 - [x] Remove the unbacked sample-credit promise (defaults, admin placeholders, live settings)
 - [x] Back-in-stock waitlist: notify-me on the PDP + owner waitlist on Admin → Inventory
 - [ ] Abandoned-checkout follow-up (owner-driven WhatsApp)
-- [ ] Post-purchase review request (store currently has zero reviews)
+- [x] Verified-buyer reviews (order number + phone, no account) + "Ask for a review" on delivered orders
 - [ ] `/bundles` is empty but still linked — user will add bundles
 
 ## Post-launch backlog (user asked for these; specs not yet written)

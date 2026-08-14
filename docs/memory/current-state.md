@@ -2,6 +2,18 @@
 
 _Last updated: 2026-08-14_
 
+## Post-M4 round 42 (FUNNELS pt.2 — verified-buyer reviews + review request, SHIPPED, 2026-08-14)
+- 🚨 **Root cause found: customers could not review at all.** `POST /products/:slug/reviews` required `requireAuth`, but guest checkout is the norm and after the launch wipe there were exactly **2 accounts, both the owner's**. Asking customers for reviews would have walked them into a registration wall — so the store had zero social proof and no path to any.
+- ✅ **Verified-buyer reviews, no account needed.** `POST /api/products/:slug/reviews/verified` takes **order number + the phone it was placed with** — the same proof pair as order tracking (decision #51). **Extends decision #26, does not replace it**: moderation still applies (`isApproved: false`), and one-review-per-order-per-product is the guest equivalent of one-per-user-per-product.
+  - **Security**: a single **404** covers both "no such order" and "wrong phone", so the endpoint can't be used to probe which order numbers exist; **403** for an order that doesn't contain the product or was cancelled; **409** on a repeat; only the customer's **first name** is ever published — never the full name, phone, or order number.
+- ⚠️ **Index migration that tests would never have caught**: `Review.user` became optional, so the old `{product,user}` unique index would make a **second guest review collide on a null user**. Both indexes are now `partialFilterExpression`-guarded (`user`/`orderNumber` `$exists`), and **production indexes were synced explicitly** via `Review.syncIndexes()` (safe — collection was empty). mongodb-memory-server builds fresh indexes each run, so this would have passed every test and failed live.
+- ✅ **UI**: guests get a real form (order number, phone, stars, title, body) instead of a sign-in link; approved guest reviews carry a green **VERIFIED BUYER** badge. Admin → Orders gains **"Ask for a review"** on `delivered` orders only (asking earlier invites a bad review), carrying the order number the form needs.
+- ✅ Suites: shared **74** / api **322** (+10) / web **118** (+5), typecheck + lint + build clean. Deployed both.
+- ✅ **Live-verified end to end on production**: placed a real order → 403 reviewing a product it didn't contain → 201 on the right one → 409 on a repeat → invisible publicly until approved → approved in admin → published with the badge and `rating {avg:5,count:1}`. All test data removed afterwards, stock returned, ratings reset to 0.
+- 📌 A stale test premise briefly looked like a bug (404 instead of 403) — the user had deleted the order I was testing against. **The code was right; the assumption was stale.** Re-tested against a freshly placed order.
+- ⏭ **Abandoned-checkout follow-up still not built** — the last funnel item. Needs contact capture mid-checkout (privacy-sensitive).
+
+
 ## Post-M4 round 41 (FUNNELS pt.1 — unbacked promise removed + back-in-stock waitlist, SHIPPED, 2026-08-14)
 - 🔍 **Audited the live store for real leaks instead of writing generic funnel advice.** Two confirmed, one deferred by the user.
 - 🚨 **THE BIG FINDING — the site promised something it could not deliver.** The samples copy said the sample price was *credited back against a bottle* in **three places** (`strapline`, `steps[2]`, `modalText`) and there was **NO mechanism anywhere** — no `sampleCredit` field, no redemption path, nothing in `createOrder`. A customer who bought samples and returned for a bottle paid full price. **"Samples first, bottles later" is the store's whole stated strategy, so this was the missing final step of its core funnel.**

@@ -2,6 +2,24 @@
 
 _Last updated: 2026-08-14_
 
+## NEW (2026-08-14, round 42): FUNNELS pt.2 — verified-buyer reviews shipped
+Detail in current-state round 42. Deployed + live-verified. Suites shared 74 / api 322 / web 118.
+- 🚨 **Customers literally could not review** (requireAuth + guest-checkout norm = zero possible reviewers). Fixed with `POST /api/products/:slug/reviews/verified` — order number + phone as proof, no account. One 404 for both "no order" and "wrong phone" so order numbers can't be probed. First name only is ever published.
+- ⚠️ **`Review` indexes are now partial** (`{product,user}` and `{product,orderNumber}`, each `$exists`-guarded). **Production indexes were synced by hand.** If the Review schema's indexes change again, run `Review.syncIndexes()` against prod — mongodb-memory-server rebuilds indexes every run, so an index bug passes every test and fails only in production.
+- ✅ Admin → Orders: **"Ask for a review"** on delivered orders only.
+
+### ⏭ REMAINING BACKLOG
+1. **Funnels pt.3** — abandoned-checkout follow-up (the last funnel item; needs contact capture as the customer types, privacy-sensitive).
+2. **Motion graphics** — not started. Transforms/opacity only, `prefers-reduced-motion`, no CLS, Lighthouse ≥ 90. **Round-36: never wrap horizontal-carousel items in a scroll-reveal.**
+3. **On-page SEO content** — technical blocker cleared round 38; content untouched.
+4. **Meta Pixel + CAPI** — deferred (decision #60), blocked on the portfolio choice.
+
+### ⚠️ Still open
+- **`/bundles` empty but still linked** in nav + footer (user's choice — "I'll add bundles soon").
+- No password reset for customers OR admin.
+- VASCO 55ml stock read **11** after round-42 cleanup; consistent with the user cancelling their InstaPay order (+1) and the test order netting to zero. Worth an eyeball against the real shelf.
+
+
 ## NEW (2026-08-14, round 41): FUNNELS pt.1 — unbacked promise removed, back-in-stock waitlist shipped
 Detail in current-state round 41. Committed `7f7648d`, deployed, live-verified. Suites shared 74 / api 312 / web 113.
 - 🚨 **The samples copy promised the sample price back against a bottle in three places with no mechanism at all.** User chose to REMOVE the promise rather than build the credit. `settings.ts` carries a comment: do not reintroduce a credit claim without a redemption mechanism.

@@ -5,6 +5,7 @@ import { RequireAdmin } from '../../features/auth/RequireAdmin';
 import { useAuth } from '../../features/auth/AuthContext';
 import { adminFetchOrders } from '../../features/admin/adminClient';
 import AdminDashboard from './AdminDashboard';
+import AdminAnalytics from './AdminAnalytics';
 import AdminHome from './AdminHome';
 import AdminProducts from './AdminProducts';
 import AdminInventory from './AdminInventory';
@@ -19,6 +20,7 @@ import AdminDiscounts from './AdminDiscounts';
 
 const NAV = [
   { to: '/admin/dashboard', label: 'Dashboard' },
+  { to: '/admin/analytics', label: 'Analytics' },
   { to: '/admin/home', label: 'Home' },
   { to: '/admin/products', label: 'Products' },
   { to: '/admin/inventory', label: 'Inventory' },
@@ -110,6 +112,7 @@ export default function AdminApp() {
             <Routes>
               <Route path="/" element={<AdminDashboard />} />
               <Route path="/dashboard" element={<AdminDashboard />} />
+              <Route path="/analytics" element={<AdminAnalytics />} />
               <Route path="/home" element={<AdminHome />} />
               <Route path="/products" element={<AdminProducts />} />
               <Route path="/inventory" element={<AdminInventory />} />

@@ -17,6 +17,11 @@
   --ink: #2a0f0f;
   --muted: #77634d;
   --accent: #a9793b;
+  /* Chart series. Validated with the dataviz palette checker against --surface:
+     normal-vision dE 16.7, CVD dE 12.9 (protan) / 18.0 (tritan), contrast >= 3:1.
+     Dark mode is re-validated separately below, never an automatic flip. */
+  --chart-1: #a9793b;
+  --chart-2: #4f6d7a;
   --accent-strong: #8f6329;
   --gold-hi: #cfa862;
   --shimmer: #d9a441;
@@ -47,6 +52,9 @@
   --ink: #fbf3df;
   --muted: #cbb794;
   --accent: #d0a866;
+  /* Dark: normal-vision dE 15.6, CVD dE 12.8 / 15.8 against --surface #2c1a16. */
+  --chart-1: #d0a866;
+  --chart-2: #7d9aa8;
   --accent-strong: #e0bd82;
   --gold-hi: #ecd6a0;
   --shimmer: #9a6a24;

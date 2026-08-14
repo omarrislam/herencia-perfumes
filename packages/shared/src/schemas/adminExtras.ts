@@ -101,6 +101,8 @@ export type AnalyticsDTO = {
   /** Same-length period immediately before the range, for comparison. */
   previous: AnalyticsFunnelDTO;
   series: AnalyticsPointDTO[];
+  /** The comparison period's daily values, index-aligned with `series` for plotting. */
+  previousSeries: AnalyticsPointDTO[];
   revenue: number;
   previousRevenue: number;
   aov: number;

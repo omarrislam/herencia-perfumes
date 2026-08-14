@@ -141,6 +141,15 @@ export async function buildReport(from: string, to: string): Promise<AnalyticsDT
     return { date: d, sessions: r?.sessions ?? 0, orders: r?.orders ?? 0, revenue: r?.revenue ?? 0 };
   });
 
+  // Index-aligned with `series` so the chart can overlay them on one x-axis; the
+  // dates are the comparison period's own, surfaced in the tooltip.
+  const prevDays = eachDay(prevFrom, prevTo);
+  const prevByDate = new Map(prevRows.map((r) => [r.date, r]));
+  const previousSeries: AnalyticsPointDTO[] = prevDays.map((d) => {
+    const r = prevByDate.get(d);
+    return { date: d, sessions: r?.sessions ?? 0, orders: r?.orders ?? 0, revenue: r?.revenue ?? 0 };
+  });
+
   const funnel = sumFunnel(rows);
   const revenue = round2(rows.reduce((n, r) => n + r.revenue, 0));
   const previousRevenue = round2(prevRows.reduce((n, r) => n + r.revenue, 0));
@@ -155,6 +164,7 @@ export async function buildReport(from: string, to: string): Promise<AnalyticsDT
     funnel,
     previous: sumFunnel(prevRows),
     series,
+    previousSeries,
     revenue,
     previousRevenue,
     aov: funnel.orders ? round2(revenue / funnel.orders) : 0,

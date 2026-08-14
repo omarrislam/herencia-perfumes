@@ -24,16 +24,21 @@ const DIST = fileURLToPath(new URL('../dist/', import.meta.url));
 // The prerender step (decision #34) writes a populated #root for some routes so the
 // client can hydrate; those must keep their own HTML. Everything else starts from the
 // empty-#root shell so React calls createRoot instead of hydrating stale markup.
-async function templateFor(path) {
+//
+// The fallback is read ONCE, before any writes: a web-only build has no spa-shell.html,
+// so the fallback resolves to index.html — and index.html is itself a route we rewrite.
+// Re-reading it per route makes every later page inherit the home page's canonical and
+// OG tags. (mountSpa reads its fallbackShell once at mount for the same reason.)
+async function loadFallback() {
+  return readFile(join(DIST, 'spa-shell.html'), 'utf8').catch(() =>
+    readFile(join(DIST, 'index.html'), 'utf8'),
+  );
+}
+
+async function templateFor(path, fallback) {
   const candidate = path === '/' ? 'index.html' : join(path.replace(/^\//, ''), 'index.html');
-  try {
-    return { html: await readFile(join(DIST, candidate), 'utf8'), out: candidate };
-  } catch {
-    const shell = await readFile(join(DIST, 'spa-shell.html'), 'utf8').catch(() =>
-      readFile(join(DIST, 'index.html'), 'utf8'),
-    );
-    return { html: shell, out: candidate };
-  }
+  const html = await readFile(join(DIST, candidate), 'utf8').catch(() => fallback);
+  return { html, out: candidate };
 }
 
 function injectHead(html, head) {
@@ -49,6 +54,8 @@ try {
   const { routes } = await res.json();
   if (!Array.isArray(routes) || routes.length === 0) throw new Error('no routes returned');
 
+  const fallback = await loadFallback();
+
   let written = 0;
   for (const { path, head } of routes) {
     // Path traversal guard: these come from the API, but they end up as filesystem writes.
@@ -56,7 +63,7 @@ try {
       console.warn(`[bake-seo] skipped suspicious path: ${path}`);
       continue;
     }
-    const { html, out } = await templateFor(path);
+    const { html, out } = await templateFor(path, fallback);
     const target = join(DIST, out);
     await mkdir(dirname(target), { recursive: true });
     await writeFile(target, injectHead(html, head), 'utf8');

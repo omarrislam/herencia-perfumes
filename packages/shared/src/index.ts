@@ -16,3 +16,4 @@ export * from './schemas/settings';
 export * from './schemas/noteIcon';
 export * from './schemas/adminExtras';
 export * from './util/productTitle';
+export * from './schemas/analytics';

@@ -10,6 +10,7 @@ import { BlogPost } from '../models/BlogPost';
 import { Setting } from '../models/Setting';
 import { NoteIcon } from '../models/NoteIcon';
 import { Subscriber } from '../models/Subscriber';
+import { StockNotification } from '../models/StockNotification';
 import { DiscountCode } from '../models/DiscountCode';
 import { User } from '../models/User';
 import { HttpError } from '../middleware/error';
@@ -405,6 +406,91 @@ export function adminRouter(): Router {
         page,
         pages: Math.ceil(total / limit) || 1,
       });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // ---- Back-in-stock waitlist ----
+  // Demand captured on sold-out sizes. The owner contacts people over WhatsApp and
+  // marks them done — nothing is sent automatically (decision #48).
+  router.get('/waitlist', async (_req, res, next) => {
+    try {
+      const rows = await StockNotification.aggregate<{
+        _id: { product: unknown; sizeLabel: string };
+        waiting: number;
+        latest: Date;
+      }>([
+        { $match: { notified: { $ne: true } } },
+        {
+          $group: {
+            _id: { product: '$product', sizeLabel: '$sizeLabel' },
+            waiting: { $sum: 1 },
+            latest: { $max: '$createdAt' },
+          },
+        },
+        { $sort: { waiting: -1 } },
+      ]);
+
+      const products = await Product.find({ _id: { $in: rows.map((r) => r._id.product) } })
+        .select('name slug sizes')
+        .lean();
+      const byId = new Map(products.map((p) => [String(p._id), p]));
+
+      res.json(
+        rows.flatMap((r) => {
+          const p = byId.get(String(r._id.product));
+          if (!p) return []; // product deleted since someone signed up
+          const size = p.sizes.find((s) => s.label === r._id.sizeLabel);
+          return [{
+            productId: String(p._id),
+            name: p.name,
+            slug: p.slug,
+            sizeLabel: r._id.sizeLabel,
+            waiting: r.waiting,
+            inStock: size?.stock ?? 0,
+            latest: new Date(r.latest).toISOString(),
+          }];
+        }),
+      );
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  router.get('/waitlist/:productId/:sizeLabel', async (req, res, next) => {
+    try {
+      const rows = await StockNotification.find({
+        product: req.params.productId,
+        sizeLabel: req.params.sizeLabel,
+      })
+        .sort({ createdAt: 1 })
+        .lean();
+      res.json(
+        rows.map((r) => ({
+          id: String(r._id),
+          sizeLabel: r.sizeLabel,
+          phone: r.phone,
+          email: r.email ?? undefined,
+          notified: !!r.notified,
+          createdAt: new Date(r.createdAt).toISOString(),
+        })),
+      );
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  router.put('/waitlist/:id/notified', async (req, res, next) => {
+    try {
+      const notified = req.body?.notified !== false;
+      const doc = await StockNotification.findByIdAndUpdate(
+        req.params.id,
+        { $set: { notified } },
+        { new: true },
+      );
+      if (!doc) throw new HttpError(404, 'Not found', 'not_found');
+      res.json({ ok: true, notified: doc.notified });
     } catch (err) {
       next(err);
     }

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { egyptianPhoneSchema } from './order';
 
 // ---- Newsletter subscribers (admin view) ----
 export type SubscriberDTO = {
@@ -108,4 +109,35 @@ export type AnalyticsDTO = {
   aov: number;
   sources: AnalyticsSourceDTO[];
   cohorts: AnalyticsCohortsDTO;
+};
+
+// ---- Back-in-stock notifications ----
+// Captures the demand that a sold-out size would otherwise lose. The owner works
+// the list manually over WhatsApp, consistent with decision #48.
+export const stockNotifySchema = z.object({
+  sizeLabel: z.string().trim().min(1).max(40),
+  phone: egyptianPhoneSchema,
+  email: z.string().email('Enter a valid email address').optional().or(z.literal('')),
+});
+export type StockNotifyInput = z.infer<typeof stockNotifySchema>;
+
+export type StockNotificationDTO = {
+  id: string;
+  product: { id: string; name: string; slug: string };
+  sizeLabel: string;
+  phone: string;
+  email?: string;
+  notified: boolean;
+  createdAt: string;
+};
+
+/** One row per product+size that has people waiting, for the inventory screen. */
+export type StockWaitlistDTO = {
+  productId: string;
+  name: string;
+  slug: string;
+  sizeLabel: string;
+  waiting: number;
+  inStock: number;
+  latest: string;
 };

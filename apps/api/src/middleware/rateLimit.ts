@@ -30,3 +30,6 @@ export const trackLimiter = makeLimiter({ windowMs: 15 * 60 * 1000, max: 20 });
 // sending — so the ceiling is far higher than the write limiters. Generous by design:
 // dropping real analytics is worse than absorbing a little noise.
 export const eventsLimiter = makeLimiter({ windowMs: 60 * 1000, max: 60 });
+
+// Back-in-stock requests: a real visitor asks once or twice, so this can be tight.
+export const notifyLimiter = makeLimiter({ windowMs: 15 * 60 * 1000, max: 10 });

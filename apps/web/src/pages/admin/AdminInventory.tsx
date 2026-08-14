@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { LOW_STOCK_THRESHOLD } from '@herencia/shared';
 import { fetchSettings } from '../../lib/api';
 import { adminFetchProducts } from '../../features/admin/adminClient';
+import { Waitlist } from '../../features/admin/Waitlist';
 
 type Row = { id: string; name: string; type: string; size: string; price: number; stock: number; hidden: boolean };
 
@@ -58,6 +59,8 @@ export default function AdminInventory() {
           cover only those. Manage the rest from Products.
         </p>
       )}
+
+      <Waitlist />
 
       <section className="overflow-hidden rounded-xl border border-hairline bg-surface">
         <table className="w-full text-left">

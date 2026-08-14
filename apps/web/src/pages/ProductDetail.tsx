@@ -14,6 +14,7 @@ import { Skeleton } from '../components/Skeleton';
 import { WishlistButton } from '../components/WishlistButton';
 import { TryScentButton } from '../components/TryScentButton';
 import { WhatsAppAsk } from '../components/WhatsAppAsk';
+import { NotifyMe } from '../features/products/NotifyMe';
 import { useCart } from '../features/cart/CartContext';
 import { ReviewsSection } from '../features/reviews/ReviewsSection';
 
@@ -118,6 +119,9 @@ export default function ProductDetail() {
             </button>
             <WishlistButton productId={p.id} />
           </div>
+
+          {/* A sold-out size used to be a dead end — capture the demand instead. */}
+          {size && size.stock === 0 && <NotifyMe slug={p.slug} sizeLabel={size.label} />}
 
           {p.type === 'perfume' && p.sampleStock > 0 && (
             <TryScentButton

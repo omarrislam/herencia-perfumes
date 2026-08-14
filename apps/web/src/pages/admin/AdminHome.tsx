@@ -306,7 +306,7 @@ export default function AdminHome() {
         </label>
         <label className="block">
           <span className="mb-1 block font-body text-sm text-muted">Strapline</span>
-          <input value={samples.strapline} onChange={(e) => setSamples({ ...samples, strapline: e.target.value })} placeholder="Any scent · {size} vial · {price} each — credited back when you buy the bottle." className="field-lux" />
+          <input value={samples.strapline} onChange={(e) => setSamples({ ...samples, strapline: e.target.value })} placeholder="Any scent · {size} vial · {price} each — live with it before you commit." className="field-lux" />
         </label>
         <label className="block">
           <span className="mb-1 block font-body text-sm text-muted">Step 1</span>
@@ -340,7 +340,7 @@ export default function AdminHome() {
         </label>
         <label className="block">
           <span className="mb-1 block font-body text-sm text-muted">Modal text</span>
-          <textarea value={samples.modalText} onChange={(e) => setSamples({ ...samples, modalText: e.target.value })} rows={2} placeholder="Pick as many as you like · {size} each · {price} per sample. The value is credited when you buy the bottle." className="field-lux" />
+          <textarea value={samples.modalText} onChange={(e) => setSamples({ ...samples, modalText: e.target.value })} rows={2} placeholder="Pick as many as you like · {size} each · {price} per sample. Wear them properly before you choose." className="field-lux" />
         </label>
       </section>
 

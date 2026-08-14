@@ -1,5 +1,5 @@
 // apps/web/src/features/admin/adminClient.ts
-import type { AdminProductInput, AdminUpdateOrderInput, ProductDTO, ProductListDTO, ScentFamilyDTO, OrderDTO, OrderStatus, ReviewDTO, QuizQuestionAdminDTO, QuizQuestionInput, BannerDTO, BannerInput, BlogPostDTO, BlogPostInput, SubscriberDTO, CustomerDTO, AdminStatsDTO, AnalyticsDTO, DiscountCodeDTO, DiscountCodeInput, StaleUnpaidDTO, ReleaseStaleResultDTO } from '@herencia/shared';
+import type { AdminProductInput, AdminUpdateOrderInput, ProductDTO, ProductListDTO, ScentFamilyDTO, OrderDTO, OrderStatus, ReviewDTO, QuizQuestionAdminDTO, QuizQuestionInput, BannerDTO, BannerInput, BlogPostDTO, BlogPostInput, SubscriberDTO, CustomerDTO, AdminStatsDTO, StockWaitlistDTO, StockNotificationDTO, AnalyticsDTO, DiscountCodeDTO, DiscountCodeInput, StaleUnpaidDTO, ReleaseStaleResultDTO } from '@herencia/shared';
 import { apiSend, apiGet, apiGetBlob } from '../../lib/api';
 
 type Paged<T> = { items: T[]; total: number; page: number; pages: number };
@@ -9,6 +9,11 @@ export const adminFetchSubscribers = (page = 1) =>
 export const adminFetchCustomers = (page = 1) =>
   apiGet<Paged<CustomerDTO>>(`/api/admin/customers?page=${page}`);
 export const adminFetchStats = () => apiGet<AdminStatsDTO>('/api/admin/stats');
+export const adminFetchWaitlist = () => apiGet<StockWaitlistDTO[]>('/api/admin/waitlist');
+export const adminFetchWaitlistPeople = (productId: string, sizeLabel: string) =>
+  apiGet<StockNotificationDTO[]>(`/api/admin/waitlist/${productId}/${encodeURIComponent(sizeLabel)}`);
+export const adminMarkNotified = (id: string, notified: boolean) =>
+  apiSend<{ ok: true }>('PUT', `/api/admin/waitlist/${id}/notified`, { notified });
 export const adminFetchAnalytics = (range: { from: string; to: string }) =>
   apiGet<AnalyticsDTO>(`/api/admin/analytics?from=${range.from}&to=${range.to}`);
 export const adminFetchDiscounts = () => apiGet<DiscountCodeDTO[]>('/api/admin/discounts');

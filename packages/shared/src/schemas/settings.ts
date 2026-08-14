@@ -80,17 +80,21 @@ export const DEFAULT_SAMPLES_SETTINGS: SamplesSettings = {
   sizeLabel: '5ml',
   eyebrow: 'Try before you commit',
   heading: 'Samples first.\nBottles later.',
-  strapline: 'Any scent · {size} vial · {price} each — credited back when you buy the bottle.',
+  // NOTE: this copy deliberately does NOT promise the sample price back against a
+  // bottle. It used to, in three places, with no mechanism behind it anywhere in the
+  // API — a promise the store could not keep. Do not reintroduce a credit claim
+  // unless a real redemption mechanism ships with it.
+  strapline: 'Any scent · {size} vial · {price} each — live with it before you commit.',
   steps: [
     'Pick any scents from the collection',
     'Wear each one for a full day',
-    'Sample price credited to your bottle',
+    'Come back for the one you never stop reaching for',
   ],
   ctaText: 'Order samples · {price} each',
   stickerTop: '{size} from',
   stickerBottom: 'per sample',
   modalTitle: 'Order samples',
-  modalText: 'Pick as many as you like · {size} each · {price} per sample. The value is credited when you buy the bottle.',
+  modalText: 'Pick as many as you like · {size} each · {price} per sample. Wear them properly before you choose.',
 };
 
 export const socialLinksSchema = z

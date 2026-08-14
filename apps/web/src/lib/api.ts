@@ -136,3 +136,7 @@ export const subscribeNewsletter = (email: string) =>
 export const fetchBlogList = (page = 1, tag?: string) =>
   apiGet<BlogListDTO>(`/api/blog?page=${page}${tag ? `&tag=${encodeURIComponent(tag)}` : ''}`);
 export const fetchBlogPost = (slug: string) => apiGet<BlogPostDTO>(`/api/blog/${slug}`);
+
+// Back-in-stock request for a sold-out size. Idempotent server-side.
+export const notifyWhenBack = (slug: string, data: { sizeLabel: string; phone: string; email?: string }) =>
+  apiSend<{ ok: true }>('POST', `/api/products/${encodeURIComponent(slug)}/notify`, data);

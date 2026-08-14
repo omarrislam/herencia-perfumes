@@ -8,7 +8,8 @@
     "start": "node --env-file=../../.env dist/server.js",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
-    "seed": "tsx --env-file=../../.env src/seed.ts"
+    "seed": "tsx --env-file=../../.env src/seed.ts",
+    "reset-launch": "tsx --env-file=../../.env src/scripts/resetLaunch.cli.ts"
   },
   "dependencies": {
     "@herencia/shared": "*",

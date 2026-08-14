@@ -68,6 +68,22 @@ describe('ProductCard', () => {
     expect(screen.getByText(/1,?000/)).toBeInTheDocument();
     expect(screen.queryByText(/1,?500/)).not.toBeInTheDocument();
   });
+  it('states the bottle size when there is only one', () => {
+    wrap(<ProductCard product={{ ...product, sizes: [{ label: '55ml', price: 500, stock: 14 }] }} />);
+    expect(screen.getByText('55ml')).toBeInTheDocument();
+  });
+  it('states no size when the product has several', () => {
+    const multi = {
+      ...product,
+      sizes: [
+        { label: '55ml', price: 500, stock: 5 },
+        { label: '100ml', price: 900, stock: 5 },
+      ],
+    };
+    wrap(<ProductCard product={multi} />);
+    expect(screen.queryByText('55ml')).not.toBeInTheDocument();
+    expect(screen.queryByText('100ml')).not.toBeInTheDocument();
+  });
   it('does not render TryScentButton when sampleStock is 0', () => {
     wrap(<ProductCard product={product} />);
     expect(screen.queryByRole('button', { name: /order a sample/i })).not.toBeInTheDocument();

@@ -44,6 +44,20 @@ function renderAt(path: string) {
 }
 
 describe('ProductDetail', () => {
+  it('states the bottle size for a single-size product', async () => {
+    // Regression: the size block was gated on sizes.length > 1, so a one-size
+    // perfume never showed its size anywhere on the page.
+    const single = { ...product, sizes: [{ label: '55ml', price: 500, stock: 14 }] };
+    vi.stubGlobal('fetch', vi.fn(async (url: string) =>
+      url.endsWith('/related') || url.endsWith('/api/notes')
+        ? new Response(JSON.stringify([]), { status: 200 })
+        : new Response(JSON.stringify(single), { status: 200 }),
+    ));
+    renderAt('/products/royal-oud');
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'Royal Oud' })).toBeInTheDocument());
+    expect(screen.getByText('55ml')).toBeInTheDocument();
+  });
+
   it('renders product name, notes, and price after load', async () => {
     vi.stubGlobal('fetch', vi.fn(async (url: string) =>
       url.endsWith('/related') || url.endsWith('/api/notes')

@@ -19,6 +19,7 @@ import { noteIconRouter } from './routes/noteIcons';
 import { discountRouter } from './routes/discounts';
 import { buildSitemap, ROBOTS_TXT } from './lib/seo';
 import { mountSpa } from './middleware/spa';
+import { seoRouter } from './routes/seo';
 import { Product } from './models/Product';
 import { BlogPost } from './models/BlogPost';
 
@@ -80,6 +81,7 @@ export function createApp(opts: {
   app.use('/api', newsletterRouter());
   app.use('/api', noteIconRouter);
   app.use('/api/discounts', discountRouter());
+  app.use('/api', seoRouter(opts.origin ?? ''));
   app.use('/api', notFound);
 
   const origin = opts.origin ?? '';

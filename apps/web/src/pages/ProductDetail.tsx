@@ -52,7 +52,14 @@ export default function ProductDetail() {
 
           <div className="rule-gold-left" />
 
-          {p.sizes.length > 1 ? (
+          {p.sizes.length === 1 ? (
+            // A single size still has to be stated — this block used to render nothing,
+            // so the bottle size never appeared anywhere on the page.
+            <div>
+              <p className="eyebrow mb-2">Size</p>
+              <p className="font-body text-lg text-content">{p.sizes[0]!.label}</p>
+            </div>
+          ) : p.sizes.length > 1 ? (
             <div>
               <p className="eyebrow mb-2">Size</p>
               <div className="flex flex-wrap gap-2">

@@ -53,6 +53,14 @@ export function articleJsonLd(post: { title: string; excerpt: string; coverImage
   return JSON.stringify(data).replace(/</g, '\\u003c');
 }
 
+/**
+ * The bottle size, but only when the product has exactly one — with several sizes there
+ * is no single answer, and naming one in a title or JSON-LD offer would be wrong.
+ */
+export function soleSizeLabel(p: Pick<ProductDTO, 'sizes'>): string | undefined {
+  return p.sizes.length === 1 ? p.sizes[0]!.label : undefined;
+}
+
 export function productJsonLd(p: ProductDTO, canonical: string): string {
   const offer = {
     '@type': 'Offer',
@@ -70,6 +78,8 @@ export function productJsonLd(p: ProductDTO, canonical: string): string {
     brand: { '@type': 'Brand', name: BRAND },
     offers: offer,
   };
+  const size = soleSizeLabel(p);
+  if (size) data.size = size;
   if (p.rating.count > 0) {
     data.aggregateRating = {
       '@type': 'AggregateRating',
@@ -90,8 +100,12 @@ export async function routeMetaForPath(path: string): Promise<RouteMeta> {
     if (doc) {
       const dto = toProductDTO(doc);
       const canonical = `/${detail[1]}/${slug}`;
+      // Size + concentration in the title: the long-tail queries are "55ml perfume", not bare names.
+      const qualifier = [soleSizeLabel(dto), dto.concentration !== 'Other' ? dto.concentration : undefined]
+        .filter(Boolean)
+        .join(' ');
       return {
-        title: dto.seo.title ?? `${dto.name} — ${BRAND}`,
+        title: dto.seo.title ?? [dto.name, qualifier || undefined, BRAND].filter(Boolean).join(' — '),
         description: dto.seo.description ?? dto.shortDesc,
         canonicalPath: canonical,
         image: toAbsoluteImageUrl(dto.images[0]),

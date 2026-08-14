@@ -1,6 +1,24 @@
 # Next Session — START HERE
 
-_Last updated: 2026-07-29_
+_Last updated: 2026-08-14_
+
+## NEW (2026-08-14, round 38): LAUNCH PREP shipped — data reset, 55ml, per-route SEO
+Decisions **#57–61**, detail in current-state round 38.
+- **Production data was reset**: 36 orders, 5 carts, 3 subscribers, 7 `@example.com` accounts deleted via the new `npm run reset-launch -w apps/api` (dry-run by default, `--yes-wipe-production` to apply). Catalog/settings/content/admin untouched; the user's 2 accounts kept.
+- **Products are 55ml now** (were `50ml`), surfaced on card / PDP / SEO title / JSON-LD. `ProductDetail` used to hide the size entirely for single-size products.
+- **Per-route SEO works at last** — the round-28 gap is closed. `GET /api/seo/prerender` + `bake-seo.mjs`. ⚠️ **Deploy api BEFORE web** — the web build fetches that endpoint. ⚠️ Adding a product/post needs a web redeploy for its meta.
+- **InstaPay now points at the business handle** `herencia@instapay` / `ipn.eg/S/herencia/instapay/25bWuF` (was the user's personal link).
+
+### ⭐ THE REAL BACKLOG — user asked for all of this; only launch blockers were built
+The original request decomposed into 8 workstreams. **These 4 are unbuilt and each needs its own spec → plan → implement cycle:**
+1. **Conversion funnels** — keeping users engaged. Not started.
+2. **Smart motion graphics** — not started.
+3. **Shopify-grade analytics dashboard** — user picked ALL four pillars: conversion funnel (sessions → views → ATC → checkout → orders with drop-off), revenue over time + period comparison, traffic sources / UTM attribution, customer cohorts + LTV. **Needs first-party event capture + UTM storage on orders — a real build, not a dashboard skin.**
+4. **On-page SEO content** to actually rank — the *technical* blocker is now fixed, the content work isn't.
+5. **Meta Pixel + CAPI** — deferred by the user (decision #60). Blocked on which Meta portfolio to use; ships inert until a Pixel ID exists.
+
+### ⚠️ Machine gotcha (will bite again)
+This box's system DNS resolver times out on the TXT lookup `mongodb+srv://` needs → `queryTxt ETIMEOUT` on ANY script hitting the prod DB. Google DNS resolves it fine. Workaround: a throwaway wrapper that calls `dns.setServers(['8.8.8.8','1.1.1.1'])` then imports the real script. Deliberately not committed.
 
 ## NEW (2026-07-29, round 37): PRE-LAUNCH GAP AUDIT — 12 fixes. **SHIPPED 2026-07-30** (`f170deb`, pushed, api + web deployed, live-verified)
 Audit of the purchase + admin flows before launch; user picked 12 items. Decisions **#50–56**, detail in current-state round 37.

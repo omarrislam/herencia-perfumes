@@ -40,7 +40,8 @@ describe('SPA + SEO injection', () => {
     });
     const res = await request(app).get('/products/royal-oud');
     expect(res.status).toBe(200);
-    expect(res.text).toContain('<title>Royal Oud — HERENCIA</title>');
+    // Single-size products carry their bottle size and concentration in the title.
+    expect(res.text).toContain('<title>Royal Oud — 50ml EDP — HERENCIA</title>');
     expect(res.text).toContain('application/ld+json');
     expect(res.text).toContain('<div id="root">');
   });

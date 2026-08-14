@@ -2,6 +2,8 @@ import { describe, it, expect, vi, afterEach, beforeAll, afterAll } from 'vitest
 import { buildHeadTags, buildSitemap, ROBOTS_TXT, toAbsoluteImageUrl, routeMetaForPath, articleJsonLd } from './seo';
 import { connectMemory, disconnectMemory, clearDb } from '../test/db';
 import { BlogPost } from '../models/BlogPost';
+import { Product } from '../models/Product';
+import { ScentFamily } from '../models/ScentFamily';
 
 beforeAll(connectMemory);
 afterAll(disconnectMemory);
@@ -76,6 +78,51 @@ describe('toAbsoluteImageUrl', () => {
 
   it('returns undefined for undefined input', () => {
     expect(toAbsoluteImageUrl(undefined)).toBeUndefined();
+  });
+});
+
+describe('product SEO — bottle size', () => {
+  async function makeProduct(sizes: { label: string; price: number; stock: number }[]) {
+    const family = await ScentFamily.create({ name: 'Woody', slug: 'woody', order: 1 });
+    await Product.create({
+      name: 'Ashes', slug: 'ashes', type: 'perfume', shortDesc: 'Warm and addictive.',
+      description: 'x', images: ['herencia/ashes'], sizes, scentFamily: family._id,
+      gender: 'unisex', concentration: 'EDP', isActive: true,
+    });
+  }
+
+  it('puts the bottle size and concentration in the title', async () => {
+    await makeProduct([{ label: '55ml', price: 500, stock: 14 }]);
+    const meta = await routeMetaForPath('/products/ashes');
+    expect(meta.title).toBe('Ashes — 55ml EDP — HERENCIA');
+  });
+
+  it('exposes the size in the Product JSON-LD', async () => {
+    await makeProduct([{ label: '55ml', price: 500, stock: 14 }]);
+    const meta = await routeMetaForPath('/products/ashes');
+    expect(meta.jsonLd).toContain('"size":"55ml"');
+  });
+
+  it('omits size from the title when a product has several', async () => {
+    await makeProduct([
+      { label: '55ml', price: 500, stock: 14 },
+      { label: '100ml', price: 900, stock: 4 },
+    ]);
+    const meta = await routeMetaForPath('/products/ashes');
+    expect(meta.title).toBe('Ashes — EDP — HERENCIA');
+    expect(meta.jsonLd).not.toContain('"size"');
+  });
+
+  it('still respects an admin-authored SEO title', async () => {
+    const family = await ScentFamily.create({ name: 'Woody', slug: 'woody', order: 1 });
+    await Product.create({
+      name: 'Ashes', slug: 'ashes', type: 'perfume', shortDesc: 'x', description: 'x',
+      images: ['herencia/ashes'], sizes: [{ label: '55ml', price: 500, stock: 1 }],
+      scentFamily: family._id, gender: 'unisex', concentration: 'EDP', isActive: true,
+      seo: { title: 'Hand-written title' },
+    });
+    const meta = await routeMetaForPath('/products/ashes');
+    expect(meta.title).toBe('Hand-written title');
   });
 });
 

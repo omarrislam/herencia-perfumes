@@ -74,6 +74,21 @@ _Last updated: 2026-07-01 (Milestone 3 complete)_
 - [ ] **Password reset (customer + admin)** — still missing; an owner lockout needs DB access to fix
 - [ ] Set `instapay.handle` in Admin → Home (confirmation step 1 currently names no destination)
 
+## Launch prep (round 38, 2026-08-14)
+- [x] Reset production data for launch (`npm run reset-launch -w apps/api`, dry-run by default)
+- [x] Products relabelled 50ml → 55ml, surfaced on card / PDP / SEO title / JSON-LD
+- [x] Per-route SEO on the split Vercel deploy (`/api/seo/prerender` + `bake-seo.mjs`) — closes the round-28 gap
+- [x] `sitemap.xml` + `robots.txt` served from the web domain, not just the API domain
+- [x] InstaPay handle + business pay link set; email-popup mojibake fixed
+- [x] `www.herencia-eg.com` added to the Vercel web project
+- [ ] **Meta Pixel + Conversions API** — deferred by user; blocked on the portfolio decision (#60)
+
+## Post-launch backlog (user asked for these; specs not yet written)
+- [ ] Conversion funnels / engagement flows
+- [ ] Smart motion graphics
+- [ ] Shopify-grade analytics dashboard (funnel + revenue trends + UTM attribution + cohorts/LTV)
+- [ ] On-page SEO content work (technical blocker now cleared)
+
 ## Milestone 5 (deferred) — Ops / Deploy (separate plan)
 - [ ] **Fix built-server ESM** so `node apps/api/dist/server.js` runs on plain Node (NodeNext + `.js` imports, or esbuild bundle) — blocks E2E run + deploy
 - [ ] Deployment (VPS + Nginx + PM2)

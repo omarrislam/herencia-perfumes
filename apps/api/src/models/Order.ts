@@ -51,6 +51,16 @@ const orderSchema = new Schema(
     paymentMethod: { type: String, enum: [...PAYMENT_METHOD], default: 'cod' },
     paidAt: { type: Date },
     notes: { type: String },
+    // Copied from the visitor's Session at creation. Kept on the order so revenue
+    // attribution survives the 90-day raw-event TTL.
+    attribution: {
+      source: { type: String },
+      medium: { type: String },
+      campaign: { type: String },
+      referrer: { type: String },
+      landingPath: { type: String },
+      sessionId: { type: String },
+    },
     user: { type: Schema.Types.ObjectId, ref: 'User', index: true },
   },
   { timestamps: true },

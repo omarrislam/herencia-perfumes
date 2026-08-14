@@ -1,5 +1,5 @@
 import type { Types } from 'mongoose';
-import type { CreateOrderInput, CreateOrderResultDTO } from '@herencia/shared';
+import type { CreateOrderInput, CreateOrderResultDTO, AttributionDTO } from '@herencia/shared';
 import {
   SAMPLE_SIZE_LABEL,
   DEFAULT_SAMPLES_SETTINGS,
@@ -17,6 +17,8 @@ import { generateOrderNumber } from '../../lib/orderNumber';
 import { toOrderDTO } from '../../lib/serialize';
 import { sendOrderReceipt } from '../../lib/waCloud';
 import { sendNewOrderAlert, sendLowStockAlert, type LowStockLine } from '../../lib/ntfy';
+import { Session } from '../../models/Session';
+import { recordPurchase } from '../analytics/service';
 
 export async function createOrder(
   input: CreateOrderInput,
@@ -83,6 +85,26 @@ export async function createOrder(
     }
   }
 
+  // Marketing attribution, resolved before the order is written so it can be stored
+  // on the document itself and outlive the 90-day session TTL. Fail-soft throughout:
+  // analytics must never stop a sale.
+  let attribution: AttributionDTO | undefined;
+  if (input.sessionId) {
+    const s = await Session.findOne({ sessionId: input.sessionId })
+      .lean()
+      .catch(() => null);
+    if (s) {
+      attribution = {
+        source: s.utm?.source ?? undefined,
+        medium: s.utm?.medium ?? undefined,
+        campaign: s.utm?.campaign ?? undefined,
+        referrer: s.referrer ?? undefined,
+        landingPath: s.landingPath ?? undefined,
+        sessionId: s.sessionId,
+      };
+    }
+  }
+
   try {
     const doc = await Order.create({
       orderNumber: generateOrderNumber(),
@@ -110,6 +132,7 @@ export async function createOrder(
       ],
       paymentMethod: input.paymentMethod ?? 'cod',
       notes: input.notes,
+      attribution,
       user: userId,
     });
 
@@ -123,6 +146,16 @@ export async function createOrder(
     // Owner push notifications via ntfy.sh (both no-ops unless configured).
     await sendNewOrderAlert(doc);
     if (lowStock.length > 0) await sendLowStockAlert(lowStock);
+    // The purchase event is written server-side, never client-reported: a client
+    // report would be both spoofable and lossy (people close the confirmation tab).
+    // Caught explicitly — an uncaught throw here would hit the rollback below and
+    // restore stock for an order that already exists.
+    await recordPurchase({
+      sessionId: input.sessionId,
+      visitorId: input.visitorId,
+      orderNumber: doc.orderNumber,
+      total: doc.total,
+    }).catch((err) => console.error('[analytics] purchase event failed', err));
     return { order, whatsappUrl };
   } catch (err) {
     await rollback(decremented);

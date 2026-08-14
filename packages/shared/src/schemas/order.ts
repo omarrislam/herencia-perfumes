@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { ORDER_STATUS, PAYMENT_METHOD, type OrderStatus, type PaymentMethod } from '../enums';
+import type { AttributionDTO } from './analytics';
 
 export { ORDER_STATUS, type OrderStatus } from '../enums';
 
@@ -47,6 +48,10 @@ export const createOrderSchema = z.object({
   paymentMethod: z.enum(PAYMENT_METHOD).optional(),
   // Validated server-side against the email-popup discount code; never trusted as an amount.
   discountCode: z.string().max(40).optional(),
+  // Analytics correlation only — used to look the visitor's session up so the order
+  // can carry its marketing attribution. Never used for pricing or identity.
+  sessionId: z.string().trim().max(64).optional(),
+  visitorId: z.string().trim().max(64).optional(),
 });
 
 export type CreateOrderInput = z.infer<typeof createOrderSchema>;
@@ -122,6 +127,8 @@ export type OrderDTO = {
   discountCode?: string;
   total: number;
   status: OrderStatus;
+  /** Where this order came from. Absent on orders placed before analytics shipped. */
+  attribution?: AttributionDTO;
   paymentMethod: PaymentMethod;
   paidAt?: string;
   statusHistory: { status: OrderStatus; at: string }[];

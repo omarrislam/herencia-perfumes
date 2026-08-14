@@ -6,6 +6,8 @@ import { Setting } from '../../models/Setting';
 import { DiscountCode } from '../../models/DiscountCode';
 import { Order } from '../../models/Order';
 import { createOrder, linkGuestOrders } from './service';
+import { Session } from '../../models/Session';
+import { Event } from '../../models/Event';
 
 beforeAll(connectMemory);
 afterAll(disconnectMemory);
@@ -235,5 +237,45 @@ describe('linkGuestOrders', () => {
     await createOrder(input(1));
     expect(await linkGuestOrders(userId, { phone: 'not-a-phone' })).toBe(0);
     expect(await linkGuestOrders(userId, {})).toBe(0);
+  });
+});
+
+describe('createOrder — analytics attribution', () => {
+  it('stamps the session campaign onto the order permanently', async () => {
+    await Session.create({
+      sessionId: 'S1', visitorId: 'V1', landingPath: '/products/royal-oud',
+      referrer: 'https://instagram.com/',
+      utm: { source: 'instagram', medium: 'social', campaign: 'launch' },
+    });
+    const { order } = await createOrder({ ...input(1), sessionId: 'S1', visitorId: 'V1' });
+    const doc = await Order.findOne({ orderNumber: order.orderNumber }).lean();
+    expect(doc!.attribution).toMatchObject({
+      source: 'instagram', medium: 'social', campaign: 'launch',
+      landingPath: '/products/royal-oud', sessionId: 'S1',
+    });
+  });
+
+  it('writes exactly one purchase event carrying the real order total', async () => {
+    await Session.create({ sessionId: 'S1', visitorId: 'V1', landingPath: '/' });
+    const { order } = await createOrder({ ...input(1), sessionId: 'S1', visitorId: 'V1' });
+    const events = await Event.find({ type: 'purchase' }).lean();
+    expect(events).toHaveLength(1);
+    expect(events[0]!.orderNumber).toBe(order.orderNumber);
+    expect(events[0]!.value).toBe(order.total);
+  });
+
+  it('still creates the order when no session is supplied', async () => {
+    const { order } = await createOrder(input(1));
+    expect(order.orderNumber).toBeTruthy();
+    const doc = await Order.findOne({ orderNumber: order.orderNumber }).lean();
+    expect(doc!.attribution?.source).toBeUndefined();
+    expect(await Event.countDocuments({ type: 'purchase' })).toBe(0);
+  });
+
+  it('still creates the order when the sessionId is unknown', async () => {
+    const { order } = await createOrder({ ...input(1), sessionId: 'GHOST', visitorId: 'V9' });
+    expect(order.orderNumber).toBeTruthy();
+    const doc = await Order.findOne({ orderNumber: order.orderNumber }).lean();
+    expect(doc!.attribution?.source).toBeUndefined();
   });
 });

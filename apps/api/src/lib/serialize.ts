@@ -247,6 +247,16 @@ export function toOrderDTO(doc: AnyDoc): OrderDTO {
       at: new Date(h.at).toISOString(),
     })),
     notes: doc.notes ?? undefined,
+    attribution: doc.attribution
+      ? {
+          source: doc.attribution.source ?? undefined,
+          medium: doc.attribution.medium ?? undefined,
+          campaign: doc.attribution.campaign ?? undefined,
+          referrer: doc.attribution.referrer ?? undefined,
+          landingPath: doc.attribution.landingPath ?? undefined,
+          sessionId: doc.attribution.sessionId ?? undefined,
+        }
+      : undefined,
     createdAt: (doc.createdAt instanceof Date
       ? doc.createdAt
       : new Date(doc.createdAt)

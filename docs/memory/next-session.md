@@ -8,6 +8,9 @@ Decisions **#57–61**, detail in current-state round 38.
 - **Products are 55ml now** (were `50ml`), surfaced on card / PDP / SEO title / JSON-LD. `ProductDetail` used to hide the size entirely for single-size products.
 - **Per-route SEO works at last** — the round-28 gap is closed. `GET /api/seo/prerender` + `bake-seo.mjs`. ⚠️ **Deploy api BEFORE web** — the web build fetches that endpoint. ⚠️ Adding a product/post needs a web redeploy for its meta.
 - **InstaPay now points at the business handle** `herencia@instapay` / `ipn.eg/S/herencia/instapay/25bWuF` (was the user's personal link).
+- **`www.herencia-eg.com` now serves** (round-37 open item closed). Both apex and www return 200.
+- **Shipped**: `a6cb8b9` + `fc80aca` + `2a1ca65`, pushed to origin/master, api + web both deployed and live-verified. Suites shared 67 / api 224 / web 74.
+- ⚠️ **Two self-inflicted bugs caught only by live verification, not by tests** — worth remembering as a pattern: baked HTML needs to be inspected as bytes, and the hydrated DOM needs a real browser. (1) duplicate canonicals from re-reading a template the loop had already rewritten; (2) `useSeo` overwriting the baked title on hydration. Details in current-state round 38.
 
 ### ⭐ THE REAL BACKLOG — user asked for all of this; only launch blockers were built
 The original request decomposed into 8 workstreams. **These 4 are unbuilt and each needs its own spec → plan → implement cycle:**

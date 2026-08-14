@@ -62,7 +62,7 @@ describe('utm capture', () => {
 
 describe('flush', () => {
   it('sends queued events via sendBeacon', async () => {
-    const beacon = vi.fn(() => true);
+    const beacon = vi.fn<(url: string, body?: BodyInit | null) => boolean>(() => true);
     vi.stubGlobal('navigator', { ...navigator, sendBeacon: beacon });
     track('page_view', { path: '/' });
     await flush();
@@ -74,7 +74,7 @@ describe('flush', () => {
 
   it('falls back to a keepalive fetch when sendBeacon is unavailable', async () => {
     vi.stubGlobal('navigator', { ...navigator, sendBeacon: undefined });
-    const f = vi.fn(async () => new Response(null, { status: 204 }));
+    const f = vi.fn<(url: string, init?: RequestInit) => Promise<Response>>(async () => new Response(null, { status: 204 }));
     vi.stubGlobal('fetch', f);
     track('page_view', { path: '/' });
     await flush();
@@ -83,7 +83,7 @@ describe('flush', () => {
   });
 
   it('does nothing when the queue is empty', async () => {
-    const beacon = vi.fn(() => true);
+    const beacon = vi.fn<(url: string, body?: BodyInit | null) => boolean>(() => true);
     vi.stubGlobal('navigator', { ...navigator, sendBeacon: beacon });
     await flush();
     expect(beacon).not.toHaveBeenCalled();
@@ -102,7 +102,7 @@ describe('flush', () => {
   });
 
   it('carries the product slug, never an id', async () => {
-    const beacon = vi.fn(() => true);
+    const beacon = vi.fn<(url: string, body?: BodyInit | null) => boolean>(() => true);
     vi.stubGlobal('navigator', { ...navigator, sendBeacon: beacon });
     track('add_to_cart', { path: '/products/ashes', productSlug: 'ashes' });
     await flush();

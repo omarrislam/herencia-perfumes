@@ -7,6 +7,7 @@ import { applySampleTokens } from '../../lib/sampleCopy';
 import { useCart } from '../cart/CartContext';
 import { ProductImage } from '../../components/ProductImage';
 import { formatEGP } from '../../components/Price';
+import { track } from '../../lib/analytics';
 
 export function SampleModal() {
   const { isOpen, close, samples, add, remove, has, clear } = useSamples();
@@ -24,7 +25,12 @@ export function SampleModal() {
     // One line per picked perfume (qty 1 each).
     for (const picked of samples) {
       const line = items.find((i) => i.productId === picked.id && i.sizeLabel === SAMPLE_SIZE_LABEL);
-      if (!line) addItem({ productId: picked.id, sizeLabel: SAMPLE_SIZE_LABEL, qty: 1 });
+      if (!line) {
+        addItem({ productId: picked.id, sizeLabel: SAMPLE_SIZE_LABEL, qty: 1 });
+        // Tracked against the perfume's own slug so sample interest shows up
+        // against the right product in the funnel.
+        track('add_to_cart', { productSlug: picked.slug });
+      }
     }
     clear();
     close();

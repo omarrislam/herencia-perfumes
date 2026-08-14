@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchProduct, fetchRelated } from '../lib/api';
 import { useSeo } from '../lib/useSeo';
 import { productTitle } from '@herencia/shared';
+import { track } from '../lib/analytics';
 import { Gallery } from '../features/products/Gallery';
 import { NotesPyramid } from '../features/products/NotesPyramid';
 import { Price } from '../components/Price';
@@ -30,6 +31,11 @@ export default function ProductDetail() {
     title: product.data ? productTitle(product.data) : 'HERENCIA',
     description: product.data?.shortDesc,
   });
+
+  const viewedSlug = product.data?.slug;
+  useEffect(() => {
+    if (viewedSlug) track('product_view', { path: `/products/${viewedSlug}`, productSlug: viewedSlug });
+  }, [viewedSlug]);
 
   if (product.isLoading) return <Skeleton className="h-96 w-full" />;
   if (product.isError || !product.data) return <p className="font-body text-muted">Product not found.</p>;
@@ -99,6 +105,7 @@ export default function ProductDetail() {
               onClick={() => {
                 if (!size) return;
                 addItem({ productId: p.id, sizeLabel: size.label, qty: 1 });
+                track('add_to_cart', { productSlug: p.slug });
                 setOpen(true);
               }}
               className="btn-lux flex-1 disabled:cursor-not-allowed disabled:opacity-50"

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { track, flush, currentIds } from '../lib/analytics';
 import { createOrderSchema, type CreateOrderInput, type CreateOrderResultDTO, type PaymentMethod, SAMPLE_SIZE_LABEL, DEFAULT_SAMPLES_SETTINGS } from '@herencia/shared';
 import { useCart } from '../features/cart/CartContext';
 import { useSamples } from '../features/samples/SampleContext';
@@ -72,6 +73,13 @@ export default function Checkout() {
   // Prefill the delivery address from the account's saved addresses (default
   // first) — only into fields the user hasn't typed in yet.
   const addresses = useQuery({ queryKey: ['account', 'addresses'], queryFn: api.fetchAddresses, enabled: !!user });
+
+  // Top of the checkout funnel — fired once on mount, then flushed immediately so a
+  // visitor who abandons the page is still counted as having started checkout.
+  useEffect(() => {
+    track('checkout_started');
+    void flush();
+  }, []);
   useEffect(() => {
     const addr = addresses.data?.find((a) => a.isDefault) ?? addresses.data?.[0];
     if (!addr) return;
@@ -154,6 +162,9 @@ export default function Checkout() {
       ...(form.notes ? { notes: form.notes } : {}),
       paymentMethod: instapayOn ? payment : 'cod',
       ...(discountCode.trim() ? { discountCode: discountCode.trim() } : {}),
+      // Lets the server attach this order to the visit that produced it, so the
+      // dashboard can attribute the revenue to a campaign.
+      ...currentIds(),
     };
 
     const parsed = createOrderSchema.safeParse(input);

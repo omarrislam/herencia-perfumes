@@ -6,6 +6,7 @@ import { Rating } from './Rating';
 import { WishlistButton } from './WishlistButton';
 import { TryScentButton } from './TryScentButton';
 import { useCart } from '../features/cart/CartContext';
+import { track } from '../lib/analytics';
 
 export function ProductCard({ product }: { product: ProductDTO }) {
   const { addItem, setOpen } = useCart();
@@ -22,6 +23,7 @@ export function ProductCard({ product }: { product: ProductDTO }) {
   const addToCart = () => {
     if (!baseSize) return;
     addItem({ productId: product.id, sizeLabel: baseSize.label, qty: 1 });
+    track('add_to_cart', { productSlug: product.slug });
     setOpen(true);
   };
 

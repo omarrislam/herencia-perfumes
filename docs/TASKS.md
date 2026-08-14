@@ -94,8 +94,12 @@ _Last updated: 2026-07-01 (Milestone 3 complete)_
 - [x] Verified-buyer reviews (order number + phone, no account) + "Ask for a review" on delivered orders
 - [ ] `/bundles` is empty but still linked — user will add bundles
 
+## Motion graphics (round 43, 2026-08-14)
+- [x] Fragrance notes reveal in scent order (top → heart → base), mount-based CSS, delay capped
+- [x] Wishlist heart: SVG fill + pop on add only
+- [x] Live-verified at 390px / 4× CPU in both reduced-motion modes — no stranded tiles
+
 ## Post-launch backlog (user asked for these; specs not yet written)
-- [ ] Smart motion graphics
 - [ ] On-page SEO content work (technical blocker now cleared)
 
 ## Milestone 5 (deferred) — Ops / Deploy (separate plan)

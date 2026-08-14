@@ -2,6 +2,24 @@
 
 _Last updated: 2026-08-14_
 
+## NEW (2026-08-14, round 43): MOTION GRAPHICS shipped
+Detail in current-state round 43. Deployed + live-verified. Suites shared 74 / api 322 / web 125.
+- **Audited first**: the site was already well-animated, so this added only the two real feedback gaps rather than more spectacle.
+- ✅ **Fragrance notes reveal in scent order** (top → heart → base) on the PDP — meaningful ornament, not decoration. Delay capped so long note lists can't strand tiles.
+- ✅ **Wishlist heart** now an SVG that fills with a pop on ADD only (state carried by `fill`, so reduced motion still reads).
+- 🛡 Both are **mount-based CSS, zero JS** — round 36 cannot recur, and a test asserts no `IntersectionObserver`. Verified live at 390px / 4× CPU in both motion modes: all 16 tiles opacity 1, no overflow.
+
+### ⏭ REMAINING BACKLOG
+1. **On-page SEO content** — the LAST of the four original workstreams. Technical blocker cleared in round 38; content untouched.
+2. **Funnels pt.3** — abandoned-checkout follow-up. Needs capturing a phone as the customer types, before they've agreed to anything — **ask the user before building this one**.
+3. **Meta Pixel + CAPI** — deferred (decision #60), blocked on the portfolio choice.
+
+### ⚠️ Still open
+- **`/bundles` empty but still linked** in nav + footer (user's choice).
+- No password reset for customers OR admin.
+- VASCO 55ml read **11** after round-42 cleanup — worth an eyeball against the real shelf.
+
+
 ## NEW (2026-08-14, round 42): FUNNELS pt.2 — verified-buyer reviews shipped
 Detail in current-state round 42. Deployed + live-verified. Suites shared 74 / api 322 / web 118.
 - 🚨 **Customers literally could not review** (requireAuth + guest-checkout norm = zero possible reviewers). Fixed with `POST /api/products/:slug/reviews/verified` — order number + phone as proof, no account. One 404 for both "no order" and "wrong phone" so order numbers can't be probed. First name only is ever published.

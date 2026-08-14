@@ -2,6 +2,16 @@
 
 _Last updated: 2026-08-14_
 
+## Post-M4 round 43 (MOTION GRAPHICS — note reveal + wishlist heart, SHIPPED, 2026-08-14)
+- 🔍 **Audited existing motion before adding any.** The site was already well-animated: hero ScentTrail (wisps + motes) + scroll parallax + blur-up, featured-card stagger, `Reveal` on other sections, quiz chip drift, marquee promo bar, logo shimmer, splash, route fade, `card-lux`/`btn-lux` hover **and `:active`** states, cart-badge pulse on add (`justAdded`), and an animated free-shipping progress bar. Per `.impeccable.md` principle 4 ("one signature moment per page; everything else quiet support") the hero already owns the signature — so this round looked for **feedback gaps on conversion actions**, not spectacle.
+- ✅ **Fragrance-note sequential reveal (PDP's own moment).** `NotesPyramid` rows are literally labelled "The opening / The character / The trail" — how a scent develops on skin over hours — but rendered as a static grid. Tiles now appear in that order (top → heart → base), cascading within each row: `ROW_STEP 130ms`, `TILE_STEP 45ms`, **capped at 8 tile-steps** so a long note list never strands the last tiles. This is `.impeccable.md` principle 5 — ornament that means something.
+- ✅ **Wishlist heart.** Was a bare `♡`/`♥` **character swap with zero feedback**. Now an SVG heart that fills, with one scale pop **on ADD only** — celebrating a removal is how interfaces become tiring. State is carried by `fill`, so it still reads when the pop is suppressed.
+- 🛡 **Round-36 cannot recur here**: both are **mount-based CSS**, never consulting scroll position. A test stubs `IntersectionObserver` and asserts it is never observed. The global reduced-motion rule already zeroes `animation-delay` (the round-36 fix), so staggered tiles appear instantly there.
+- ⚡ **Zero JavaScript added** — the animation is entirely CSS (`heart-pop`, `.note-tile` reusing `rise-in`). Transform/opacity only, no layout properties, no CLS. Entry bundle JS unchanged.
+- ✅ Suites: shared **74** / api **322** / web **125** (+7), typecheck + lint + build clean. Deployed web.
+- ✅ **Live-verified on production at 390px with 4× CPU throttling**: all **16** note tiles reach opacity 1 — measured under BOTH `prefers-reduced-motion: no-preference` AND `reduce` — with zero horizontal overflow. That is the round-36 failure mode explicitly disproven on the real site, not just in tests.
+
+
 ## Post-M4 round 42 (FUNNELS pt.2 — verified-buyer reviews + review request, SHIPPED, 2026-08-14)
 - 🚨 **Root cause found: customers could not review at all.** `POST /products/:slug/reviews` required `requireAuth`, but guest checkout is the norm and after the launch wipe there were exactly **2 accounts, both the owner's**. Asking customers for reviews would have walked them into a registration wall — so the store had zero social proof and no path to any.
 - ✅ **Verified-buyer reviews, no account needed.** `POST /api/products/:slug/reviews/verified` takes **order number + the phone it was placed with** — the same proof pair as order tracking (decision #51). **Extends decision #26, does not replace it**: moderation still applies (`isApproved: false`), and one-review-per-order-per-product is the guest equivalent of one-per-user-per-product.

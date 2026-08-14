@@ -62,3 +62,48 @@ export type DiscountCodeDTO = {
 
 // Public preview at checkout: only what the client needs to show the discount.
 export type DiscountPreviewDTO = { code: string; percent: number };
+
+// ---- Analytics dashboard ----
+export type AnalyticsFunnelDTO = {
+  sessions: number;
+  productViews: number;
+  addToCarts: number;
+  checkoutStarts: number;
+  orders: number;
+};
+
+export type AnalyticsPointDTO = { date: string; sessions: number; orders: number; revenue: number };
+
+export type AnalyticsSourceDTO = {
+  /** utm_source, else the referrer host, else 'direct'. */
+  source: string;
+  medium?: string;
+  campaign?: string;
+  sessions: number;
+  orders: number;
+  revenue: number;
+  /** orders ÷ sessions; 0 when there were no sessions. */
+  conversion: number;
+};
+
+export type AnalyticsCohortsDTO = {
+  newCustomers: number;
+  returningCustomers: number;
+  repeatRate: number;
+  avgLtv: number;
+  firstOrderRevenue: number;
+  repeatOrderRevenue: number;
+};
+
+export type AnalyticsDTO = {
+  range: { from: string; to: string };
+  funnel: AnalyticsFunnelDTO;
+  /** Same-length period immediately before the range, for comparison. */
+  previous: AnalyticsFunnelDTO;
+  series: AnalyticsPointDTO[];
+  revenue: number;
+  previousRevenue: number;
+  aov: number;
+  sources: AnalyticsSourceDTO[];
+  cohorts: AnalyticsCohortsDTO;
+};

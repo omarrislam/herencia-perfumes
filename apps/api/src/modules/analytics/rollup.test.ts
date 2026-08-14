@@ -176,6 +176,11 @@ describe('rollupDay', () => {
   });
 });
 
+// NOTE: these use fake timers only to move "today", and deliberately seed NO documents
+// while faked. Vitest's fake timers replace the global Date; mongoose casts with
+// `instanceof Date`, so a document written under fake timers stores its date fields as
+// raw NUMBERS and no date-range query will ever match them. If you add seeded data here,
+// switch to real-date-relative offsets like adminAnalytics.test.ts does.
 describe('ensureRollups', () => {
   it('fills every missing past day in the range', async () => {
     vi.setSystemTime(new Date('2026-08-13T12:00:00.000Z'));

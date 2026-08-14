@@ -18,6 +18,8 @@ import { isCloudinaryConfigured, signUploadParams } from '../lib/cloudinary';
 import { toProductDTO, toScentFamilyDTO, toOrderDTO, toReviewDTO, toQuizQuestionAdminDTO, toBannerDTO, toBlogPostDTO, toSettingDTO, toNoteIconDTO, toSubscriberDTO, toDiscountCodeDTO } from '../lib/serialize';
 import { sendStatusUpdate } from '../lib/waCloud';
 import { recomputeProductRating } from '../modules/review/service';
+import { buildReport } from '../modules/analytics/report';
+import { dayKey } from '../modules/analytics/rollup';
 
 export function adminRouter(): Router {
   const router = Router();
@@ -403,6 +405,23 @@ export function adminRouter(): Router {
         page,
         pages: Math.ceil(total / limit) || 1,
       });
+    } catch (err) {
+      next(err);
+    }
+  });
+
+  // ---- Analytics report (funnel, revenue trend, sources, cohorts) ----
+  router.get('/analytics', async (req, res, next) => {
+    try {
+      const isDay = (v: unknown): v is string => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v);
+      // Default window is the last 30 days inclusive.
+      const to = req.query.to === undefined ? dayKey(new Date()) : req.query.to;
+      const from =
+        req.query.from === undefined ? dayKey(new Date(Date.now() - 29 * 864e5)) : req.query.from;
+      if (!isDay(from) || !isDay(to) || from > to) {
+        throw new HttpError(400, 'Invalid date range', 'invalid_range');
+      }
+      res.json(await buildReport(from, to));
     } catch (err) {
       next(err);
     }

@@ -4,7 +4,8 @@ _Last updated: 2026-08-14_
 
 ## NEW (2026-08-14, round 40): ANALYTICS PHASE 2 (dashboard) SHIPPED — analytics is COMPLETE
 `/admin/analytics` is live: range selector, revenue vs previous period, drop-off funnel, traffic sources, phone-keyed cohorts. Decisions **#66–68**, detail in current-state round 40. Suites shared 74 / api 292 / web 105.
-**⚠️ Not visually inspected in production** — needs an admin login (the owner's). Worth a look on the first visit.
+**✅ Live-verified in production** (Playwright login + screenshot). Three issues found and fixed: a 23.6s first 90-day load (backfill looped day-by-day → now one batched `rollupRange` pass, 1.4s cold), a funnel that read as broken when orders exceed tracked checkouts (now explained in-panel), and a chart with no value labels (now labels peak + latest).
+**Lesson repeated for the third round running: the bug was only visible by exercising the real thing.** Screenshot the page and time the endpoint; tests will not surface latency or "this looks broken".
 
 ### Lessons from round 40
 - **Vitest fake timers + mongoose = silent data loss in tests.** Fake timers replace the global `Date`; mongoose casts with `instanceof Date`, so any document written under fake timers stores its date fields as raw NUMBERS and no date-range query matches. Seed relative to the real current day instead. `rollup.test.ts` carries a warning comment.

@@ -2,6 +2,26 @@
 
 _Last updated: 2026-08-14_
 
+## NEW (2026-08-14, round 40): ANALYTICS PHASE 2 (dashboard) SHIPPED — analytics is COMPLETE
+`/admin/analytics` is live: range selector, revenue vs previous period, drop-off funnel, traffic sources, phone-keyed cohorts. Decisions **#66–68**, detail in current-state round 40. Suites shared 74 / api 292 / web 105.
+**⚠️ Not visually inspected in production** — needs an admin login (the owner's). Worth a look on the first visit.
+
+### Lessons from round 40
+- **Vitest fake timers + mongoose = silent data loss in tests.** Fake timers replace the global `Date`; mongoose casts with `instanceof Date`, so any document written under fake timers stores its date fields as raw NUMBERS and no date-range query matches. Seed relative to the real current day instead. `rollup.test.ts` carries a warning comment.
+- **Run the dataviz palette validator; don't eyeball.** The obvious accent-vs-muted pairing failed the normal-vision floor (ΔE 11.4 < 15) — two warm browns. `--chart-2` is a validated slate instead.
+
+### ⏭ REMAINING BACKLOG (user asked for all of these)
+1. **Conversion funnels / engagement flows** — now measurable, which is why it was sequenced after analytics. Not started.
+2. **Smart motion graphics** — not started. Constraints: transforms/opacity only, respect `prefers-reduced-motion`, no CLS, Lighthouse ≥ 90. **Round-36 lesson: never wrap horizontal-carousel items in a scroll-reveal.**
+3. **On-page SEO content** — the technical blocker was cleared in round 38; the content work is untouched.
+4. **Meta Pixel + CAPI** — deferred by the user (decision #60); blocked on which Meta portfolio to use.
+
+### ⚠️ Still open
+- `HRC-MSSV644S-IJQS` (Omar Islam, VASCO 55ml, 560 EGP, **InstaPay pending**) placed by the user 2026-08-14 11:28. Unpaid InstaPay holds stock — use the decision-54 stale-unpaid sweep if it was only a test.
+- No password reset for customers OR admin — an owner lockout still needs DB access.
+- `/bundles` is empty but linked in nav + footer.
+
+
 ## NEW (2026-08-14, round 39): ANALYTICS PHASE 1 (capture) SHIPPED — dashboard is next
 Spec `specs/2026-08-14-analytics-design.md`, plan `plans/2026-08-14-analytics-capture.md`. Decisions **#62–65**. Detail in current-state round 39.
 **Live now**: `Event` + `Session` (90-day TTL), `POST /api/events`, `Order.attribution` stamped at creation, server-side purchase events, client tracker + `usePageTracking`. Verified end-to-end on production (UTM landing → product_view → add_to_cart → attributed order). Suites shared 74 / api 256 / web 90.

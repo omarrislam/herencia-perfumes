@@ -30,65 +30,132 @@ export function bucketSource(s: {
   return 'direct';
 }
 
+const UTC_DAY = { format: '%Y-%m-%d', timezone: 'UTC' } as const;
+
+type SourceRow = { source: string; medium?: string; campaign?: string; sessions: number };
+
 /**
- * Recomputes one day from raw data and upserts it.
+ * Recomputes the given days from raw data and upserts them all.
+ *
+ * Deliberately range-based rather than a loop over single days: a per-day loop ran
+ * three queries per day, which made the first 90-day dashboard load take 23s while
+ * it backfilled. This runs three grouped aggregations for the WHOLE span regardless
+ * of how many days are missing.
  *
  * Idempotent by construction: every field is `$set` from a fresh computation, never
- * incremented — so re-running a day (which the endpoint does for *today* on every
+ * incremented — so re-running a day (which the report does for *today* on every
  * dashboard load) can never double-count.
  */
-export async function rollupDay(key: string): Promise<void> {
-  const { start, end } = dayBounds(key);
+export async function rollupRange(keys: string[]): Promise<void> {
+  if (keys.length === 0) return;
+  const sorted = [...keys].sort();
+  const start = dayBounds(sorted[0]!).start;
+  const end = dayBounds(sorted[sorted.length - 1]!).end;
   const window = { $gte: start, $lt: end };
 
-  const sessions = await Session.find({ createdAt: window, isBot: { $ne: true } })
-    .select('sessionId visitorId utm referrer')
-    .lean();
-  const humanIds = sessions.map((s) => s.sessionId);
-
-  const counts = await Event.aggregate<{ _id: string; n: number }>([
-    { $match: { createdAt: window, sessionId: { $in: humanIds } } },
-    { $group: { _id: '$type', n: { $sum: 1 } } },
+  const sessions = await Session.aggregate<{
+    day: string;
+    sessionId: string;
+    visitorId: string;
+    utm?: { source?: string; medium?: string; campaign?: string };
+    referrer?: string;
+  }>([
+    { $match: { createdAt: window, isBot: { $ne: true } } },
+    {
+      $project: {
+        _id: 0,
+        day: { $dateToString: { ...UTC_DAY, date: '$createdAt' } },
+        sessionId: 1,
+        visitorId: 1,
+        utm: 1,
+        referrer: 1,
+      },
+    },
   ]);
-  const byType = new Map(counts.map((c) => [c._id, c.n]));
+
+  const humanIds = sessions.map((s) => s.sessionId);
+  const events = await Event.aggregate<{ _id: { day: string; type: string }; n: number }>([
+    { $match: { createdAt: window, sessionId: { $in: humanIds } } },
+    {
+      $group: {
+        _id: { day: { $dateToString: { ...UTC_DAY, date: '$createdAt' } }, type: '$type' },
+        n: { $sum: 1 },
+      },
+    },
+  ]);
 
   // Money comes from Order — authoritative, and unaffected by ad blockers that can
   // silently drop the browser's purchase event.
-  const [money] = await Order.aggregate<{ n: number; rev: number }>([
+  const money = await Order.aggregate<{ _id: string; n: number; rev: number }>([
     { $match: { createdAt: window, status: { $ne: 'cancelled' } } },
-    { $group: { _id: null, n: { $sum: 1 }, rev: { $sum: '$total' } } },
-  ]);
-
-  const sourceMap = new Map<
-    string,
-    { source: string; medium?: string; campaign?: string; sessions: number }
-  >();
-  for (const s of sessions) {
-    const source = bucketSource(s);
-    const medium = s.utm?.medium ?? undefined;
-    const campaign = s.utm?.campaign ?? undefined;
-    const k = `${source}|${medium ?? ''}|${campaign ?? ''}`;
-    const row = sourceMap.get(k) ?? { source, medium, campaign, sessions: 0 };
-    row.sessions += 1;
-    sourceMap.set(k, row);
-  }
-
-  await DailyStat.updateOne(
-    { date: key },
     {
-      $set: {
-        sessions: sessions.length,
-        visitors: new Set(sessions.map((s) => s.visitorId)).size,
-        productViews: byType.get('product_view') ?? 0,
-        addToCarts: byType.get('add_to_cart') ?? 0,
-        checkoutStarts: byType.get('checkout_started') ?? 0,
-        orders: money?.n ?? 0,
-        revenue: Math.round((money?.rev ?? 0) * 100) / 100,
-        bySource: [...sourceMap.values()],
+      $group: {
+        _id: { $dateToString: { ...UTC_DAY, date: '$createdAt' } },
+        n: { $sum: 1 },
+        rev: { $sum: '$total' },
       },
     },
-    { upsert: true },
-  );
+  ]);
+
+  const sessionsByDay = new Map<string, typeof sessions>();
+  for (const s of sessions) {
+    const list = sessionsByDay.get(s.day) ?? [];
+    list.push(s);
+    sessionsByDay.set(s.day, list);
+  }
+  const eventsByDay = new Map<string, Map<string, number>>();
+  for (const e of events) {
+    const m = eventsByDay.get(e._id.day) ?? new Map<string, number>();
+    m.set(e._id.type, e.n);
+    eventsByDay.set(e._id.day, m);
+  }
+  const moneyByDay = new Map(money.map((m) => [m._id, m]));
+
+  // Only the requested keys are written — days that fall inside the span but are
+  // already stored must not be silently recomputed.
+  type BulkOps = Parameters<typeof DailyStat.bulkWrite>[0];
+  const ops: BulkOps = keys.map((key) => {
+    const daySessions = sessionsByDay.get(key) ?? [];
+    const byType = eventsByDay.get(key) ?? new Map<string, number>();
+    const cash = moneyByDay.get(key);
+
+    const sourceMap = new Map<string, SourceRow>();
+    for (const s of daySessions) {
+      const source = bucketSource(s);
+      const medium = s.utm?.medium ?? undefined;
+      const campaign = s.utm?.campaign ?? undefined;
+      const k = `${source}|${medium ?? ''}|${campaign ?? ''}`;
+      const row = sourceMap.get(k) ?? { source, medium, campaign, sessions: 0 };
+      row.sessions += 1;
+      sourceMap.set(k, row);
+    }
+
+    return {
+      updateOne: {
+        filter: { date: key },
+        update: {
+          $set: {
+            sessions: daySessions.length,
+            visitors: new Set(daySessions.map((s) => s.visitorId)).size,
+            productViews: byType.get('product_view') ?? 0,
+            addToCarts: byType.get('add_to_cart') ?? 0,
+            checkoutStarts: byType.get('checkout_started') ?? 0,
+            orders: cash?.n ?? 0,
+            revenue: Math.round((cash?.rev ?? 0) * 100) / 100,
+            bySource: [...sourceMap.values()],
+          },
+        },
+        upsert: true,
+      },
+    };
+  });
+
+  await DailyStat.bulkWrite(ops, { ordered: false });
+}
+
+/** Convenience wrapper — the report recomputes today on every load. */
+export async function rollupDay(key: string): Promise<void> {
+  return rollupRange([key]);
 }
 
 /**
@@ -113,7 +180,6 @@ export async function ensureRollups(from: string, to: string): Promise<void> {
     .select('date')
     .lean();
   const have = new Set(existing.map((r) => r.date));
-  for (const key of wanted) {
-    if (!have.has(key)) await rollupDay(key);
-  }
+  // One batched pass, not one round trip per day — see rollupRange.
+  await rollupRange(wanted.filter((key) => !have.has(key)));
 }

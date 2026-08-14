@@ -87,8 +87,14 @@ _Last updated: 2026-07-01 (Milestone 3 complete)_
 - [x] **Phase 1 — capture**: Event/Session models (90-day TTL), `POST /api/events`, `Order.attribution`, server-side purchase events, client tracker, storefront wiring
 - [x] **Phase 2 — dashboard**: `DailyStat` lazy rollups, `/admin/analytics`, funnel with drop-off, revenue vs previous period, traffic sources, phone-keyed cohorts + LTV
 
+## Conversion funnels (round 41, 2026-08-14)
+- [x] Remove the unbacked sample-credit promise (defaults, admin placeholders, live settings)
+- [x] Back-in-stock waitlist: notify-me on the PDP + owner waitlist on Admin → Inventory
+- [ ] Abandoned-checkout follow-up (owner-driven WhatsApp)
+- [ ] Post-purchase review request (store currently has zero reviews)
+- [ ] `/bundles` is empty but still linked — user will add bundles
+
 ## Post-launch backlog (user asked for these; specs not yet written)
-- [ ] Conversion funnels / engagement flows
 - [ ] Smart motion graphics
 - [ ] On-page SEO content work (technical blocker now cleared)
 

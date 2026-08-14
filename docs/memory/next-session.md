@@ -2,6 +2,23 @@
 
 _Last updated: 2026-08-14_
 
+## NEW (2026-08-14, round 41): FUNNELS pt.1 — unbacked promise removed, back-in-stock waitlist shipped
+Detail in current-state round 41. Committed `7f7648d`, deployed, live-verified. Suites shared 74 / api 312 / web 113.
+- 🚨 **The samples copy promised the sample price back against a bottle in three places with no mechanism at all.** User chose to REMOVE the promise rather than build the credit. `settings.ts` carries a comment: do not reintroduce a credit claim without a redemption mechanism.
+- ✅ **Back-in-stock**: `POST /api/products/:slug/notify` + PDP form + waitlist on Admin → Inventory (restocked rows highlight, wa.me per person, mark-contacted).
+
+### ⏭ REMAINING BACKLOG
+1. **Funnels pt.2** — abandoned-checkout follow-up (needs contact capture as the customer types, privacy-sensitive) and post-purchase review request (store has **zero reviews** — no social proof anywhere). Both fit the owner-taps-WhatsApp pattern.
+2. **Motion graphics** — not started. Transforms/opacity only, respect `prefers-reduced-motion`, no CLS, Lighthouse ≥ 90. **Round-36 lesson: never wrap horizontal-carousel items in a scroll-reveal.**
+3. **On-page SEO content** — technical blocker cleared in round 38; content untouched.
+4. **Meta Pixel + CAPI** — deferred (decision #60), blocked on the portfolio choice.
+
+### ⚠️ Still open
+- **`/bundles` is empty but still linked** in nav + footer — the user chose to keep it ("I'll add bundles soon"). Every click is a dead end until a bundle exists.
+- `HRC-MSSV644S-IJQS` (InstaPay pending, 560 EGP) placed by the user — unpaid InstaPay holds stock.
+- No password reset for customers OR admin.
+
+
 ## NEW (2026-08-14, round 40): ANALYTICS PHASE 2 (dashboard) SHIPPED — analytics is COMPLETE
 `/admin/analytics` is live: range selector, revenue vs previous period, drop-off funnel, traffic sources, phone-keyed cohorts. Decisions **#66–68**, detail in current-state round 40. Suites shared 74 / api 292 / web 105.
 **✅ Live-verified in production** (Playwright login + screenshot). Three issues found and fixed: a 23.6s first 90-day load (backfill looped day-by-day → now one batched `rollupRange` pass, 1.4s cold), a funnel that read as broken when orders exceed tracked checkouts (now explained in-panel), and a chart with no value labels (now labels peak + latest).

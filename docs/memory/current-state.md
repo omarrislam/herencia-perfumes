@@ -2,6 +2,18 @@
 
 _Last updated: 2026-08-14_
 
+## Post-M4 round 41 (FUNNELS pt.1 — unbacked promise removed + back-in-stock waitlist, SHIPPED, 2026-08-14)
+- 🔍 **Audited the live store for real leaks instead of writing generic funnel advice.** Two confirmed, one deferred by the user.
+- 🚨 **THE BIG FINDING — the site promised something it could not deliver.** The samples copy said the sample price was *credited back against a bottle* in **three places** (`strapline`, `steps[2]`, `modalText`) and there was **NO mechanism anywhere** — no `sampleCredit` field, no redemption path, nothing in `createOrder`. A customer who bought samples and returned for a bottle paid full price. **"Samples first, bottles later" is the store's whole stated strategy, so this was the missing final step of its core funnel.**
+  - **User's decision: drop the promise, don't build the credit.** I noted once that this removes the reason a sampler returns; the user chose it anyway, so it's settled. Removed from `DEFAULT_SAMPLES_SETTINGS`, the AdminHome placeholders, and the LIVE settings doc; replaced with copy selling the sample on confidence ("live with it before you commit" / "Come back for the one you never stop reaching for"). **A comment in settings.ts forbids reintroducing a credit claim without a redemption mechanism shipping alongside.**
+- ✅ **Back-in-stock waitlist** — a sold-out size was a dead end. New `StockNotification` model (unique on `{product,sizeLabel,phone}`), `POST /api/products/:slug/notify` (idempotent, `notifyLimiter` 10/15min, **409 `in_stock`** when there's nothing to wait for, 404 on unknown/inactive product or unknown size, reuses `egyptianPhoneSchema`). PDP shows a **collapsed** "Notify me when it's back" that only expands on intent. Asks for a WhatsApp number, not an email — guests rarely give one and WhatsApp is the store's channel.
+- ✅ **Owner side on Admin → Inventory** (deliberate placement — restocking is exactly when you need the list): `GET /api/admin/waitlist` groups by product+size with live stock, `GET /api/admin/waitlist/:productId/:sizeLabel` lists people, `PUT /api/admin/waitlist/:id/notified` clears them. **Restocked rows highlight green**; each person gets a pre-filled wa.me message the owner taps. Nothing automatic (decision #48).
+- ✅ Suites: shared **74** / api **312** (+20) / web **113** (+8), typecheck + lint + build clean. Committed `7f7648d`, api + web deployed.
+- ✅ **Live-verified end to end**: 409 on an in-stock product, 201 on a sold-out one, idempotent on repeat, 400 on a bad phone; then browsed the real PDP (CTA → form → confirmation) and the admin waitlist showing both testers with WhatsApp links. Perla Rosa was temporarily set to 0 stock for the test and **restored to 2**; all test rows deleted.
+- ⏭ **User chose to KEEP `/bundles` linked** in nav + footer despite having zero bundles ("I'll add bundles soon"). Until then every click on Bundles is an empty page.
+- ⏭ **Not built yet**: abandoned-checkout follow-up (needs contact capture mid-checkout) and post-purchase review request (the store still has **zero reviews**, so no social proof anywhere).
+
+
 ## Post-M4 round 40 (ANALYTICS PHASE 2 — dashboard, SHIPPED, 2026-08-14)
 - 🎯 Plan `docs/superpowers/plans/2026-08-14-analytics-dashboard.md`, design already in the round-39 spec. **Analytics is now complete end to end.** Decisions **#66–68**.
 - ✅ **`DailyStat`** — one permanent doc per day (no TTL; raw events expire at 90 days, these are the long-range history). Holds sessions/visitors/productViews/addToCarts/checkoutStarts/orders/revenue + `bySource[]`.

@@ -2,6 +2,22 @@
 
 _Last updated: 2026-08-14_
 
+## NEW (2026-08-14, round 39): ANALYTICS PHASE 1 (capture) SHIPPED — dashboard is next
+Spec `specs/2026-08-14-analytics-design.md`, plan `plans/2026-08-14-analytics-capture.md`. Decisions **#62–65**. Detail in current-state round 39.
+**Live now**: `Event` + `Session` (90-day TTL), `POST /api/events`, `Order.attribution` stamped at creation, server-side purchase events, client tracker + `usePageTracking`. Verified end-to-end on production (UTM landing → product_view → add_to_cart → attributed order). Suites shared 74 / api 256 / web 90.
+
+### ⏭ NEXT: Analytics Phase 2 (dashboard) — design already written, needs its own plan
+From the spec: `DailyStat` **lazy rollups** (no cron, per decision #54 — the stats endpoint rolls up missing past days on request, today computed live, recompute must be idempotent), `/admin/analytics` with date range + compare-to-previous, funnel with drop-off, revenue chart, sources table (sessions from `DailyStat.bySource`, orders/revenue from `Order.attribution`), phone-keyed cohorts + LTV. **Hand-rolled SVG charts** — no charting library (Lighthouse budget); use the `dataviz` skill.
+
+### ⚠️ Hard-won lessons from round 39 — do not relearn these
+- **`sendBeacon` sends `text/plain`.** The server parses it. **Never "fix" this by sending an `application/json` Blob** — it works in dev (same-origin proxy) and breaks in production (cross-origin, not CORS-safelisted, beacons can't preflight).
+- **Unit tests passed through all three real bugs.** Baked HTML must be inspected as bytes; the hydrated DOM and the network layer need a real browser. Browse the actual site before believing a tracking feature works.
+- **Order matters in `flush()`**: `getSessionId()` is what captures the landing UTMs, so it must run before they are read. Getting this wrong silently empties the most valuable field, permanently (`$setOnInsert`).
+- **Analytics writes inside `createOrder` must be individually caught** — an uncaught throw reaches the stock `rollback` and restores stock for an order that already exists.
+
+### ⚠️ Open item
+`HRC-MSSV644S-IJQS` (Omar Islam, VASCO 55ml, 560 EGP, **InstaPay pending**) was placed by the user 2026-08-14 11:28 and left untouched. Unpaid InstaPay holds stock — use the decision-54 stale-unpaid sweep if it was only a test.
+
 ## NEW (2026-08-14, round 38): LAUNCH PREP shipped — data reset, 55ml, per-route SEO
 Decisions **#57–61**, detail in current-state round 38.
 - **Production data was reset**: 36 orders, 5 carts, 3 subscribers, 7 `@example.com` accounts deleted via the new `npm run reset-launch -w apps/api` (dry-run by default, `--yes-wipe-production` to apply). Catalog/settings/content/admin untouched; the user's 2 accounts kept.

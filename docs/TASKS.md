@@ -83,10 +83,13 @@ _Last updated: 2026-07-01 (Milestone 3 complete)_
 - [x] `www.herencia-eg.com` added to the Vercel web project
 - [ ] **Meta Pixel + Conversions API** — deferred by user; blocked on the portfolio decision (#60)
 
+## Analytics (round 39, 2026-08-14) — spec `2026-08-14-analytics-design.md`
+- [x] **Phase 1 — capture**: Event/Session models (90-day TTL), `POST /api/events`, `Order.attribution`, server-side purchase events, client tracker, storefront wiring
+- [ ] **Phase 2 — dashboard**: `DailyStat` lazy rollups, `/admin/analytics`, funnel with drop-off, revenue vs previous period, traffic sources, phone-keyed cohorts + LTV
+
 ## Post-launch backlog (user asked for these; specs not yet written)
 - [ ] Conversion funnels / engagement flows
 - [ ] Smart motion graphics
-- [ ] Shopify-grade analytics dashboard (funnel + revenue trends + UTM attribution + cohorts/LTV)
 - [ ] On-page SEO content work (technical blocker now cleared)
 
 ## Milestone 5 (deferred) — Ops / Deploy (separate plan)

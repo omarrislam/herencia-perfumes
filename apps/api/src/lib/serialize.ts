@@ -151,10 +151,16 @@ export function toAddressDTO(a: AnyDoc): AddressDTO {
 
 export function toReviewDTO(doc: AnyDoc): ReviewDTO {
   const u = doc.user && typeof doc.user === 'object' && doc.user._id ? doc.user : null;
+  // A verified-guest review has no account — it carries a first name taken from the
+  // order instead, and is flagged so the UI can say "verified buyer".
+  const guest = !doc.user && doc.orderNumber;
   return {
     id: String(doc._id),
     productId: String(doc.product),
-    user: { id: String(u ? u._id : doc.user), name: u?.name ?? 'Customer' },
+    user: guest
+      ? { name: doc.guestName || 'Customer' }
+      : { id: String(u ? u._id : doc.user), name: u?.name ?? 'Customer' },
+    ...(guest ? { verifiedBuyer: true } : {}),
     rating: doc.rating,
     title: doc.title ?? undefined,
     body: doc.body,

@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import type { CreateReviewInput } from '@herencia/shared';
 import { fetchReviews, submitReview, ApiError } from '../../lib/api';
 import { useAuth } from '../auth/AuthContext';
+import { VerifiedReviewForm } from './VerifiedReviewForm';
 
 
 interface ReviewsSectionProps {
@@ -79,6 +79,11 @@ export function ReviewsSection({ slug }: ReviewsSectionProps) {
                   {'★'.repeat(Math.round(review.rating))}{'☆'.repeat(5 - Math.round(review.rating))}
                 </span>
                 <span className="font-body text-sm font-medium text-content">{review.user.name}</span>
+                {review.verifiedBuyer && (
+                  <span className="rounded-full bg-success-soft px-2 py-0.5 font-body text-[10px] uppercase tracking-wider text-success">
+                    Verified buyer
+                  </span>
+                )}
               </div>
               {review.title && (
                 <p className="font-body text-sm font-semibold text-content">{review.title}</p>
@@ -93,12 +98,14 @@ export function ReviewsSection({ slug }: ReviewsSectionProps) {
       )}
 
       <div className="border-t border-hairline pt-6">
-        {user === null ? (
-          <p className="font-body text-sm text-muted">
-            <Link to="/login" className="link-underline text-accent">
-              Sign in to write a review
-            </Link>
+        {submitted ? (
+          <p className="font-body text-sm text-success">
+            Thank you — your review is pending moderation.
           </p>
+        ) : user === null ? (
+          // Guests are the majority here, so they get a real form rather than a
+          // sign-in wall — the order number + phone proves the purchase.
+          <VerifiedReviewForm slug={slug} onDone={() => setSubmitted(true)} />
         ) : submitted ? (
           <p className="font-body text-sm text-success">
             Thank you — your review is pending moderation.

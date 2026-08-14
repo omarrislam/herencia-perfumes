@@ -1,6 +1,7 @@
 import { Router } from 'express';
-import { createReviewSchema } from '@herencia/shared';
+import { verifiedReviewSchema, createReviewSchema } from '@herencia/shared';
 import { Product } from '../models/Product';
+import { Order } from '../models/Order';
 import { Review } from '../models/Review';
 import { HttpError } from '../middleware/error';
 import { authenticate, requireAuth } from '../middleware/auth';
@@ -55,6 +56,54 @@ export function reviewRouter(): Router {
       ]);
       res.json({ items: docs.map(toReviewDTO), total, page, pages: Math.ceil(total / limit) || 1 });
     } catch (err) {
+      next(err);
+    }
+  });
+
+  // Verified-buyer review, no account required.
+  //
+  // Guest checkout is the norm here, so gating reviews behind requireAuth meant
+  // almost nobody could leave one — the store had zero social proof. Proof of
+  // purchase is the order number + the phone it was placed with, exactly the pair
+  // used by order tracking (decision #51), so an order number alone is never enough.
+  router.post('/products/:slug/reviews/verified', reviewLimiter, async (req, res, next) => {
+    try {
+      const parsed = verifiedReviewSchema.safeParse(req.body);
+      if (!parsed.success) throw new HttpError(400, parsed.error.issues[0]?.message ?? 'Invalid', 'invalid');
+      const { orderNumber, phone, ...review } = parsed.data;
+
+      const product = await Product.findOne({ slug: req.params['slug'], isActive: true }).select('_id').lean();
+      if (!product) throw new HttpError(404, 'Product not found', 'not_found');
+
+      // One 404 for "no such order" and "wrong phone" alike, so this cannot be used
+      // to probe which order numbers exist.
+      const order = await Order.findOne({ orderNumber: orderNumber.toUpperCase(), 'customer.phone': phone }).lean();
+      if (!order) throw new HttpError(404, 'We could not find that order', 'not_found');
+
+      if (order.status === 'cancelled') {
+        throw new HttpError(403, 'That order was cancelled', 'not_purchased');
+      }
+      const bought = order.items.some((i) => String(i.product) === String(product._id));
+      if (!bought) throw new HttpError(403, 'That order does not include this product', 'not_purchased');
+
+      if (await Review.exists({ product: product._id, orderNumber: order.orderNumber })) {
+        throw new HttpError(409, 'This order has already reviewed this product', 'already_reviewed');
+      }
+
+      const doc = await Review.create({
+        ...review,
+        product: product._id,
+        orderNumber: order.orderNumber,
+        // First name only — a public review must never expose a customer's full
+        // identity, and never their phone.
+        guestName: (order.customer?.name ?? 'Customer').trim().split(/\s+/)[0],
+        isApproved: false,
+      });
+      res.status(201).json(toReviewDTO(doc.toObject()));
+    } catch (err) {
+      if ((err as { code?: number }).code === 11000) {
+        return next(new HttpError(409, 'This order has already reviewed this product', 'already_reviewed'));
+      }
       next(err);
     }
   });

@@ -140,3 +140,9 @@ export const fetchBlogPost = (slug: string) => apiGet<BlogPostDTO>(`/api/blog/${
 // Back-in-stock request for a sold-out size. Idempotent server-side.
 export const notifyWhenBack = (slug: string, data: { sizeLabel: string; phone: string; email?: string }) =>
   apiSend<{ ok: true }>('POST', `/api/products/${encodeURIComponent(slug)}/notify`, data);
+
+// Verified-buyer review — no account, proof is the order number + phone.
+export const submitVerifiedReview = (
+  slug: string,
+  data: { orderNumber: string; phone: string; rating: number; title?: string; body: string },
+) => apiSend<ReviewDTO>('POST', `/api/products/${encodeURIComponent(slug)}/reviews/verified`, data);

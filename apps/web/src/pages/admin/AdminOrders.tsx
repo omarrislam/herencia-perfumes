@@ -17,7 +17,7 @@ import {
 import { fetchSettings } from '../../lib/api';
 import { Price } from '../../components/Price';
 import { OrderReceipt } from '../../components/OrderReceipt';
-import { customerWhatsAppUrl, receiptMessage, statusMessage } from '../../features/admin/whatsappMessage';
+import { customerWhatsAppUrl, receiptMessage, statusMessage, reviewRequestMessage } from '../../features/admin/whatsappMessage';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -528,6 +528,21 @@ function OrderDetails({
         >
           WhatsApp “{order.status}” update
         </a>
+        {/* Only once it has actually arrived — asking for a review before then is
+            the fastest way to get a bad one. */}
+        {order.status === 'delivered' && (
+          <a
+            href={customerWhatsAppUrl(
+              order.customer.phone,
+              reviewRequestMessage(order, window.location.origin),
+            )}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="rounded border border-accent px-3 py-1.5 text-accent transition-colors hover:bg-accent hover:text-surface"
+          >
+            Ask for a review
+          </a>
+        )}
         <button
           type="button"
           onClick={() => window.print()}

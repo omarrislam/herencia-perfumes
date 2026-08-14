@@ -46,3 +46,26 @@ export function statusMessage(order: OrderDTO): string {
 export function customerWhatsAppUrl(phone: string, text: string): string {
   return `https://wa.me/${normalizePhone(phone)}?text=${encodeURIComponent(text)}`;
 }
+
+/**
+ * Asks a delivered customer for a review.
+ *
+ * Includes the order number because the review form needs it as proof of purchase —
+ * the customer has no account, so that number plus their phone is how the site
+ * verifies they actually bought the perfume.
+ */
+export function reviewRequestMessage(order: OrderDTO, siteUrl: string): string {
+  const first = (order.customer.name ?? '').trim().split(/\s+/)[0] || 'there';
+  const item = order.items.find((i) => !i.isSample) ?? order.items[0];
+  const lines = [
+    `Hi ${first}, thank you for your order from HERENCIA.`,
+    '',
+    item ? `How are you finding ${item.name}?` : 'How are you finding your order?',
+    'If you have a moment, a short review really helps other customers choose.',
+    '',
+    `Leave one here: ${siteUrl}/products`,
+    `Your order number: ${order.orderNumber}`,
+    '(You will need it plus this phone number to confirm the purchase.)',
+  ];
+  return lines.join('\n');
+}

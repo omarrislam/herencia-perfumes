@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { fetchProduct, fetchRelated } from '../lib/api';
 import { useSeo } from '../lib/useSeo';
+import { productTitle } from '@herencia/shared';
 import { Gallery } from '../features/products/Gallery';
 import { NotesPyramid } from '../features/products/NotesPyramid';
 import { Price } from '../components/Price';
@@ -23,8 +24,10 @@ export default function ProductDetail() {
   useEffect(() => { setSizeIdx(0); }, [slug]);
   const { addItem, setOpen } = useCart();
 
+  // Must match the server-rendered title in api lib/seo.ts, or hydration replaces the
+  // baked title with a shorter one and a JS-rendering crawler indexes that instead.
   useSeo({
-    title: product.data ? `${product.data.name} — HERENCIA` : 'HERENCIA',
+    title: product.data ? productTitle(product.data) : 'HERENCIA',
     description: product.data?.shortDesc,
   });
 

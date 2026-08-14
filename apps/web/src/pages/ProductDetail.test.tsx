@@ -58,6 +58,19 @@ describe('ProductDetail', () => {
     expect(screen.getByText('55ml')).toBeInTheDocument();
   });
 
+  it('sets the same document title the server bakes into the HTML', async () => {
+    // If these drift, hydration overwrites the baked title and a JS-rendering
+    // crawler indexes the client's shorter version instead.
+    const single = { ...product, sizes: [{ label: '55ml', price: 500, stock: 14 }] };
+    vi.stubGlobal('fetch', vi.fn(async (url: string) =>
+      url.endsWith('/related') || url.endsWith('/api/notes')
+        ? new Response(JSON.stringify([]), { status: 200 })
+        : new Response(JSON.stringify(single), { status: 200 }),
+    ));
+    renderAt('/products/royal-oud');
+    await waitFor(() => expect(document.title).toBe('Royal Oud — 55ml EDP — HERENCIA'));
+  });
+
   it('renders product name, notes, and price after load', async () => {
     vi.stubGlobal('fetch', vi.fn(async (url: string) =>
       url.endsWith('/related') || url.endsWith('/api/notes')

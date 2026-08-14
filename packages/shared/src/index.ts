@@ -15,3 +15,4 @@ export * from './schemas/quiz';
 export * from './schemas/settings';
 export * from './schemas/noteIcon';
 export * from './schemas/adminExtras';
+export * from './util/productTitle';

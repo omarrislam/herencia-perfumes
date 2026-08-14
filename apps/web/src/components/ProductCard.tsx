@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import type { ProductDTO } from '@herencia/shared';
+import { type ProductDTO, soleSizeLabel } from '@herencia/shared';
 import { ProductImage } from './ProductImage';
 import { Price } from './Price';
 import { Rating } from './Rating';
@@ -16,7 +16,7 @@ export function ProductCard({ product }: { product: ProductDTO }) {
   );
   const inStock = product.sizes.some((s) => s.stock > 0);
   // Only stated when unambiguous — with several sizes the card shows a "from" price instead.
-  const soleSize = product.sizes.length === 1 ? product.sizes[0] : undefined;
+  const soleSize = soleSizeLabel(product);
   const showConcentration = product.type === 'perfume' && product.concentration && product.concentration !== 'Other';
 
   const addToCart = () => {
@@ -43,9 +43,7 @@ export function ProductCard({ product }: { product: ProductDTO }) {
         </div>
         <div className="p-3.5 pb-1.5">
           <h3 className="font-display text-base leading-snug text-content">{product.name}</h3>
-          {soleSize && (
-            <p className="mt-0.5 font-body text-xs tracking-wide text-muted">{soleSize.label}</p>
-          )}
+          {soleSize && <p className="mt-0.5 font-body text-xs tracking-wide text-muted">{soleSize}</p>}
           <div className="mt-0.5"><Rating avg={product.rating.avg} count={product.rating.count} /></div>
         </div>
       </Link>

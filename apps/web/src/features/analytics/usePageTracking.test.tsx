@@ -66,4 +66,18 @@ describe('usePageTracking', () => {
     rerender(ui);
     expect(pageViews()).toHaveLength(1);
   });
+  it('flushes on pagehide, not only on visibilitychange', () => {
+    // A hard navigation away does not reliably deliver visibilitychange before
+    // teardown, which lost queued product_view events in production.
+    render(
+      <MemoryRouter initialEntries={['/']}>
+        <Routes>
+          <Route path="/" element={<Harness />} />
+        </Routes>
+      </MemoryRouter>,
+    );
+    (analytics.flush as unknown as { mockClear: () => void }).mockClear();
+    window.dispatchEvent(new Event('pagehide'));
+    expect(analytics.flush).toHaveBeenCalled();
+  });
 });

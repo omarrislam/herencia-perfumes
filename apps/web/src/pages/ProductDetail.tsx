@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchProduct, fetchRelated } from '../lib/api';
 import { useSeo } from '../lib/useSeo';
 import { productTitle } from '@herencia/shared';
-import { track } from '../lib/analytics';
+import { track, flush } from '../lib/analytics';
 import { Gallery } from '../features/products/Gallery';
 import { NotesPyramid } from '../features/products/NotesPyramid';
 import { Price } from '../components/Price';
@@ -32,9 +32,13 @@ export default function ProductDetail() {
     description: product.data?.shortDesc,
   });
 
+  // Flushed rather than left queued: a PDP is where visitors linger and then leave,
+  // so batching this until the next route change loses it on a hard navigation.
   const viewedSlug = product.data?.slug;
   useEffect(() => {
-    if (viewedSlug) track('product_view', { path: `/products/${viewedSlug}`, productSlug: viewedSlug });
+    if (!viewedSlug) return;
+    track('product_view', { path: `/products/${viewedSlug}`, productSlug: viewedSlug });
+    void flush();
   }, [viewedSlug]);
 
   if (product.isLoading) return <Skeleton className="h-96 w-full" />;

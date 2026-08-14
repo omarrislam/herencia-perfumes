@@ -19,12 +19,21 @@ export function usePageTracking(): void {
     void flush();
   }, [pathname]);
 
-  // A visitor who closes the tab still has queued events worth keeping.
+  // A visitor who leaves still has queued events worth keeping. Both listeners are
+  // needed: visibilitychange covers tab switches and backgrounding, pagehide covers
+  // a hard navigation away, where visibilitychange is not reliably delivered before
+  // teardown (this is why product_view went missing in production verification).
+  // Duplicate flushes are harmless — flush() no-ops on an empty queue.
   useEffect(() => {
     const onHide = () => {
       if (document.visibilityState === 'hidden') void flush();
     };
+    const onPageHide = () => void flush();
     document.addEventListener('visibilitychange', onHide);
-    return () => document.removeEventListener('visibilitychange', onHide);
+    window.addEventListener('pagehide', onPageHide);
+    return () => {
+      document.removeEventListener('visibilitychange', onHide);
+      window.removeEventListener('pagehide', onPageHide);
+    };
   }, []);
 }

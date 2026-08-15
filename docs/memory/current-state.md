@@ -2,6 +2,18 @@
 
 _Last updated: 2026-08-14_
 
+## Post-M4 round 44 (MOTION pt.2 — higher-presence motion, SHIPPED, 2026-08-14)
+- 🎯 User asked for motion with **more presence** than round 43's two quiet additions ("attracts the user's eyes and keeps them engaged"). Four pieces, chosen to read as expensive rather than loud — a perfume house that flashes looks cheap.
+- ✅ **Hero masked word reveal** (`components/WordReveal.tsx`) — the headline reveals word by word, each rising from behind its own clip (`.word-mask` + `.word-rise`). **A11y**: the full string stays as an `aria-label` and the per-word spans are `aria-hidden`, so a screen reader hears a sentence rather than a list of words. Newlines are preserved as separate lines and the stagger cadence continues across them. Mount-based, so nothing depends on scroll.
+- ✅ **Fly-to-cart** (`lib/flyToCart.ts`) — a clone of the product image arcs into the header cart button on add. **Comprehension, not decoration**: it answers "where did that go?" at the moment of commitment. **Web Animations API, no library.** Fixed-position clone → never touches layout. Wired at BOTH call sites (ProductCard via a ref, PDP via `[data-gallery-main] img`), target marked with `CART_TARGET_ATTR` on the header cart button.
+  - No-ops on: reduced motion, missing target, zero-size source, or a browser without `animate()`. A `setTimeout` guarantees clone removal even if a backgrounded tab never fires `finish` — a stranded fixed-position clone would sit over the page forever.
+- ✅ **PDP scent trail** — the hero's `ScentTrail` reused inside the product gallery. Same visual vocabulary, on the page where someone is actually deciding. Gallery wrapper became `relative` to host it.
+- ✅ **Card gold sweep** (`.card-sweep`) — light-across-metal sweep on product-card hover, echoing `.btn-lux::before`. Gated on `@media (hover: hover)` so it never fires on touch, and `display:none` under reduced motion.
+- ⚡ **Cost: +0.41 kB JS and +0.19 kB CSS gzipped** for all four. No framer-motion, no new dependency. Entry bundle 75.69 → 76.10 kB gzip.
+- ✅ Suites: shared **74** / api **322** / web **139** (+14), typecheck + lint + build clean. Deployed web.
+- ✅ **Live-verified on production in BOTH motion modes**: 4 hero words all settle to identity transform; headline reads identically via `aria-label`; zero horizontal overflow; fly clone appears on add under normal motion, is **suppressed entirely** under reduced motion, and **zero clones stranded** afterwards in either mode; no page errors.
+
+
 ## Post-M4 round 43 (MOTION GRAPHICS — note reveal + wishlist heart, SHIPPED, 2026-08-14)
 - 🔍 **Audited existing motion before adding any.** The site was already well-animated: hero ScentTrail (wisps + motes) + scroll parallax + blur-up, featured-card stagger, `Reveal` on other sections, quiz chip drift, marquee promo bar, logo shimmer, splash, route fade, `card-lux`/`btn-lux` hover **and `:active`** states, cart-badge pulse on add (`justAdded`), and an animated free-shipping progress bar. Per `.impeccable.md` principle 4 ("one signature moment per page; everything else quiet support") the hero already owns the signature — so this round looked for **feedback gaps on conversion actions**, not spectacle.
 - ✅ **Fragrance-note sequential reveal (PDP's own moment).** `NotesPyramid` rows are literally labelled "The opening / The character / The trail" — how a scent develops on skin over hours — but rendered as a static grid. Tiles now appear in that order (top → heart → base), cascading within each row: `ROW_STEP 130ms`, `TILE_STEP 45ms`, **capped at 8 tile-steps** so a long note list never strands the last tiles. This is `.impeccable.md` principle 5 — ornament that means something.

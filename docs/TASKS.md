@@ -99,6 +99,13 @@ _Last updated: 2026-07-01 (Milestone 3 complete)_
 - [x] Wishlist heart: SVG fill + pop on add only
 - [x] Live-verified at 390px / 4× CPU in both reduced-motion modes — no stranded tiles
 
+## Motion pt.2 (round 44, 2026-08-14) — higher presence, at user's request
+- [x] Hero masked word-by-word headline reveal (aria-label keeps it one sentence)
+- [x] Fly-to-cart on add (Web Animations API, no library, self-cleaning)
+- [x] Scent trail on the product gallery
+- [x] Gold sweep across product cards on hover (hover-capable pointers only)
+- [x] +0.41 kB JS / +0.19 kB CSS gzipped total; live-verified in both motion modes
+
 ## Post-launch backlog (user asked for these; specs not yet written)
 - [ ] On-page SEO content work (technical blocker now cleared)
 

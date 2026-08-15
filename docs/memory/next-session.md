@@ -2,6 +2,25 @@
 
 _Last updated: 2026-08-14_
 
+## NEW (2026-08-14, round 44): MOTION pt.2 — higher-presence motion shipped
+Detail in current-state round 44. Deployed + live-verified in both motion modes. Suites shared 74 / api 322 / web 139.
+- **Hero word reveal** (masked, word by word), **fly-to-cart** (WAAPI, no library), **PDP scent trail**, **card gold sweep**.
+- **+0.41 kB JS / +0.19 kB CSS gzipped total** — no framer-motion.
+- `flyToCart` no-ops on reduced motion / missing target / zero-size source / no `animate()`, and self-cleans via timeout so a clone can never strand over the page.
+- ⚠️ If the header cart button is ever restructured, keep `CART_TARGET_ATTR` on it or fly-to-cart silently stops (it no-ops by design).
+
+### ⏭ REMAINING BACKLOG
+1. **On-page SEO content** — the LAST of the four original workstreams. Technical blocker cleared round 38; content untouched.
+2. **Funnels pt.3** — abandoned-checkout follow-up. Needs capturing a phone as the customer types — **ask the user first**.
+3. **Meta Pixel + CAPI** — deferred (decision #60), blocked on the portfolio choice.
+4. **WhatsApp automation** — user found `aldinokemal/go-whatsapp-web-multidevice` (wraps **whatsmeow**, Go, no Chromium, single binary/Docker). Best-in-class of the unofficial family and better suited than Evolution API, BUT: needs an always-on process + session DB (impossible on Vercel serverless, fine on the decision-6 VPS) and its own README recommends the official API. **Advice given: not before launch, and on a SECOND burner number, never the store's line.** `waCloud.ts` is the dormant seam — swapping in a GOWA adapter is ~a day; the cost is the server and the ban risk, not the code.
+
+### ⚠️ Still open
+- **`/bundles` empty but still linked** in nav + footer (user's choice).
+- No password reset for customers OR admin.
+- VASCO 55ml read **11** after round-42 cleanup — worth an eyeball against the real shelf.
+
+
 ## NEW (2026-08-14, round 43): MOTION GRAPHICS shipped
 Detail in current-state round 43. Deployed + live-verified. Suites shared 74 / api 322 / web 125.
 - **Audited first**: the site was already well-animated, so this added only the two real feedback gaps rather than more spectacle.

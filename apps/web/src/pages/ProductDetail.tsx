@@ -5,6 +5,7 @@ import { fetchProduct, fetchRelated } from '../lib/api';
 import { useSeo } from '../lib/useSeo';
 import { productTitle } from '@herencia/shared';
 import { track, flush } from '../lib/analytics';
+import { flyToCart } from '../lib/flyToCart';
 import { Gallery } from '../features/products/Gallery';
 import { NotesPyramid } from '../features/products/NotesPyramid';
 import { Price } from '../components/Price';
@@ -111,6 +112,7 @@ export default function ProductDetail() {
                 if (!size) return;
                 addItem({ productId: p.id, sizeLabel: size.label, qty: 1 });
                 track('add_to_cart', { productSlug: p.slug });
+                flyToCart(document.querySelector<HTMLImageElement>('[data-gallery-main] img'));
                 setOpen(true);
               }}
               className="btn-lux flex-1 disabled:cursor-not-allowed disabled:opacity-50"

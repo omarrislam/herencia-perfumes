@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useTheme } from './ThemeProvider';
 import { useAuth } from '../features/auth/AuthContext';
 import { useCart } from '../features/cart/CartContext';
+import { CART_TARGET_ATTR } from '../lib/flyToCart';
 import { FloatingSocials } from '../components/FloatingSocials';
 import { fetchSettings } from '../lib/api';
 
@@ -111,6 +112,7 @@ export function StorefrontLayout() {
             <button
               type="button"
               aria-label={`Cart${count > 0 ? `, ${count} item${count === 1 ? '' : 's'}` : ''}`}
+              {...{ [CART_TARGET_ATTR]: '' }}
               onClick={() => setOpen(true)}
               className={`relative inline-flex items-center gap-2 font-body text-sm tracking-wide transition-colors hover:text-accent ${justAdded ? 'motion-safe:animate-[pulse_0.6s_ease-out]' : ''}`}
             >

@@ -419,3 +419,56 @@
    cannot, because it never consults scroll position. The global reduced-motion
    rule zeroes both duration AND delay, so the tiles appear instantly there. */
 .note-tile { opacity: 0; animation: rise-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+
+/* ---- Round 44: higher-presence motion ------------------------------------ */
+
+/* Masked word reveal. Each word rises from behind its own clip — the editorial
+   entrance, arresting without shouting. Mount-based, so nothing depends on
+   scroll position; the global reduced-motion rule snaps words into place. */
+@keyframes word-rise {
+  from { transform: translate3d(0, 110%, 0); }
+  to   { transform: translate3d(0, 0, 0); }
+}
+.word-mask {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  /* Descenders (g, y, p) would be clipped by a tight box. */
+  padding-bottom: 0.08em;
+  margin-bottom: -0.08em;
+}
+.word-rise {
+  display: inline-block;
+  animation: word-rise 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Gold sweep across a product card on hover — the same light-across-metal idea
+   as .btn-lux::before, so the vocabulary stays consistent. */
+.card-sweep { position: relative; overflow: hidden; }
+.card-sweep::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(105deg, transparent 38%, var(--gold-hi) 50%, transparent 62%);
+  opacity: 0;
+  transform: translateX(-120%);
+  transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
+}
+@media (hover: hover) {
+  .group:hover .card-sweep::after { opacity: 0.16; transform: translateX(120%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-sweep::after { display: none; }
+}
+
+/* Fly-to-cart clone. Positioned and driven by the Web Animations API in
+   flyToCart.ts; this only fixes its painting context. */
+.fly-clone {
+  position: fixed;
+  z-index: 60;
+  pointer-events: none;
+  border-radius: 0.5rem;
+  object-fit: cover;
+  will-change: transform, opacity;
+}

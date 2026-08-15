@@ -1,3 +1,4 @@
+import { useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { type ProductDTO, soleSizeLabel } from '@herencia/shared';
 import { ProductImage } from './ProductImage';
@@ -7,9 +8,11 @@ import { WishlistButton } from './WishlistButton';
 import { TryScentButton } from './TryScentButton';
 import { useCart } from '../features/cart/CartContext';
 import { track } from '../lib/analytics';
+import { flyToCart } from '../lib/flyToCart';
 
 export function ProductCard({ product }: { product: ProductDTO }) {
   const { addItem, setOpen } = useCart();
+  const imgRef = useRef<HTMLDivElement>(null);
   const href = `${product.type === 'bundle' ? '/bundles' : '/products'}/${product.slug}`;
   const baseSize = product.sizes.reduce<(typeof product.sizes)[number] | undefined>(
     (min, s) => (min === undefined || s.price < min.price ? s : min),
@@ -24,13 +27,15 @@ export function ProductCard({ product }: { product: ProductDTO }) {
     if (!baseSize) return;
     addItem({ productId: product.id, sizeLabel: baseSize.label, qty: 1 });
     track('add_to_cart', { productSlug: product.slug });
+    // Answers "where did that go?" at the moment of commitment.
+    flyToCart(imgRef.current?.querySelector('img'));
     setOpen(true);
   };
 
   return (
     <div className="group card-lux relative flex h-full flex-col overflow-hidden rounded-xl">
       <Link to={href} className="block focus-visible:outline-none">
-        <div className="relative aspect-[5/4] overflow-hidden bg-surface2">
+        <div ref={imgRef} className="card-sweep relative aspect-[5/4] overflow-hidden bg-surface2">
           <ProductImage
             publicId={product.images[0] ?? ''}
             alt={product.name}

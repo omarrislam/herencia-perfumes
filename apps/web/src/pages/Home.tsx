@@ -14,6 +14,7 @@ import { Skeleton } from '../components/Skeleton';
 import { Reveal } from '../components/Reveal';
 import { ParallaxImage } from '../components/ParallaxImage';
 import { ScentTrail } from '../components/ScentTrail';
+import { WordReveal } from '../components/WordReveal';
 import { ThreeSteps } from '../components/ThreeSteps';
 import { TestimonialCarousel } from '../components/TestimonialCarousel';
 
@@ -480,7 +481,9 @@ export default function Home() {
               <div className="mx-auto w-full max-w-6xl px-5 sm:px-6">
                 <motion.div style={{ y: heroTextY, opacity: heroTextOpacity }} className="max-w-2xl space-y-6">
                   <p className="eyebrow rise text-gold-hi" style={{ animationDelay: '0.05s' }}>Heritage Perfumery</p>
-                  <h1 className="display rise text-5xl leading-[1.02] text-cream sm:text-6xl md:text-7xl" style={{ animationDelay: '0.15s' }}>{hero?.title ?? 'Luxury in every drop'}</h1>
+                  <h1 className="display text-5xl leading-[1.02] text-cream sm:text-6xl md:text-7xl">
+                    <WordReveal text={hero?.title ?? 'Luxury in every drop'} delay={150} step={95} />
+                  </h1>
                   <p className="rise max-w-md font-body text-base leading-relaxed text-cream/85 md:text-lg" style={{ animationDelay: '0.28s' }}>{hero?.subtitle ?? 'Composed in small batches, worn like an heirloom.'}</p>
                   <div className="rise flex flex-wrap gap-3 pt-2" style={{ animationDelay: '0.4s' }}>
                     <Link to={hero?.ctaLink ?? '/products'} className="btn-lux">{hero?.ctaText ?? 'Shop the collection'}</Link>

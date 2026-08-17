@@ -6,7 +6,6 @@ import { useProductFilters } from '../features/products/useProductFilters';
 import { FilterBar } from '../features/products/FilterBar';
 import { ProductCard } from '../components/ProductCard';
 import { Skeleton } from '../components/Skeleton';
-import { Reveal } from '../components/Reveal';
 
 export default function Products() {
   useSeo({ title: 'Shop Perfumes — HERENCIA', description: 'Browse the HERENCIA perfume collection.' });
@@ -47,11 +46,22 @@ export default function Products() {
         <p className="py-16 text-center font-body text-muted">No perfumes match your filters.</p>
       ) : (
         <>
-          <Reveal>
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 sm:gap-5">
-              {data?.items.map((p) => <ProductCard key={p.id} product={p} />)}
-            </div>
-          </Reveal>
+          {/* Cards arrive one after another rather than as one block. Mount-based
+              with a capped stagger, NOT a scroll-reveal per card: round 36 left
+              carousel cards stranded at opacity 0 forever because they never
+              intersected the viewport. This never consults scroll position, and
+              the reduced-motion rule zeroes both duration and delay. */}
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 sm:gap-5">
+            {data?.items.map((p, i) => (
+              <div
+                key={p.id}
+                className="anim-fade-up h-full"
+                style={{ animationDelay: `${Math.min(i, 11) * 55}ms` }}
+              >
+                <ProductCard product={p} />
+              </div>
+            ))}
+          </div>
           {data && data.pages > 1 ? (
             <div className="mt-12 flex items-center justify-center gap-4 font-body">
               <button disabled={data.page <= 1} onClick={() => setFilter('page', data.page - 1)} className="rounded-md border border-line px-4 py-2 text-content transition-colors hover:border-accent disabled:opacity-40">Previous</button>

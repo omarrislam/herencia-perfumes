@@ -86,7 +86,7 @@ export function StorefrontLayout() {
             </div>
           </div>
         )}
-        <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-5 sm:py-4">
+        <nav className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3 sm:px-6 sm:py-4">
           <Link to="/" onClick={() => window.scrollTo(0, 0)} className="flex items-center gap-2.5">
             <img src="/logo.png" alt="HERENCIA crest" className="h-10 w-10 object-contain" />
             <span className={`logo-shimmer font-display text-xl tracking-[0.2em] sm:text-2xl ${light ? 'text-cream' : 'text-content'}`}>
@@ -205,7 +205,7 @@ export function StorefrontLayout() {
         )}
       </header>
 
-      <main className={isHome ? 'w-full flex-1' : 'mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-5'}>
+      <main className={isHome ? 'w-full flex-1' : 'mx-auto w-full max-w-6xl flex-1 px-5 py-8 sm:px-6'}>
         <div key={location.pathname} className="anim-fade-in-fast">
           {/* The fallback reserves a full viewport so the footer never paints
               at the top and then gets shoved down when the route chunk lands
@@ -217,7 +217,7 @@ export function StorefrontLayout() {
       </main>
 
       <footer className="mt-24 border-t border-hairline bg-bg-deep">
-        <div className="mx-auto max-w-6xl px-4 py-14 sm:px-5">
+        <div className="mx-auto max-w-6xl px-5 py-14 sm:px-6">
           <div className="grid gap-10 md:grid-cols-[1.5fr_1fr_1fr]">
             <div>
               <div className="flex items-center gap-2.5">

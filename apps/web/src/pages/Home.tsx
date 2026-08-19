@@ -485,8 +485,10 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-t from-espresso/90 via-espresso/45 to-espresso/15" />
           <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-espresso/55 to-transparent" />
           <ScentTrail />
+          {/* pt-16 on mobile clears the overlaid header: the hero is shorter there,
+              so vertically centred copy would otherwise ride up under the logo. */}
           {heroKnown && (
-            <div className="absolute inset-0 flex items-center">
+            <div className="absolute inset-0 flex items-center pt-16 sm:pt-0">
               <div className="mx-auto w-full max-w-6xl px-5 sm:px-6">
                 <motion.div style={{ y: heroTextY, opacity: heroTextOpacity }} className="max-w-2xl space-y-6">
                   <p className="eyebrow rise text-gold-hi" style={{ animationDelay: '0.05s' }}>Heritage Perfumery</p>

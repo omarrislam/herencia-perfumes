@@ -230,10 +230,15 @@ export default function Home() {
         <div className="relative md:mx-auto md:max-w-4xl">
           <div
             ref={featuredScroller}
-            className={`no-scrollbar -mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto overflow-y-hidden overscroll-x-contain px-5 pb-3 sm:gap-5 ${
+            // scroll-pl-5 is load-bearing, not cosmetic: with snap-mandatory the
+            // browser snaps to the first card's edge and IGNORES this scroller's
+            // padding, silently setting scrollLeft to 20px on load and pulling the
+            // first card flush against the screen edge. scroll-padding makes the
+            // snap point respect the gutter. It must be zeroed wherever px-5 is.
+            className={`no-scrollbar -mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto overflow-y-hidden overscroll-x-contain scroll-pl-5 px-5 pb-3 sm:gap-5 ${
               featuredCarousel
-                ? 'md:mx-0 md:snap-none md:gap-6 md:px-0 md:pb-0'
-                : 'sm:mx-0 sm:px-0 md:grid md:grid-cols-3 md:gap-6 md:overflow-visible md:pb-0'
+                ? 'md:mx-0 md:snap-none md:gap-6 md:px-0 md:pb-0 md:scroll-pl-0'
+                : 'sm:mx-0 sm:px-0 sm:scroll-pl-0 md:grid md:grid-cols-3 md:gap-6 md:overflow-visible md:pb-0'
             }`}
           >
             {featured.isLoading

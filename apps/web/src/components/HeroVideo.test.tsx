@@ -116,7 +116,7 @@ describe('HeroVideo', () => {
     const { container } = render(<HeroVideo src="/hero.mp4" ready />);
     await waitFor(() => expect(video(container)).toBeTruthy());
     const cls = video(container)!.className;
-    expect(cls).toContain('object-[18%_50%]');
+    expect(cls).toContain('object-[8%_50%]');
     expect(cls).toContain('sm:object-center');
   });
 

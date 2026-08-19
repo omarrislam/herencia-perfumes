@@ -83,10 +83,12 @@ export function HeroVideo({ src, ready }: { src: string; ready: boolean }) {
         setVisible(true);
         tryPlay(e.currentTarget);
       }}
-      // object-position is biased left on phones: the frame is 854 wide inside a
-      // ~390 window, so ~460px is cropped and a centred crop cuts the atomiser
-      // out of shot. Larger screens lose almost nothing, so they stay centred.
-      className={`pointer-events-none absolute inset-0 h-full w-full object-cover object-[18%_50%] transition-opacity duration-700 ease-out sm:object-center ${
+      // object-position is biased left on phones. The frame is 854 wide inside a
+      // ~390 window, so 460px is cropped: a centred crop shows only 27%-73% of the
+      // frame and cuts the atomiser (which sits at ~10-18%) out of shot entirely.
+      // 8% shows 4%-50%, giving the nozzle margin on both sides. Larger screens
+      // lose almost nothing and stay centred.
+      className={`pointer-events-none absolute inset-0 h-full w-full object-cover object-[8%_50%] transition-opacity duration-700 ease-out sm:object-center ${
         visible ? 'opacity-100' : 'opacity-0'
       }`}
     >

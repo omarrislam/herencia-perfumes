@@ -63,13 +63,34 @@ describe('HeroVideo', () => {
     expect(video(container)).toBeNull();
   });
 
-  it('offers a lighter rendition to small screens', async () => {
+  it('picks the rendition in JS, not with <source media>', async () => {
+    // Safari applies the media attribute on <source> inconsistently for video and
+    // can end up with no playable source at all, which is one way a hero ends up
+    // paused behind a play badge. The choice is made here instead.
     const { container } = render(<HeroVideo src="/hero.mp4" ready />);
     await waitFor(() => expect(video(container)).toBeTruthy());
-    const sources = [...container.querySelectorAll('source')];
-    expect(sources[0]!.getAttribute('src')).toBe('/hero-sm.mp4');
-    expect(sources[0]!.getAttribute('media')).toContain('max-width');
-    expect(sources[1]!.getAttribute('src')).toBe('/hero.mp4');
+    expect(container.querySelectorAll('source')).toHaveLength(0);
+    expect(video(container)!.getAttribute('src')).toBe('/hero.mp4');
+  });
+
+  it('shows a poster so a blocked video is never a black rectangle', async () => {
+    const { container } = render(<HeroVideo src="/hero.mp4" ready />);
+    await waitFor(() => expect(video(container)).toBeTruthy());
+    expect(video(container)!.getAttribute('poster')).toBe('/hero-poster.jpg');
+  });
+
+  it('retries playback on the first user gesture, for iOS Low Power Mode', async () => {
+    // iOS refuses autoplay entirely in Low Power Mode; no markup overrides that.
+    // A play() inside a user gesture is always permitted, so the first touch or
+    // scroll starts it.
+    const play = vi.fn(() => Promise.resolve());
+    Object.defineProperty(HTMLMediaElement.prototype, 'play', { configurable: true, value: play });
+    Object.defineProperty(HTMLMediaElement.prototype, 'paused', { configurable: true, get: () => true });
+    const { container } = render(<HeroVideo src="/hero.mp4" ready />);
+    await waitFor(() => expect(video(container)).toBeTruthy());
+    play.mockClear();
+    window.dispatchEvent(new Event('touchstart'));
+    expect(play).toHaveBeenCalled();
   });
 
   it('is muted, looping and inline — the only way autoplay is allowed on mobile', async () => {

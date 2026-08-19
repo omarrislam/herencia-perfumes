@@ -444,7 +444,7 @@ export default function Home() {
           {/* Cached hero renders instantly; a true first visit briefly holds the espresso
               base until settings resolve (never flashes the wrong image). No CLS. */}
           {!heroKnown ? (
-            <div className="h-[72vh] max-h-[760px] min-h-[440px] w-full" />
+            <div className="h-[60vh] max-h-[760px] min-h-[380px] w-full sm:h-[72vh] sm:min-h-[440px]" />
           ) : useCloudHero && heroPublicId ? (
             <>
               {/* Blurred preview (~1–2 kB, preloaded from the baked HTML) paints
@@ -466,7 +466,7 @@ export default function Home() {
                 onLoad={() => setHeroLoaded(true)}
                 {...({ fetchpriority: 'high' } as object)}
                 style={{ y: heroImgY, scale: reduced ? 1 : 1.1 }}
-                className={`h-[72vh] max-h-[760px] min-h-[440px] w-full object-cover transition-opacity duration-300 ease-out ${heroLoaded ? 'opacity-100' : 'opacity-0'}`}
+                className={`h-[60vh] max-h-[760px] min-h-[380px] w-full sm:h-[72vh] sm:min-h-[440px] object-cover transition-opacity duration-300 ease-out ${heroLoaded ? 'opacity-100' : 'opacity-0'}`}
               />
             </>
           ) : (
@@ -476,7 +476,7 @@ export default function Home() {
               alt={hero?.title ?? 'HERENCIA'}
               onLoad={() => setHeroLoaded(true)}
               style={{ y: heroImgY, scale: reduced ? 1 : 1.1 }}
-              className={`h-[72vh] max-h-[760px] min-h-[440px] w-full bg-espresso object-cover transition-opacity duration-300 ease-out ${heroLoaded ? 'opacity-100' : 'opacity-0'}`}
+              className={`h-[60vh] max-h-[760px] min-h-[380px] w-full sm:h-[72vh] sm:min-h-[440px] bg-espresso object-cover transition-opacity duration-300 ease-out ${heroLoaded ? 'opacity-100' : 'opacity-0'}`}
             />
           )}
           {/* Between the image and the scrims: the image keeps painting first and

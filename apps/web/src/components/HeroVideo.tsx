@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 /**
  * play() returns a Promise in modern browsers but `undefined` in older ones, so
@@ -15,31 +15,26 @@ function tryPlay(el: HTMLVideoElement): void {
  *
  * The image is never replaced — it is the poster, the fallback, and the LCP
  * element that round 13 bakes into index.html for a first paint with no JS. This
- * component only fades a video in on top once it can play, so the measured hero
- * performance is unchanged for anyone who never receives the video.
+ * only fades a video in on top once it can play, so measured hero performance is
+ * unchanged for anyone who never receives the video.
  *
- * It declines to load at all when:
- *  - the visitor asked for reduced motion,
- *  - the browser reports Save-Data or a 2g/3g connection,
- *  - or the hero image has not painted yet (never compete with LCP).
+ * It declines to load at all under reduced motion, Save-Data, or a 2g/3g
+ * connection, and waits for an idle moment so it never competes with the image.
  */
 export function HeroVideo({ src, ready }: { src: string; ready: boolean }) {
   const [allowed, setAllowed] = useState(false);
   const [visible, setVisible] = useState(false);
+  const elRef = useRef<HTMLVideoElement | null>(null);
 
   useEffect(() => {
     if (!ready) return;
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    // Non-standard but widely shipped; treat absence as "fine to load".
     const c = (navigator as Navigator & {
       connection?: { saveData?: boolean; effectiveType?: string };
     }).connection;
     if (c?.saveData) return;
     if (c?.effectiveType && /(^|-)2g$|^3g$/.test(c.effectiveType)) return;
 
-    // Wait for an idle moment so the video never competes with the hero image
-    // or the route chunk for bandwidth. requestIdleCallback is missing on older
-    // Safari, hence the runtime check rather than a type-level one.
     const start = () => setAllowed(true);
     const idle = typeof window.requestIdleCallback === 'function';
     const id = idle ? window.requestIdleCallback(start) : window.setTimeout(start, 1200);
@@ -50,26 +45,54 @@ export function HeroVideo({ src, ready }: { src: string; ready: boolean }) {
   }, [ready]);
 
   /**
-   * iOS Safari only permits inline autoplay when the `muted` ATTRIBUTE is present
-   * on the element. React's `muted` prop sets the DOM *property* and never emits
-   * the attribute, so on a real iPhone playback is refused and the native play
-   * button appears — while Chromium happily plays and hides the bug. Set both here,
-   * before the element can attempt to play, then ask explicitly and swallow the
-   * rejection (a blocked play() must not surface as an unhandled promise).
+   * iOS refuses autoplay outright in Low Power Mode, and when "Auto-Play Video
+   * Previews" is off — no markup can override either. When that happens the
+   * FIRST touch or scroll anywhere on the page is a user gesture, and playback
+   * started inside one is always permitted. Listeners remove themselves after
+   * the first successful start.
    */
+  useEffect(() => {
+    if (!allowed) return;
+    const kick = () => {
+      const el = elRef.current;
+      if (el && el.paused) tryPlay(el);
+    };
+    const opts = { passive: true } as AddEventListenerOptions;
+    for (const ev of ['touchstart', 'pointerdown', 'scroll', 'click']) {
+      window.addEventListener(ev, kick, opts);
+    }
+    document.addEventListener('visibilitychange', kick);
+    return () => {
+      for (const ev of ['touchstart', 'pointerdown', 'scroll', 'click']) {
+        window.removeEventListener(ev, kick);
+      }
+      document.removeEventListener('visibilitychange', kick);
+    };
+  }, [allowed]);
+
   const attach = useCallback((el: HTMLVideoElement | null) => {
+    elRef.current = el;
     if (!el) return;
+    // React's `muted` prop sets the DOM property but never emits the attribute,
+    // and iOS only permits inline autoplay when the ATTRIBUTE is present.
     el.muted = true;
-    el.setAttribute('muted', '');
     el.defaultMuted = true;
+    el.setAttribute('muted', '');
     tryPlay(el);
   }, []);
 
   if (!allowed) return null;
 
+  // Chosen here rather than with <source media>, which Safari applies
+  // inconsistently for video and can leave with no playable source at all.
+  const small = typeof window !== 'undefined' && window.matchMedia('(max-width: 640px)').matches;
+  const chosen = small ? src.replace(/\.mp4$/, '-sm.mp4') : src;
+
   return (
     <video
       ref={attach}
+      src={chosen}
+      poster="/hero-poster.jpg"
       autoPlay
       muted
       loop
@@ -79,22 +102,17 @@ export function HeroVideo({ src, ready }: { src: string; ready: boolean }) {
       disablePictureInPicture
       aria-hidden="true"
       tabIndex={-1}
+      onLoadedData={(e) => tryPlay(e.currentTarget)}
       onCanPlay={(e) => {
         setVisible(true);
         tryPlay(e.currentTarget);
       }}
-      // object-position is biased left on phones. The frame is 854 wide inside a
-      // ~390 window, so 460px is cropped: a centred crop shows only 27%-73% of the
-      // frame and cuts the atomiser (which sits at ~10-18%) out of shot entirely.
-      // 8% shows 4%-50%, giving the nozzle margin on both sides. Larger screens
-      // lose almost nothing and stay centred.
+      onPlaying={() => setVisible(true)}
+      // The frame is 854 wide in a ~390 window, so a centred crop shows only
+      // 27%-73% and loses the atomiser (at ~10-18%). 8% shows 4%-50%.
       className={`pointer-events-none absolute inset-0 h-full w-full object-cover object-[8%_50%] transition-opacity duration-700 ease-out sm:object-center ${
         visible ? 'opacity-100' : 'opacity-0'
       }`}
-    >
-      {/* Small phones get the lighter rendition; the browser picks before fetching. */}
-      <source src={src.replace(/\.mp4$/, '-sm.mp4')} type="video/mp4" media="(max-width: 640px)" />
-      <source src={src} type="video/mp4" />
-    </video>
+    />
   );
 }

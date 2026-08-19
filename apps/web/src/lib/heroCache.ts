@@ -8,6 +8,8 @@ export type CachedHero = {
   image: string;
   // Fully-resolved image URL (Cloudinary), used for the pre-React preload.
   imageUrl?: string;
+  // Optional looping background video layered over the image once it can play.
+  video?: string;
 };
 
 const KEY = 'herencia.hero';

@@ -25,7 +25,7 @@ export function toSettingDTO(doc: AnyDoc): SettingDTO {
     shippingFee: doc.shippingFee ?? 0,
     freeShippingThreshold: doc.freeShippingThreshold ?? undefined,
     socialLinks: doc.socialLinks ?? {},
-    hero: doc.hero,
+    hero: { ...doc.hero, video: doc.hero?.video || undefined },
     homeSections: {
       hero: hs.hero ?? DEFAULT_HOME_SECTIONS.hero,
       featured: hs.featured ?? DEFAULT_HOME_SECTIONS.featured,

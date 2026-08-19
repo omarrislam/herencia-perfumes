@@ -15,6 +15,7 @@ import { Reveal } from '../components/Reveal';
 import { ParallaxImage } from '../components/ParallaxImage';
 import { ScentTrail } from '../components/ScentTrail';
 import { WordReveal } from '../components/WordReveal';
+import { HeroVideo } from '../components/HeroVideo';
 import { ThreeSteps } from '../components/ThreeSteps';
 import { TestimonialCarousel } from '../components/TestimonialCarousel';
 
@@ -478,6 +479,9 @@ export default function Home() {
               className={`h-[72vh] max-h-[760px] min-h-[440px] w-full bg-espresso object-cover transition-opacity duration-300 ease-out ${heroLoaded ? 'opacity-100' : 'opacity-0'}`}
             />
           )}
+          {/* Between the image and the scrims: the image keeps painting first and
+              stays the fallback, the video only layers over it once ready. */}
+          {hero?.video && <HeroVideo src={hero.video} ready={heroLoaded} />}
           <div className="absolute inset-0 bg-gradient-to-t from-espresso/90 via-espresso/45 to-espresso/15" />
           <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-espresso/55 to-transparent" />
           <ScentTrail />

@@ -12,6 +12,9 @@ const settingSchema = new Schema(
       ctaText: { type: String, required: true },
       ctaLink: { type: String, required: true },
       image: { type: String, required: true },
+      // Optional looping background video (URL). The image stays required: it is
+      // the poster, the fallback and the LCP element.
+      video: { type: String },
     },
     homeSections: {
       hero: { type: Boolean, default: true },

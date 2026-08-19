@@ -7,7 +7,7 @@ import { adminUpdateSettings, uploadImage } from '../../features/admin/adminClie
 import { cld } from '../../lib/cloudinary';
 import { ApiError } from '../../lib/api';
 
-type HeroForm = { title: string; subtitle: string; ctaText: string; ctaLink: string; image: string };
+type HeroForm = { title: string; subtitle: string; ctaText: string; ctaLink: string; image: string; video: string };
 const LABELS: Record<keyof HomeSections, { label: string; hint: string }> = {
   hero: { label: 'Hero', hint: 'Main banner at the top (always first)' },
   featured: { label: 'Featured scents', hint: 'Featured products (drawer on mobile)' },
@@ -25,7 +25,7 @@ export default function AdminHome() {
   const qc = useQueryClient();
   const settings = useQuery({ queryKey: ['settings'], queryFn: fetchSettings });
 
-  const [hero, setHero] = useState<HeroForm>({ title: '', subtitle: '', ctaText: '', ctaLink: '', image: '' });
+  const [hero, setHero] = useState<HeroForm>({ title: '', subtitle: '', ctaText: '', ctaLink: '', image: '', video: '' });
   const [sections, setSections] = useState<HomeSections>({ hero: true, featured: true, samples: true, essence: true, gifting: true, time: true, testimonials: true, values: true, quiz: true, faq: true });
   const [order, setOrder] = useState<ReorderableSection[]>(DEFAULT_SECTION_ORDER);
   const [shipping, setShipping] = useState<{ fee: string; freeOver: string }>({ fee: '', freeOver: '' });
@@ -46,7 +46,7 @@ export default function AdminHome() {
   useEffect(() => {
     const s = settings.data;
     if (!s) return;
-    setHero({ title: s.hero.title, subtitle: s.hero.subtitle, ctaText: s.hero.ctaText, ctaLink: s.hero.ctaLink, image: s.hero.image });
+    setHero({ title: s.hero.title, subtitle: s.hero.subtitle, ctaText: s.hero.ctaText, ctaLink: s.hero.ctaLink, image: s.hero.image, video: s.hero.video ?? '' });
     setSections(s.homeSections);
     setOrder(s.sectionOrder);
     setShipping({ fee: String(s.shippingFee), freeOver: s.freeShippingThreshold != null ? String(s.freeShippingThreshold) : '' });
@@ -104,7 +104,7 @@ export default function AdminHome() {
 
   const save = () => {
     mut.mutate({
-      hero,
+      hero: { ...hero, video: hero.video.trim() || undefined },
       homeSections: sections,
       sectionOrder: order,
       ...(shipping.fee.trim() !== '' && Number(shipping.fee) >= 0 ? { shippingFee: Number(shipping.fee) } : {}),
@@ -184,6 +184,23 @@ export default function AdminHome() {
             <input type="file" accept="image/*" onChange={(e) => void pickImage('hero', e.target.files?.[0])} disabled={uploading === 'hero'} className="font-body text-sm text-content" />
             {uploading === 'hero' && <span className="font-body text-xs text-muted">Uploading…</span>}
           </div>
+          <p className="mt-1 font-body text-xs text-muted">
+            Always required. It paints instantly on first load and is what visitors see if the video is skipped.
+          </p>
+        </div>
+        <div>
+          <span className="mb-1 block font-body text-sm text-muted">Hero video (optional)</span>
+          <input
+            value={hero.video}
+            onChange={(e) => setHero({ ...hero, video: e.target.value })}
+            placeholder="/hero.mp4"
+            className="field-lux"
+          />
+          <p className="mt-1 font-body text-xs text-muted">
+            Plays muted on a loop over the image. Leave empty for image only. It never
+            delays the page: it loads after the image and is skipped on slow connections
+            or when a visitor prefers reduced motion.
+          </p>
         </div>
       </section>
 

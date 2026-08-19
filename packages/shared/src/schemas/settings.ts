@@ -6,6 +6,10 @@ export const heroSchema = z.object({
   ctaText: z.string().min(1).max(60),
   ctaLink: z.string().min(1).max(300),
   image: z.string().min(1).max(300),
+  // Optional looping background video. The IMAGE is never optional: it is the
+  // poster, the fallback, and the LCP element — the video only ever layers on
+  // top once it can play. Empty or absent means image only.
+  video: z.string().max(300).optional(),
 });
 export type HeroContent = z.infer<typeof heroSchema>;
 

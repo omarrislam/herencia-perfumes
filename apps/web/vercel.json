@@ -1,6 +1,11 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    { "source": "/products/amber-noir", "destination": "/products/perla-rosa", "permanent": true },
+    { "source": "/products/cedar-smoke", "destination": "/products/vasco", "permanent": true }
+  ],
   "rewrites": [
+    { "source": "/sitemap.xml", "destination": "https://herencia-api-pi.vercel.app/sitemap.xml" },
     { "source": "/api/(.*)", "destination": "https://herencia-api-pi.vercel.app/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]

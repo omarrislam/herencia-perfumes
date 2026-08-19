@@ -30,6 +30,7 @@ function toFormDefaults(p?: ProductDTO): AdminProductInput {
   }
   return {
     name: p.name,
+    slug: p.slug,
     type: p.type,
     shortDesc: p.shortDesc,
     description: p.description,
@@ -113,6 +114,24 @@ export function ProductForm({
           placeholder="Name"
           className="w-full rounded-md border border-line bg-bg px-3 py-2 font-body text-content"
         />
+      </label>
+
+      <label className="block">
+        <span className="mb-1 block font-body text-xs text-muted">URL slug</span>
+        <input
+          {...register('slug')}
+          placeholder="left empty on a new product, generated from the name"
+          className="w-full rounded-md border border-line bg-bg px-3 py-2 font-body text-content"
+        />
+        {/* Renaming a product deliberately does NOT change its slug (decision from
+            round 31: a rename must not silently break a live URL or its SEO). This
+            field is how a slug is changed on purpose. Old links keep working only
+            if a redirect is added for them. */}
+        <span className="mt-1 block font-body text-xs text-muted">
+          The address customers see: /products/<b>{'{slug}'}</b>. Renaming a product does not
+          change this on its own — edit it here if you want the URL to follow the name,
+          and tell me so the old address can be redirected.
+        </span>
       </label>
 
       <div className="grid grid-cols-2 gap-3">

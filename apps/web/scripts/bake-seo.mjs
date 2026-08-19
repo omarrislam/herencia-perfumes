@@ -70,15 +70,18 @@ try {
     written += 1;
   }
 
-  // sitemap.xml and robots.txt only resolved on the API domain before; crawlers look
-  // for them on the site domain.
-  for (const file of ['sitemap.xml', 'robots.txt']) {
-    const r = await fetch(`${API}/${file}`, { signal: AbortSignal.timeout(10_000) });
-    if (!r.ok) throw new Error(`${file} fetch ${r.status}`);
-    await writeFile(join(DIST, file), await r.text(), 'utf8');
-  }
+  // robots.txt only resolved on the API domain before; crawlers look for it on the site
+  // domain. Its content only changes with the origin, so baking it stays correct.
+  //
+  // sitemap.xml is deliberately NOT baked: a baked copy goes stale the moment a product
+  // is added, renamed, or deactivated, and Vercel serves the filesystem before applying
+  // rewrites — so a stale file here would shadow the live proxy. vercel.json rewrites
+  // /sitemap.xml to the API instead, which builds it from the database per request.
+  const r = await fetch(`${API}/robots.txt`, { signal: AbortSignal.timeout(10_000) });
+  if (!r.ok) throw new Error(`robots.txt fetch ${r.status}`);
+  await writeFile(join(DIST, 'robots.txt'), await r.text(), 'utf8');
 
-  console.log(`[bake-seo] baked ${written} routes + sitemap.xml + robots.txt`);
+  console.log(`[bake-seo] baked ${written} routes + robots.txt (sitemap.xml is proxied live)`);
 } catch (err) {
   console.warn(`[bake-seo] skipped: ${err instanceof Error ? err.message : err}`);
 }

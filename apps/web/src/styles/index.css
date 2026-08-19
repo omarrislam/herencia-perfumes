@@ -472,3 +472,13 @@
   object-fit: cover;
   will-change: transform, opacity;
 }
+
+/* iOS renders a native play badge over a video it declines to autoplay. The
+   muted attribute in HeroVideo is what actually permits playback; this hides the
+   badge so a momentary refusal never shows a control the visitor cannot use. */
+video::-webkit-media-controls-start-playback-button,
+video::-webkit-media-controls-play-button,
+video::-webkit-media-controls {
+  display: none !important;
+  -webkit-appearance: none;
+}

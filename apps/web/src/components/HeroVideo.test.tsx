@@ -20,6 +20,12 @@ beforeEach(() => {
   // Run the idle callback immediately so tests don't wait on the browser.
   vi.stubGlobal('requestIdleCallback', (cb: () => void) => { cb(); return 1; });
   vi.stubGlobal('cancelIdleCallback', vi.fn());
+  // jsdom does not implement play(); it returns undefined, exactly as older
+  // browsers do — which is why the component guards before calling .catch().
+  Object.defineProperty(HTMLMediaElement.prototype, 'play', {
+    configurable: true,
+    value: vi.fn(() => Promise.resolve()),
+  });
 });
 afterEach(() => vi.unstubAllGlobals());
 
@@ -86,5 +92,37 @@ describe('HeroVideo', () => {
     const { container } = render(<HeroVideo src="/hero.mp4" ready />);
     await waitFor(() => expect(video(container)).toBeTruthy());
     expect(video(container)!.className).toContain('opacity-0');
+  });
+  it('sets the muted ATTRIBUTE, not just the property — iOS refuses autoplay without it', async () => {
+    // React's `muted` prop only sets the DOM property. On a real iPhone that means
+    // playback is blocked and the native play badge appears, while Chromium plays
+    // happily and hides the bug.
+    const { container } = render(<HeroVideo src="/hero.mp4" ready />);
+    await waitFor(() => expect(video(container)).toBeTruthy());
+    const v = video(container)! as HTMLVideoElement;
+    expect(v.hasAttribute('muted')).toBe(true);
+    expect(v.muted).toBe(true);
+  });
+
+  it('asks to play explicitly and survives a blocked play()', async () => {
+    const play = vi.fn(() => Promise.reject(new Error('blocked')));
+    Object.defineProperty(HTMLMediaElement.prototype, 'play', { configurable: true, value: play });
+    const { container } = render(<HeroVideo src="/hero.mp4" ready />);
+    await waitFor(() => expect(video(container)).toBeTruthy());
+    expect(play).toHaveBeenCalled();
+  });
+
+  it('biases the crop left on phones so the subject is not cut out of frame', async () => {
+    const { container } = render(<HeroVideo src="/hero.mp4" ready />);
+    await waitFor(() => expect(video(container)).toBeTruthy());
+    const cls = video(container)!.className;
+    expect(cls).toContain('object-[18%_50%]');
+    expect(cls).toContain('sm:object-center');
+  });
+
+  it('never shows native controls', async () => {
+    const { container } = render(<HeroVideo src="/hero.mp4" ready />);
+    await waitFor(() => expect(video(container)).toBeTruthy());
+    expect((video(container) as HTMLVideoElement).controls).toBe(false);
   });
 });

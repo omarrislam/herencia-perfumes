@@ -4,6 +4,7 @@ import { useSamples } from '../features/samples/SampleContext';
 import { fetchSettings } from '../lib/api';
 import { applySampleTokens } from '../lib/sampleCopy';
 import { formatEGP } from './Price';
+import { Stamp } from './Stamp';
 
 // The samples pitch — compact, marketing-led, and unmistakably about SAMPLES
 // (the old three-card "3 Steps" band buried the subject and ran a full screen).
@@ -46,15 +47,17 @@ export function ThreeSteps() {
           loading="lazy"
           className="aspect-[4/3] w-full rounded-2xl object-cover shadow-lux"
         />
-        {/* Price sticker — the marketing anchor */}
-        <div
+        {/* Price sticker — the marketing anchor. Lands like a stamp the first time
+            it is scrolled to; -rotate-6 is baked into the keyframes' final frame,
+            so the class is dropped here to avoid fighting the animation. */}
+        <Stamp
           aria-hidden="true"
-          className="absolute -right-3 -top-5 flex h-24 w-24 -rotate-6 flex-col items-center justify-center rounded-full bg-accent text-espresso shadow-lux"
+          className="absolute -right-3 -top-5 flex h-24 w-24 flex-col items-center justify-center rounded-full bg-accent text-espresso shadow-lux -rotate-6"
         >
           <span className="font-body text-[10px] uppercase tracking-wider">{t(s.stickerTop)}</span>
           <span className="font-display text-lg font-semibold leading-tight">{formatEGP(s.price)}</span>
           <span className="font-body text-[10px] uppercase tracking-wider">{t(s.stickerBottom)}</span>
-        </div>
+        </Stamp>
       </div>
     </section>
   );

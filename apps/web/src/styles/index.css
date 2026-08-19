@@ -482,3 +482,26 @@ video::-webkit-media-controls {
   display: none !important;
   -webkit-appearance: none;
 }
+
+/* Price sticker landing like a rubber stamp: it comes down large and askew,
+   hits harder than its resting size, rebounds once, then settles at the -6deg
+   the sticker sits at. The overshoot is what reads as an impact rather than a
+   zoom — without it the whole thing looks like a modal opening.
+
+   Transform and opacity only, so it stays on the compositor. */
+@keyframes stamp-press {
+  0%   { opacity: 0;   transform: scale(2.3) rotate(-20deg); }
+  45%  { opacity: 1;   transform: scale(0.93) rotate(-3deg); }
+  62%  {               transform: scale(1.07) rotate(-8deg); }
+  78%  {               transform: scale(0.98) rotate(-5deg); }
+  100% { opacity: 1;   transform: scale(1) rotate(-6deg); }
+}
+.stamp-press { animation: stamp-press 0.62s cubic-bezier(0.2, 0.7, 0.3, 1) both; }
+
+/* A stamp is nothing without ink spreading out from the strike. */
+@keyframes stamp-ink {
+  0%   { opacity: 0;    transform: scale(0.6); }
+  45%  { opacity: 0.42; transform: scale(1); }
+  100% { opacity: 0;    transform: scale(1.7); }
+}
+.stamp-ink { animation: stamp-ink 0.75s ease-out both; }
